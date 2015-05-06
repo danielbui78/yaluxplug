@@ -169,12 +169,10 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
     // DEBUG
     dzApp->log("yaluxplug: pathTempName = [" + fileName + "]");
     fileNameLXS = fileName + ".lxs";
-//    tempPath = dzApp->getTempPath();
-//    fileName.replace(tempPath + "/","");
     fileName = DzFileIO::getBaseFileName( fileName );
     mesg = "Writing to LXS file = " + fileName;
 //    YaLuxGlobal.RenderProgress->update(ncount++);
-    YaLuxGlobal.RenderProgress->step(10);
+    YaLuxGlobal.RenderProgress->step();
     YaLuxGlobal.RenderProgress->setCurrentInfo(mesg);
     
     // open stream to write to file
@@ -188,7 +186,7 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
     YaLuxGlobal.RenderProgress->setCurrentInfo("LXS write buffer opened.");
  
     tresize = opt.getImageSize();
-    YaLuxGlobal.RenderProgress->update(ncount++);
+    YaLuxGlobal.RenderProgress->step();
     ImgHeight = tresize.height();
     ImgWidth = tresize.width();
 
@@ -241,21 +239,19 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
     if (aspectRatio == 0)
         aspectRatio = ImgWidth/ImgHeight; 
     float screenWindow[4];
-//    if (aspectRatio > 1)
-//    {
+//    if (aspectRatio > 1) {
         screenWindow[0] = -aspectRatio;
         screenWindow[1] = aspectRatio;
         screenWindow[2] = -1;
         screenWindow[3] = 1;
 //    } 
-/*    else
-    {
+/*    else {
         screenWindow[0] = -1;
         screenWindow[1] = 1;
         screenWindow[2] = -1/aspectRatio;
         screenWindow[3] = 1/aspectRatio;
     }
-    */
+*/
     outLXS.write(QString("\t\"float screenwindow\"\t[%1 %2 %3 %4]\n").arg(screenWindow[0]).arg(screenWindow[1]).arg(screenWindow[2]).arg(screenWindow[3]));
     
     // Film image settings
@@ -292,7 +288,7 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
 //    fileName = dzApp->getTempRenderFilename();
 //    fileName.replace(tempPath, "");
     mesg = "image filename = " + fileName;
-    YaLuxGlobal.RenderProgress->update(ncount++);
+    YaLuxGlobal.RenderProgress->step();
     YaLuxGlobal.RenderProgress->setCurrentInfo(mesg);
     
     // image series
@@ -304,15 +300,15 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
             fileName = opt.getRenderSerFilename();
     }
     mesg = "movie filename = " + fileName;
-    YaLuxGlobal.RenderProgress->update(ncount++);
-    YaLuxGlobal.RenderProgress->setCurrentInfo(mesg);
+    YaLuxGlobal.RenderProgress->step();
+//    YaLuxGlobal.RenderProgress->setCurrentInfo(mesg);
         
     DzTimeRange timeRange;
     timeRange.setEnds(opt.getStartTime(),opt.getEndTime());
     DzTime timeStep = dzScene->getTimeStep();
     mesg = QString("TimeStep=%1.\nTimeStart = %2.\nTimeEnd = %3.").arg(timeStep).arg(timeRange.getStart()).arg(timeRange.getEnd());
-    YaLuxGlobal.RenderProgress->update(ncount++);
-    YaLuxGlobal.RenderProgress->setCurrentInfo(mesg);
+    YaLuxGlobal.RenderProgress->step();
+//    YaLuxGlobal.RenderProgress->setCurrentInfo(mesg);
 
     // World Begin
     outLXS.write("\nWorldBegin\n");
@@ -341,8 +337,11 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
     {
         currentLight = lightList.next();
         // DEBUG
+        mesg = QString("yaluxplug: Processing Light: AssetId[%1], Label[%2]").arg(currentLight->getAssetId()).arg(currentLight->getLabel());
         LuxProcessLight(currentLight, mesg);
         dzApp->log(mesg);
+        mesg = "";
+
         mesg = currentLight->getLabel();
         outLXS.write("\nAttributeBegin\n");
         outLXS.write( QString("LightGroup\t\"%1\" # %2\n").arg(currentLight->getAssetId()).arg(mesg) );
@@ -455,67 +454,6 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
 
             mesg = LuxProcessObject(currentObject);
             outLXS.write(mesg);
-/*
-            // Object -> Shape
-            DzShape *currentShape = currentObject->getCurrentShape();
-            QString shapeLabel = currentShape->getLabel();
-
-            // Shape -> Geometry
-            DzGeometry *currentGeometry = currentObject->getCachedGeom();
-            QString geoLabel = QString("numvertices = %1").arg(currentGeometry->getNumVertices() );
-
-            dzApp->log( QString("\tobject = [%1], shape = [%2], %3").arg(objectLabel).arg(shapeLabel).arg(geoLabel) ) ;
-            
-            // TRE --> This is all redundant!
-            // ProcessEachFaceGroup of Geometry
-            // change geo to a facetmesh
-            if ( currentGeometry->inherits("DzFacetMesh") )
-            {
-                DzFacetMesh *mesh = (DzFacetMesh*)currentGeometry;
-                DzFacet *ptrFace = mesh->getFacetsPtr();
-                // get num facegroups in facetmesh
-                int numFaceGroups = mesh->getNumFaceGroups();
-
-                int indexCurrentFaceGroup=0;
-                while (indexCurrentFaceGroup < numFaceGroups)
-                {
-                    DzFaceGroup *faceGroup = mesh->getFaceGroup(indexCurrentFaceGroup);
-                    QString facegroupName = faceGroup->getName();
-                    int numFaceVerts = -1;
-                    int numFaces = faceGroup->count();
-                    int indexCurrentFace = 0;
-                    while (indexCurrentFace < 0)
-                    {
-                        int indexToMesh = faceGroup->getIndex(indexCurrentFace);
-                        // look up index in the faceMesh
-                        // ...
-                        //ptrFace[indexToMesh].isTri();
-                        indexCurrentFace++;
-                    }
-                    //numFaceVerts = faceGroup->getNumVerts();
-                    dzApp->log( QString("\tshape[%1]: faceGroup(%2/%3) = [%4] has numfaceverts = [%5]").arg(shapeLabel).arg(indexCurrentFaceGroup+1).arg(numFaceGroups).arg(facegroupName).arg(numFaceVerts) );
-                    indexCurrentFaceGroup++;
-                }
-                int numMatGroups = mesh->getNumMaterialGroups();
-                indexCurrentFaceGroup = 0;
-                while (indexCurrentFaceGroup < numMatGroups)
-                {
-                    DzMaterialFaceGroup *matGroup = mesh->getMaterialGroup(indexCurrentFaceGroup);
-                    QString matgroupName = matGroup->getName();
-                    int numFaceVerts = -1;
-                    //numFaceVerts = faceGroup->getNumVerts();
-                    dzApp->log( QString("\tshape[%1]: MaterialFaceGroup(%2/%3) = [%4] has numfaceverts = [%5]").arg(shapeLabel).arg(indexCurrentFaceGroup+1).arg(numMatGroups).arg(matgroupName).arg(numFaceVerts) );
-                    indexCurrentFaceGroup++;
-                }
-
-            
-            }
-            
-            // If no facegroups, then just run material list on this shape
-            //LuxMakeTextureList(currentShape);
-            mesg = LuxMakeMaterialList(currentShape);
-            outLXS.write(mesg);
-*/
 
         } else {
             dzApp->log("\tno object found.");
@@ -529,55 +467,24 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
 //        dzApp->log("**Processing child nodes for " + label + QString(" (%1 children total)").arg(currentNode->getNumNodeChildren()) + "***\n" );
 //        mesg = processChildNodes(currentNode, mesg, label);
 //        dzApp->log(mesg);
-        
-/*
-        // Iterate through properties of Node
-        DzPropertyListIterator propList = currentNode->propertyListIterator();
-        DzProperty *currentProperty;
-        QString propertyLabel;
-        while (propList.hasNext())
-        {
-            currentProperty = propList.next();
-            propertyLabel = currentProperty->getLabel();
-            dzApp->log( QString("\tproperty: %1").arg(propertyLabel) );
-        }
 
-        // 1. get property
-        // 2. print name of property
-        // 3. next property
-*/
-        
         //dzApp->log("yaluxplug: Calling Node->render() # " + label);
         //currentNode->render(*YaLuxGlobal.settings);
         outLXS.flush();
     }
 
     outLXS.write("\nWorldEnd\n");
-    
-    // 3. get nodelist
-    // 4. iterate through nodes:
-        // 4.1 export geometry
-        // 4.2 build lights
-           // sun & sky
-           // spotlights
-           // area lights
-        // 4.3 lookup/export/cache textures
-           // diffuse
-           // specular
-           // alpha
-           // bump/displacement
-    // 5. render frame
-
 
     outLXS.close();
+
     emit aboutToRender(this);
     handler->beginRender();
 //    handler->beginFrame(0);
 
     // Spawn luxconsole!!!
     QProcess *process = new QProcess(this);
-    connect(process, SIGNAL( finished(int, QProcess::status) ),
-            this, SLOT( handleRenderProcessComplete(int, QProcess::status) ) );
+    connect(process, SIGNAL( finished(int, QProcess::ExitStatus) ),
+            this, SLOT( handleRenderProcessComplete(int, QProcess::ExitStatus) ) );
 
     QString file = QString("/Applications/LuxRender1.3.1/LuxRender.app/Contents/MacOS/luxrender");
 //    QStringList args = QStringList() << "-l" << "-V" << "-t 4" << QString("\"%1\"").arg(fileNameLXS);
@@ -590,23 +497,17 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
     YaLuxGlobal.RenderProgress->finish();
 //    handler->finishFrame();
     handler->finishRender();
-    YaLuxGlobal.inProgress = false;
-    dzApp->log("yaluxplug: Render() DONE");
-    emit renderFinished(this);
+    YaLuxGlobal.inProgress = true;
+    dzApp->log("yaluxplug: Render() call complete.");
+//    emit renderFinished(this);
         
     return true;
-}
-
-void YaLuxRender::handleRenderProcessComplete( )
-{
-    dzApp->log( QString("yaluxplug: RENDER PROCESS exited ") );
-    YaLuxGlobal.inProgress = false;
-    emit renderFinished(this);
 }
 
 void YaLuxRender::handleRenderProcessComplete( int exitCode, QProcess::ExitStatus status )
 {
     dzApp->log( QString("yaluxplug: RENDER PROCESS exited with %1 ").arg(exitCode) );
+    YaLuxGlobal.handler->finishRender();
     YaLuxGlobal.inProgress = false;
     emit renderFinished(this);
 }

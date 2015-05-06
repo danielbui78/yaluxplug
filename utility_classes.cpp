@@ -367,6 +367,7 @@ QString LuxProcessLight(DzLight *currentLight, QString &mesg)
 {
     QString ret_str;
 
+    mesg += 
     ret_str = LuxProcessProperties( (DzElement*) currentLight, mesg);
     dzApp->log(ret_str);
     ret_str = "";
