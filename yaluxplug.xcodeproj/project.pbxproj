@@ -40,7 +40,7 @@
 /* End PBXBuildRule section */
 
 /* Begin PBXFileReference section */
-		77FF8AB41AF972FE0074D927 /* yaluxplug.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = yaluxplug.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		77FF8AB41AF972FE0074D927 /* libyaluxplug.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libyaluxplug.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		77FF8ABB1AF973410074D927 /* plugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = plugin.h; sourceTree = "<group>"; };
 		77FF8ABD1AF9735B0074D927 /* renderer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = renderer.cpp; sourceTree = "<group>"; };
 		77FF8ABF1AF9737C0074D927 /* dazToPLY.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dazToPLY.h; sourceTree = "<group>"; };
@@ -87,7 +87,7 @@
 		77FF8AB51AF972FE0074D927 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				77FF8AB41AF972FE0074D927 /* yaluxplug.dylib */,
+				77FF8AB41AF972FE0074D927 /* libyaluxplug.dylib */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -153,7 +153,7 @@
 			);
 			name = yaluxplug;
 			productName = yaluxplug;
-			productReference = 77FF8AB41AF972FE0074D927 /* yaluxplug.dylib */;
+			productReference = 77FF8AB41AF972FE0074D927 /* libyaluxplug.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 /* End PBXNativeTarget section */
@@ -299,7 +299,7 @@
 				DAZ_SDK = "/Users/Shared/My DAZ 3D Library/DAZStudio4.5+ SDK";
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
-				EXECUTABLE_PREFIX = "";
+				EXECUTABLE_PREFIX = lib;
 				EXPORTED_SYMBOLS_FILE = "$(DAZ_SDK)/include/exportedPluginSymbols.txt";
 				FRAMEWORK_SEARCH_PATHS = "\"$(DAZ_SDK)/lib/$(DAZ_PLATFORM_NAME)\"";
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -337,7 +337,7 @@
 				DAZ_SDK = "/Users/Shared/My DAZ 3D Library/DAZStudio4.5+ SDK";
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
-				EXECUTABLE_PREFIX = "";
+				EXECUTABLE_PREFIX = lib;
 				EXPORTED_SYMBOLS_FILE = "$(DAZ_SDK)/include/exportedPluginSymbols.txt";
 				FRAMEWORK_SEARCH_PATHS = "\"$(DAZ_SDK)/lib/$(DAZ_PLATFORM_NAME)\"";
 				GCC_PREPROCESSOR_DEFINITIONS = NDEBUG;
@@ -374,6 +374,7 @@
 				77FF8ABA1AF972FE0074D927 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

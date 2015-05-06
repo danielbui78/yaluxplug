@@ -22,6 +22,8 @@ const QStringList classNamesProperties = QStringList() << "DzStringProperty" << 
 
 QString LuxProcessObject(DzObject *daz_obj);
 QString LuxProcessMaterial(DzMaterial *material, QString &mesg, QString matLabel);
+QString LuxProcessProperties(DzElement *el, QString &mesg);
+QString LuxProcessLight(DzLight *currentLight, QString &mesg);
 
 class WorkerPrepareImage : public QObject
 {

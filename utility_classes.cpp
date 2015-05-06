@@ -365,6 +365,17 @@ QString LuxProcessProperties(DzMaterial *el, QString &mesg, QString &matDef, QSt
 }
 
 
+QString LuxProcessLight(DzLight *currentLight, QString &mesg)
+{
+    QString ret_str;
+
+    ret_str = LuxProcessProperties( (DzElement*) currentLight, mesg);
+    dzApp->log(ret_str);
+    ret_str = "";
+
+    return ret_str;
+}
+
 QString LuxProcessProperties(DzElement *el, QString &mesg)
 {
     // 1. get property
