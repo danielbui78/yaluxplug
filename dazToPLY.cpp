@@ -158,7 +158,7 @@ void DazToPLY::processFace( DzFacet *face )
     int daz_vertex_index; // index into Daz vertex list
     int ply_vertex_index[4] = {-1,-1,-1,-1 }; // index into PLY vertex list
     int daz_used_index[4] = {-1,-1,-1,-1 };
-    float *float_ptr;
+
     PLY_FaceElement faceEl;
     faceEl.numV = numVerts;
     
@@ -217,7 +217,7 @@ void DazToPLY::walkFaceEdges(DzFacet *face )
     int daz_vertex_index; // index into Daz vertex list
     int ply_vertex_index[4] = {-1,-1,-1,-1 }; // index into PLY vertex list
     int daz_used_index[4] = {-1,-1,-1,-1 };
-    float *float_ptr;
+
     PLY_FaceElement faceEl;
     faceEl.numV = numEdges;
     
@@ -274,7 +274,6 @@ QString DazToPLY::LuxMakeBinPLY()
         return "";
     const int *face_indexToMesh = facetIndexList->getIndicesPtr();
     int numFaceIndices = facetIndexList->count();
-    DzPnt3 *vertexList;
     
     int numFaces;
     int numVerts;
@@ -287,7 +286,6 @@ QString DazToPLY::LuxMakeBinPLY()
     int i = 0;
     while (i < numFaceIndices)
     {
-        int nTotEdgesToAdd;
         currentFace = &ptrAllFaces[face_indexToMesh[i]];
         // add entries for quad
         //walkFaceEdges(currentFace);
@@ -372,7 +370,6 @@ QString DazToPLY::LuxMakeAsciiPLY()
         return "";
     const int *face_indexToMesh = facetIndexList->getIndicesPtr();
     int numFaceIndices = facetIndexList->count();
-    DzPnt3 *vertexList;
     
     int numFaces;
     int numVerts;
@@ -385,7 +382,6 @@ QString DazToPLY::LuxMakeAsciiPLY()
     int i = 0;
     while (i < numFaceIndices)
     {
-        int nTotEdgesToAdd;
         currentFace = &ptrAllFaces[face_indexToMesh[i]];
         // add entries for quad
         //walkFaceEdges(currentFace);
@@ -421,7 +417,6 @@ QString DazToPLY::LuxMakeAsciiPLY()
     plyOut.write("end_header\n");
     
     i = 0;
-    int len = ply_vertexElList[i].sizeofByteArray();
     while (i < numVerts)
     {
         // write out the vertices

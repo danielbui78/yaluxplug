@@ -605,7 +605,7 @@ QString LuxMakeMaterialList(DzShape *currentShape)
     int i = 0;
     QString mesg = "";
     QObjectList texList;
-    DzTexture *currentTex;
+
     QString outstr = "";
     QString attributeblock = "";
     // TEXTURES 
@@ -991,7 +991,7 @@ QString LuxProcessObject(DzObject *daz_obj)
     int i = 0;
     QString mesg = "";
     QObjectList texList;
-    DzTexture *currentTex;
+
     QString outstr = "";
     QString attributeblock = "";
     // TEXTURES 

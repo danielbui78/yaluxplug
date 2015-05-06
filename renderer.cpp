@@ -159,11 +159,10 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
 
     YaLuxGlobal.handler = handler;
 
-    YaLuxGlobal.RenderProgress = new DzProgress("yaluxplug Render Started", 100);
-//    YaLuxGlobal.RenderProgress = new DzProgress("yaluxplug Render Started", steps);
+    YaLuxGlobal.RenderProgress = new DzProgress("yaluxplug Render Started", steps);
     YaLuxGlobal.RenderProgress->setShowTimeElapsed(DI_TRUE);
 //    YaLuxGlobal.RenderProgress->setCloseOnFinish(DI_FALSE);
-    YaLuxGlobal.RenderProgress->setUseCloseCheckbox(DI_TRUE);
+//    YaLuxGlobal.RenderProgress->setUseCloseCheckbox(DI_TRUE);
 
     fileName = dzApp->getTempFilename();
     YaLuxGlobal.pathTempName = fileName;
