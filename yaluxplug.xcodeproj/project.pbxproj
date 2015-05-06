@@ -100,11 +100,11 @@
 				77FF8AD91AF981680074D927 /* utility_classes.h */,
 				77FF8ABF1AF9737C0074D927 /* dazToPLY.h */,
 				77FF8ADC1AF982140074D927 /* dazToPLY.cpp */,
-				77FF8AC01AF9737C0074D927 /* renderer.h */,
 				77FF8ABB1AF973410074D927 /* plugin.h */,
 				77FF8AC11AF9737C0074D927 /* pluginmain.cpp */,
 				77FF8AC21AF9737C0074D927 /* renderoptions.h */,
 				77FF8AC31AF9737C0074D927 /* renderoptions.cpp */,
+				77FF8AC01AF9737C0074D927 /* renderer.h */,
 				77FF8ABD1AF9735B0074D927 /* renderer.cpp */,
 			);
 			name = Source;
