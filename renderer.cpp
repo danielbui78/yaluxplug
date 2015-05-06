@@ -478,7 +478,7 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
     outLXS.close();
 
     emit aboutToRender(this);
-    handler->beginRender();
+    YaLuxGlobal.handler->beginRender();
 //    handler->beginFrame(0);
 
     // Spawn luxconsole!!!
@@ -487,16 +487,13 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
             this, SLOT( handleRenderProcessComplete(int, QProcess::ExitStatus) ) );
 
     QString file = QString("/Applications/LuxRender1.3.1/LuxRender.app/Contents/MacOS/luxrender");
-//    QStringList args = QStringList() << "-l" << "-V" << "-t 4" << QString("\"%1\"").arg(fileNameLXS);
     QString cmdline = fileNameLXS;
     QStringList args = QStringList() << "-l" << "-V" << "-t4" << fileNameLXS;
-//    QStringList args = QStringList() << QString("\"%1\"").arg(fileNameLXS);
     process->start(file, args);
     dzApp->log( QString("yaluxplug: SPAWNING: %1 %2").arg(file).arg(args.join(" ")) );
 
     YaLuxGlobal.RenderProgress->finish();
-//    handler->finishFrame();
-    handler->finishRender();
+
     YaLuxGlobal.inProgress = true;
     dzApp->log("yaluxplug: Render() call complete.");
 //    emit renderFinished(this);

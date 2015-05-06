@@ -393,7 +393,7 @@ public:
     // yaluxplug slots
     void                    handlePrepareImageComplete(  WorkerPrepareImage *worker, const DzTexture *img, const QString &filename );
     void                    handleRenderProcessComplete( int exitCode, QProcess::ExitStatus status );
-    void                    handleRenderProcessComplete();
+
     
 public:
     
