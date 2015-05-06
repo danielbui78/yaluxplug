@@ -353,7 +353,7 @@ QString DazToPLY::LuxMakeBinPLY()
         // write out the faces
         len = ply_faceElList[i].sizeofByteArray();
         bytearray = ply_faceElList[i].getByteArray();
-        plyOut.write(bytearray, len);
+        ibyteswritten = plyOut.write(bytearray, len);
         if (ibyteswritten != len)
         {
             // DEBUG
