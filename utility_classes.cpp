@@ -6,8 +6,6 @@
 //  Copyright (c) 2015 Daniel Bui. All rights reserved.
 //
 
-#include <stdio.h>
-
 #include "dzapp.h"
 #include "dzfileio.h"
 #include "dztexture.h"
