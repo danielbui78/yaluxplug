@@ -165,8 +165,8 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
 
     emit aboutToRender(this);
 
-    connect(this, SIGNAL(updateData( DzRenderData &)),
-            handler, SLOT(passData( DzRenderData &)) );
+//    connect(this, SIGNAL(updateData( DzRenderData &)),
+//            handler, SLOT(passData( DzRenderData &)) );
     connect(this, SIGNAL(beginningFrame(int)),
             handler, SLOT(beginFrame(int)) );
     connect(this, SIGNAL(frameFinished() ),
