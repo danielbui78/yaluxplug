@@ -304,8 +304,8 @@ QString DazToPLY::LuxMakeBinPLY()
     filenamePLY = DzFileIO::fixName(filenamePLY);
     //DEBUG
     dzApp->log("yaluxplug: filenamePLY = [" + filenamePLY + "]");
-    dzApp->log("yaluxplug: YaLuxGlobal.pathTempName = [" + YaLuxGlobal.pathTempName + "]");
-    filenamePLY = QString("%1_%2").arg(YaLuxGlobal.pathTempName).arg(filenamePLY);
+    dzApp->log("yaluxplug: YaLuxGlobal.pathTempName = [" + YaLuxGlobal.tempPath + "]");
+    filenamePLY = QString("%1/%2_%3").arg(YaLuxGlobal.tempPath).arg(YaLuxGlobal.tempFilenameBase).arg(filenamePLY);
     //    dzApp->log( QString("meshname = [%1]. filename = [%2]\n").arg(objMatName).arg(filenamePLY) );
     dzApp->log("yaluxplug: creating PLY file: " + filenamePLY);
     QFile plyOut(filenamePLY);
@@ -393,9 +393,9 @@ QString DazToPLY::LuxMakeAsciiPLY()
     numFaces = ply_faceElList.count();
     
     // create resource directory if doesn't exist
-    DzFileIO::pathExists(YaLuxGlobal.pathTempName + "-resource", true);
+    DzFileIO::pathExists(YaLuxGlobal.tempPath + "/" + YaLuxGlobal.tempFilenameBase + "-resource", true);
     // open meshName.ply for writing inside resource directory
-    filenamePLY = QString("%1-resource/%2.ply").arg(YaLuxGlobal.pathTempName).arg(objMatName);  
+    filenamePLY = QString("$1/%2-resource/%3.ply").arg(YaLuxGlobal.tempPath).arg(YaLuxGlobal.tempFilenameBase).arg(objMatName);
     //    dzApp->log( QString("meshname = [%1]. filename = [%2]\n").arg(objMatName).arg(filenamePLY) );
     QFile plyOut(filenamePLY);
     

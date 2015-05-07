@@ -9,6 +9,8 @@
 #ifndef YALUX_PLUGIN_H
 #define YALUX_PLUGIN_H
 
+#include <QtCore/QProcess>
+
 #include "dzoptionsframe.h"
 #include "dzrendersettings.h"
 #include "dzrenderoptions.h"
@@ -22,17 +24,25 @@
 
 struct G
 {
-    DzRenderSettings *settings;
-    DzRenderOptions *options;
     DzOptionsFrame *optFrame;
     DzProgress *RenderProgress;
     DzNode *currentNode;
     bool inProgress;
-    QString cachePath;
-    QString pathTempName;
-    QStringList tokenList;
+    int totalFrames;
+    int frame_counter;
+    int activeFrame;
+    int endFrame;
+
     DzRenderHandler *handler;
-    QThread threadList[8];
+    DzRenderSettings *settings; // used when calling node->render
+    DzRenderOptions options;
+
+    QString cachePath;
+    QString tempPath;
+    QString tempFilenameBase;
+    QString workingRenderFilename;
+    QStringList tokenList;
+    QProcess *luxRenderProc;
     int tempCounter;
 };
 

@@ -28,6 +28,12 @@
 #include "dzfacegroup.h"
 #include "dzmatrix4.h"
 
+#include "dzlight.h"
+#include "dzdistantlight.h"
+
+#include "dzscene.h"
+#include "dzimagemgr.h"
+
 #include "utility_classes.h"
 #include "dazToPLY.h"
 #include "plugin.h"
@@ -365,12 +371,68 @@ QString LuxProcessProperties(DzMaterial *el, QString &mesg, QString &matDef, QSt
 
 QString LuxProcessLight(DzLight *currentLight, QString &mesg)
 {
-    QString ret_str;
+    QString ret_str, outstr;
+    QString lightLabel, lightAssetId;
+    DzVec3 lightVector;
+    DzVec3 lightPos;
 
-    mesg += 
-    ret_str = LuxProcessProperties( (DzElement*) currentLight, mesg);
-    dzApp->log(ret_str);
-    ret_str = "";
+    LuxProcessProperties( (DzElement*) currentLight, mesg);
+
+    lightLabel = currentLight->getLabel();
+    lightAssetId = currentLight->getAssetId();
+
+    outstr = "\nAttributeBegin\n";
+    outstr += QString("LightGroup\t\"%1\" # %2\n").arg(currentLight->getAssetId()).arg(lightLabel);
+    if (mesg.contains("Sun"))
+    {
+        // change light type to sun and sky
+        outstr += "LightSource \"sun\"\n";
+        outstr += QString("\t\"float importance\"\t[%1]\n").arg(1);
+        lightVector = currentLight->getWSDirection();
+        outstr += QString("\t\"vector sundir\"\t[%1 %2 %3]\n").arg(-lightVector.m_x).arg(lightVector.m_z).arg(-lightVector.m_y);
+        outstr += QString("\t\"float gain\"\t[%1]\n").arg(0.0005 * ((DzDistantLight*)currentLight)->getIntensity() );
+
+    }
+    if (mesg.contains("Sky"))
+    {
+        outstr += "LightSource \"sky2\"\n";
+        outstr += QString("\t\"float importance\"\t[%1]\n").arg(1);
+        outstr += QString("\t\"vector sundir\"\t[%1 %2 %3]\n").arg(-lightVector.m_x).arg(lightVector.m_z).arg(-lightVector.m_y);
+        outstr += QString("\t\"float gain\"\t[%1]\n").arg(0.0005 * ((DzDistantLight*)currentLight)->getIntensity() );
+    }
+    if ( !(mesg.contains("Sun")) && !(mesg.contains("Sky")) )
+    {
+        if (currentLight->inherits("DzSpotLight"))
+        {
+            outstr += "LightSource \"spot\"\n";
+            lightPos = currentLight->getWSPos();
+//            lightPos = luxTransform.multVecMatrix(lightPos);
+            lightVector = currentLight->getFocalPoint();
+//            lightVector = luxTransform.multVecMatrix(target);
+            outstr += QString("\t\"point from\"\t[%1 %2 %3]\n").arg(lightPos.m_x).arg(lightPos.m_y).arg(lightPos.m_z);
+            outstr += QString("\t\"point to\"\t[%1 %2 %3]\n").arg(lightVector.m_x).arg(lightVector.m_y).arg(lightVector.m_z);
+        } else if (currentLight->inherits("DzPointLight")) {
+            outstr += "LightSource \"point\"\n";
+            lightPos = currentLight->getWSPos();
+//            lightPos = luxTransform.multVecMatrix(lightPos);
+            outstr += QString("\t\"point from\"\t[%1 %2 %3]\n").arg(lightPos.m_x).arg(lightPos.m_y).arg(lightPos.m_z);
+        } else if (currentLight->inherits("DzDistantLight")) {
+            mesg = "distant";
+            outstr += "LightSource \"" + mesg + "\"\n";
+            lightPos = currentLight->getWSPos();
+//            lightPos = luxTransform.multVecMatrix(pos);
+            outstr += QString("\t\"point from\"\t[%1 %2 %3]\n").arg(lightPos.m_x).arg(lightPos.m_y).arg(lightPos.m_z);
+            lightVector = currentLight->getFocalPoint();
+//            lightVector = luxTransform.multVecMatrix(lightVector);
+            outstr += QString("\t\"point to\"\t[%1 %2 %3]\n").arg(lightVector.m_x).arg(lightVector.m_y).arg(lightVector.m_z);
+
+        }
+        QColor lightColor = currentLight->getDiffuseColor();
+        outstr += QString("\t\"color L\"\t[%1 %2 %3]\n").arg(lightColor.redF()).arg(lightColor.greenF()).arg(lightColor.blueF());
+        outstr += QString("\t\"float gain\"\t[%1]\n").arg(1.0);
+    }
+
+    outstr += "AttributeEnd\n";
 
     return ret_str;
 }
@@ -380,7 +442,7 @@ QString LuxProcessProperties(DzElement *el, QString &mesg)
     // 1. get property
     // 2. print name of property and values
     // 3. next property
-    
+
     // Iterate through properties of DzMaterial
     DzPropertyListIterator propList = el->propertyListIterator();
     DzProperty *currentProperty;
@@ -668,7 +730,7 @@ QString processChildNodes(DzNode *parentNode, QString &mesg, QString parentLabel
 {
     DzNode *currentNode;
     QString label;
-    QString ret_str;
+    QString ret_str = "";
     
     DzNodeListIterator nodeList = parentNode->nodeChildrenIterator();
     
@@ -680,14 +742,14 @@ QString processChildNodes(DzNode *parentNode, QString &mesg, QString parentLabel
         //Process Node
         //YaLuxGlobal.currentNode = currentNode;
         //YaLuxGlobal.settings = new DzRenderSettings(this, &opt);
-        dzApp->log( QString("yaluxplug: Looking at %1->%2: ").arg(parentLabel).arg(label));
+        mesg += QString("yaluxplug: Looking at %1->%2: ").arg(parentLabel).arg(label);
         
         // Node -> Object
         DzObject *currentObject = currentNode->getObject();
         if (currentObject != NULL)
         {
             //outLXS.write("\n# " + label +"\n");
-            ret_str += "\n# " + parentLabel + "." + label +"\n";
+            mesg += "\n# " + parentLabel + "." + label +"\n";
             QString objectLabel = currentObject->getLabel();
             
             // Object -> Shape
@@ -701,38 +763,17 @@ QString processChildNodes(DzNode *parentNode, QString &mesg, QString parentLabel
             dzApp->log( QString("\tobject = [%1], shape = [%2], %3").arg(parentLabel+"."+label+"."+objectLabel).arg(shapeLabel).arg(geoLabel) ) ;
             
             //LuxMakeTextureList(currentShape);
-            mesg = LuxMakeMaterialList(currentShape);
+            //mesg += LuxMakeMaterialList(currentShape);
             //outLXS.write(mesg);
-            ret_str += mesg;
-            
+
         } else {
-            dzApp->log("\tno object found.");
+            mesg += "\tno object found.";
         }
         
-        mesg = "Properties for node = " + parentLabel + "." + label + "\n";
+        mesg += "Properties for node = " + parentLabel + "." + label + "\n";
         LuxProcessProperties(currentNode, mesg);
-        dzApp->log(mesg);
-        /*
-         // Iterate through properties of Node
-         DzPropertyListIterator propList = currentNode->propertyListIterator();
-         DzProperty *currentProperty;
-         QString propertyLabel;
-         while (propList.hasNext())
-         {
-         currentProperty = propList.next();
-         propertyLabel = currentProperty->getLabel();
-         dzApp->log( QString("\tproperty: %1").arg(propertyLabel) );
-         }
-         
-         // 1. get property
-         // 2. print name of property
-         // 3. next property
-         */
-        
-        //dzApp->log("yaluxplug: Calling Node->render() # " + parentLabel + "." + label);
-        //currentNode->render(*YaLuxGlobal.settings);
-        //outLXS.flush();    
-        
+//        dzApp->log(mesg);
+
     }
     
     return ret_str;
@@ -1044,7 +1085,280 @@ QString LuxProcessObject(DzObject *daz_obj)
     //    dzApp->log(mesg);
     
     return outstr;
-    
-    
+
 }
+
+
+QString LuxMakeSceneFile(QString fileNameLXS, DzRenderer *r, DzCamera *camera, const DzRenderOptions &opt)
+{
+    QSize renderImageSize;
+    int ImgWidth, ImgHeight;
+    QString mesg;
+
+    // open stream to write to file
+    dzApp->log("yaluxplug: opening LXSFile = " + fileNameLXS );
+    QFile outLXS(fileNameLXS);
+    outLXS.open(QIODevice::ReadWrite);
+    outLXS.write("# Generated by yaluxplug \n");
+
+    // 1. read render options to set up environment
+    YaLuxGlobal.RenderProgress->step();
+    YaLuxGlobal.RenderProgress->setCurrentInfo("LXS write buffer opened.");
+
+    renderImageSize = opt.getImageSize();
+    YaLuxGlobal.RenderProgress->step();
+    ImgHeight = renderImageSize.height();
+    ImgWidth = renderImageSize.width();
+
+    // sampler settings
+    outLXS.write("\n");
+    outLXS.write(LXSsampler.join(""));
+
+    // surface integrator settings
+    outLXS.write("\n");
+    outLXS.write(LXSsurfaceintegrator.join(""));
+
+    // volume integrator settings
+    outLXS.write("\n");
+    outLXS.write(LXSvolumeintegrator.join(""));
+
+    // pixelfilter settings
+    outLXS.write("\n");
+    outLXS.write(LXSpixelfilter.join(""));
+
+    // accelerator settings
+    outLXS.write("\n");
+    outLXS.write(LXSaccelerator.join(""));
+
+    // Lookat
+    const float matrixLux[16] = {
+        0.01, 0, 0, 0,
+        0, 0, 0.01, 0,
+        0, -0.01, 0, 0,
+        0, 0, 0, 1 };
+    DzMatrix4 luxTransform( matrixLux );
+    DzVec3 pos1 = camera->getWSPos();
+    DzVec3 target1 = camera->getFocalPoint();
+    DzQuat rot = camera->getWSRot();
+    DzVec3 up1 = rot.multVec(DzVec3(0,100,0));
+    outLXS.write("\n");
+    DzVec3 pos = luxTransform.multVecMatrix(pos1);
+    DzVec3 target = luxTransform.multVecMatrix(target1);
+    DzVec3 up = luxTransform.multVecMatrix(up1);
+    mesg = QString("LookAt %1 %2 %3 %4 %5 %6 %7 %8 %9\n").arg(pos.m_x).arg(pos.m_y).arg(pos.m_z).arg(target.m_x).arg(target.m_y).arg(target.m_z).arg(up.m_x).arg(up.m_y).arg(up.m_z);
+    outLXS.write(mesg);
+
+    // 2. set the camera vector and orientation
+    // Camera
+    outLXS.write("\nCamera \"perspective\"\n");
+    // fov
+    double f_fov = camera->getFieldOfView() * 57.295779513; // multiply by (180/pi)
+    outLXS.write(QString("\t\"float fov\"\t[%1]\n").arg(f_fov));
+    // screenwindow
+    double aspectRatio = opt.getAspect();
+    if (aspectRatio == 0)
+        aspectRatio = ImgWidth/ImgHeight;
+    float screenWindow[4];
+    //    if (aspectRatio > 1) {
+    screenWindow[0] = -aspectRatio;
+    screenWindow[1] = aspectRatio;
+    screenWindow[2] = -1;
+    screenWindow[3] = 1;
+    //    }
+    /*    else {
+     screenWindow[0] = -1;
+     screenWindow[1] = 1;
+     screenWindow[2] = -1/aspectRatio;
+     screenWindow[3] = 1/aspectRatio;
+     }
+     */
+    outLXS.write(QString("\t\"float screenwindow\"\t[%1 %2 %3 %4]\n").arg(screenWindow[0]).arg(screenWindow[1]).arg(screenWindow[2]).arg(screenWindow[3]));
+
+    // Film image settings
+    outLXS.write("\n");
+    outLXS.write(LXSfilm.join(""));
+
+    // Film resolution
+    mesg = QString("\t\"integer xresolution\"\t[%1]\n").arg(ImgWidth);
+    mesg += QString("\t\"integer yresolution\"\t[%1]\n").arg(ImgHeight);
+    outLXS.write(mesg);
+    mesg = QString("Size is %1 x %2").arg(ImgHeight).arg(ImgWidth);
+    YaLuxGlobal.RenderProgress->step();
+    YaLuxGlobal.RenderProgress->setCurrentInfo(mesg);
+
+    // Film image filename
+    mesg = QString("\t\"string filename\"\t[\"%1\"]\n").arg(DzFileIO::getBaseFileName(YaLuxGlobal.workingRenderFilename));
+    outLXS.write(mesg);
+    YaLuxGlobal.RenderProgress->step();
+    //    YaLuxGlobal.RenderProgress->setCurrentInfo(mesg);
+
+    // Renderer
+    outLXS.write("\nRenderer \"slg\"\n");
+    mesg = QString("\t\"string config\" [\"renderengine.type = %1\" \"opencl.cpu.use = 0\" \"opencl.kernelcache = %2\"]\n").arg("PATHOCL").arg("PERSISTENT");
+    outLXS.write(mesg);
+
+    // single image
+    switch (opt.getRenderImgToId())
+    {
+        case DzRenderOptions::ActiveView:
+        case DzRenderOptions::NewWindow:
+        case DzRenderOptions::DirectToFile: ;
+//            fileName = opt.getRenderImgFilename();
+    }
+    //    fileName = dzApp->getTempRenderFilename();
+    //    fileName.replace(tempPath, "");
+//    mesg = "image filename = " + fileName;
+//    YaLuxGlobal.RenderProgress->step();
+//    YaLuxGlobal.RenderProgress->setCurrentInfo(mesg);
+
+    // image series
+    switch (opt.getRenderMovToId())
+    {
+        case DzRenderOptions::MovieFile:
+//            fileName = opt.getRenderMovFilename();
+        case DzRenderOptions::ImageSeries:;
+//            fileName = opt.getRenderSerFilename();
+    }
+//    mesg = "movie filename = " + fileName;
+//    YaLuxGlobal.RenderProgress->step();
+    //    YaLuxGlobal.RenderProgress->setCurrentInfo(mesg);
+
+    // World Begin
+    outLXS.write("\nWorldBegin\n");
+    //    outLXS.write("\nCoordSysTransform \"camera\"\n");
+
+    // LIGHTS
+    if (dzScene->getNumLights() == 0)
+    {
+        // Create a default light
+        // change light type to sun and sky
+        outLXS.write("\nAttributeBegin\n");
+        outLXS.write("LightSource \"sun\"\n");
+        outLXS.write(QString("\t\"float importance\"\t[%1]\n").arg(1));
+        outLXS.write(QString("\t\"vector sundir\"\t[%1 %2 %3]\n").arg(-1).arg(0.25).arg(1));
+        outLXS.write(QString("\t\"float gain\"\t[%1]\n").arg(1.0));
+
+        outLXS.write("LightSource \"sky2\"\n");
+        outLXS.write(QString("\t\"float importance\"\t[%1]\n").arg(1));
+        outLXS.write(QString("\t\"vector sundir\"\t[%1 %2 %3]\n").arg(0).arg(1).arg(0));
+        outLXS.write(QString("\t\"float gain\"\t[%1]\n").arg(1.0));
+        outLXS.write("AttributeEnd\n");
+    }
+    DzLightListIterator lightList = dzScene->lightListIterator();
+    DzLight *currentLight = NULL;
+    QString outstr;
+    mesg = "";
+    while (lightList.hasNext())
+    {
+        currentLight = lightList.next();
+        // DEBUG
+        mesg = QString("yaluxplug: Processing Light: AssetId[%1], Label[%2]").arg(currentLight->getAssetId()).arg(currentLight->getLabel());
+        outstr = LuxProcessLight(currentLight, mesg);
+        outLXS.write(outstr);
+        dzApp->log(mesg);
+
+    }
+    mesg = "";
+
+    // end LIGHTS
+
+    /*
+     // IMAGES TEXTURES
+     // get list of texture files
+     // print to Log
+     QList<DzTexturePtr> textureList;
+     DzTexture *textureptr;
+     QSize size;
+
+     dzScene->getActiveImages(textureList);
+     int num_items = textureList.count();
+     while (i < num_items)
+     {
+     textureptr = textureList[i];
+     fileName = textureptr->getFilename();
+     mesg = textureptr->getTempFilename();
+     //dzApp->log( QString("yaluxplug: getActiveImages[%1] = \"%2\"\n\ttempfilename = \"%3\"").arg(i).arg(fileName).arg(mesg) );
+     i++;
+     }
+     */
+    DzImageMgr *imageMgr = dzApp->getImageMgr();
+
+    // imageMgr->prepareAllImages(r);
+    emit imageMgr->prepareAllImages(r);
+
+
+    // NODES
+    DzNodeListIterator nodeList = dzScene->nodeListIterator();
+    DzNode *currentNode;
+    QString label;
+    int parentNodeIndex=0;
+    while (nodeList.hasNext())
+    {
+        currentNode = nodeList.next();
+        label = currentNode->getAssetId();
+
+        // Process Node
+        YaLuxGlobal.currentNode = currentNode;
+        YaLuxGlobal.settings = new DzRenderSettings(r, &opt);
+        dzApp->log("yaluxplug: Looking at Node: " + label + QString("(%1 of %2 Scene Level Nodes)").arg(parentNodeIndex++).arg(dzScene->getNumNodes()) );
+
+        // FINALIZE Node's geometry cache for rendering
+        currentNode->finalize(true,true);
+
+        // Node -> Object
+        DzObject *currentObject = currentNode->getObject();
+        if (currentObject != NULL)
+        {
+            outLXS.write("\n# " + label +"\n");
+            QString objectLabel = currentObject->getLabel();
+
+            mesg = LuxProcessObject(currentObject);
+            outLXS.write(mesg);
+
+        } else {
+            dzApp->log("\tno object found.");
+        }
+
+        //mesg = "Properties for node = " + label + "\n";
+        //LuxProcessProperties(currentNode, mesg);
+        //dzApp->log(mesg);
+
+        // Process child nodes
+        //        dzApp->log("**Processing child nodes for " + label + QString(" (%1 children total)").arg(currentNode->getNumNodeChildren()) + "***\n" );
+        //        mesg = processChildNodes(currentNode, mesg, label);
+        //        dzApp->log(mesg);
+
+        //dzApp->log("yaluxplug: Calling Node->render() # " + label);
+        //currentNode->render(*YaLuxGlobal.settings);
+        outLXS.flush();
+    }
+    
+    outLXS.write("\nWorldEnd\n");
+    
+    outLXS.close();
+
+
+    return "";
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

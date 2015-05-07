@@ -11,6 +11,7 @@
 
 #include "plugin.h"
 #include "dzrenderer.h"
+#include "dzrenderdata.h"
 #include "dzapp.h"
 #include <QtCore/QStringList>
 #include <QtCore/QProcess>
@@ -393,6 +394,7 @@ public:
     // yaluxplug slots
     void                    handlePrepareImageComplete(  WorkerPrepareImage *worker, const DzTexture *img, const QString &filename );
     void                    handleRenderProcessComplete( int exitCode, QProcess::ExitStatus status );
+    void                    updateData();
 
     
 public:
@@ -404,7 +406,12 @@ signals:
     
     void					aboutToRender( DzRenderer *r ) ;
     void					renderFinished( DzRenderer *r ) ;
+    void                    renderFinished();
     void					imagePrepared( const DzTexture *img, const QString &filename ) ;
+    void                    updateData( const DzRenderData &data );
+    void                    beginningRender();
+    void                    beginningFrame(int frame);
+    void                    frameFinished();
     
     
 protected:
