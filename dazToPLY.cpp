@@ -339,7 +339,7 @@ QString DazToPLY::LuxMakeBinPLY()
         if (ibyteswritten != len)
         {
             // DEBUG
-            dzApp->log("yaluxplug: ERROR writing vertices in ply bin");
+            dzApp->log("yaluxplug: ERROR writing vertices in ply bin. byteswritten= " + QString("%1").arg(len) );
         }
         i++;
     }
@@ -354,7 +354,7 @@ QString DazToPLY::LuxMakeBinPLY()
         if (ibyteswritten != len)
         {
             // DEBUG
-            dzApp->log("yaluxplug: ERROR writing faces in ply bin");
+            dzApp->log("yaluxplug: ERROR writing faces in ply bin. byteswritten= " + QString("%1").arg(len));
         }        i++;
     }
     

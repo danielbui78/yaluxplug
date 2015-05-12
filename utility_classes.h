@@ -25,16 +25,32 @@ const QStringList LXSfilm = QStringList() <<
 "\t\"float gamma\"\t[2.2]\n" <<
 "\t\"integer displayinterval\"\t[5]\n" <<
 "\t\"integer writeinterval\"\t[5]\n" <<
-"\t\"string tonemapkernel\"\t[\"autolinear\"]\n" <<
+//"\t\"string tonemapkernel\"\t[\"autolinear\"]\n" <<
+"\t\"string tonemapkernel\"\t[\"linear\"]\n" <<
+"\t\"float linear_sensitivity\"\t[400]\n" <<
+//"\t\"float linear_exposure\"\t[0.033]\n" <<
+"\t\"float linear_fstop\"\t[2.8]\n" <<
+"\t\"float linear_gamma\"\t[2.2]\n" <<
+"\t\"string ldr_clamp_method\"\t[\"lum\"]\n" <<
 //png
 "\t\"bool write_png\"\t[\"true\"]\n" <<
-"\t\"string write_png_channels\"\t[\"RGB\"]\n" <<
+"\t\"string write_png_channels\"\t[\"RGBA\"]\n" <<
 "\t\"bool write_png_16bit\"\t[\"false\"]\n" <<
 "\t\"bool write_png_gamutclamp\"\t[\"true\"]\n" <<
 //tga...
+"\t\"bool write_tga\"\t[\"false\"]\n" <<
+"\t\"string write_tga_channels\"\t[\"RGBA\"]\n" <<
 //exr...
+"\t\"bool write_exr\"\t[\"false\"]\n" <<
+"\t\"string write_exr_channels\"\t[\"RGBA\"]\n" <<
+"\t\"string write_exr_compressiontype\"\t[\"PIZ (lossless)\"]\n" <<
+"\t\"string write_exr_zbuf_normalizationtype\"\t[\"None\"]\n" <<
 //flm...
 //colorspace...
+//haltconditions
+"\t\"integer haltspp\"\t[0]\n" <<
+"\t\"integer halttime\"\t[0]\n" <<
+"\t\"float haltthreshold\"\t[0.0000001]\n" <<
 "\t\"bool debug\"\t[\"true\"]\n";
 
 const QStringList LXSpixelfilter = QStringList() <<
@@ -54,20 +70,46 @@ const QStringList LXSaccelerator = QStringList() <<
 const QStringList LXSsampler = QStringList() <<
 "Sampler \"metropolis\"\n" <<
 "\t\"float largemutationprob\"\t[0.40]\n" <<
-"\t\"bool noiseaware\"\t[\"false\"]\n" <<
+"\t\"bool noiseaware\"\t[\"true\"]\n" <<
+"\t\"string pixelsampler\"\t[\"vegas\"]\n" <<
+"\t\"bool usevariance\"\t[\"true\"]\n" <<
 "\t\"bool usecooldown\"\t[\"false\"]\n";
 
 const QStringList LXSsurfaceintegrator = QStringList() <<
 "SurfaceIntegrator \"path\"\n" <<
 "\t\"integer maxdepth\"\t[16]\n" <<
-"\t\"string lightstrategy\"\t[\"one\"]\n" <<
+"\t\"string lightstrategy\"\t[\"auto\"]\n" <<
+"\t\"bool directlightsampling\"\t[\"true\"]\n" <<
+"\t\"float rrcontinueprob\"\t[0.65]\n" <<
 "\t\"bool includeenvironment\"\t[\"true\"]\n";
 
 const QStringList LXSvolumeintegrator = QStringList() <<
 "VolumeIntegrator \"multi\"\n" <<
 "\t\"float stepsize\"\t[1.0]\n";
 
-const QStringList classNamesProperties = QStringList() << "DzStringProperty" << "DzColorProperty" << "DzFloatProperty" << "DzIntProperty" <<  "DzNodeProperty" << "DzImageProperty" ;
+const QStringList classNamesProperties = QStringList() << "DzStringProperty" << "DzBoolProperty" << "DzColorProperty" << "DzFloatProperty" << "DzIntProperty" <<  "DzNodeProperty" << "DzImageProperty" ;
+
+const QStringList areaLightPlane = QStringList() <<
+"Shape \"mesh\"\n" <<
+"\t\"point P\" [-2 -2 0 2 -2 0 2 2 0 -2 2 0]\n" <<
+//"\t\"normal N\" [0 0 1 0 0 1 0 0 1 0 0 1]\n" <<
+//"\t\"float uv\" [0 0 1 0 1 1 0 1]\n" <<
+"\t\"integer quadindices\" [0 1 2 3]\n";
+
+const QStringList spotLightPlane = QStringList() <<
+"Shape \"mesh\"\n" <<
+"\t\"point P\" [-0.5 -0.5 0 0.5 -0.5 0 0.5 0.5 0 -0.5 0.5 0]\n" <<
+//"\t\"normal N\" [0 0 1 0 0 1 0 0 1 0 0 1]\n" <<
+//"\t\"float uv\" [0 0 1 0 1 1 0 1]\n" <<
+"\t\"integer quadindices\" [0 1 2 3]\n";
+
+const QStringList distantLightPlane = QStringList() <<
+"Shape \"mesh\"\n" <<
+"\t\"point P\" [-5 -5 -10 5 -5 -10 5 5 -10 -5 5 -10]\n" <<
+"\t\"normal N\" [0 0 1 0 0 1 0 0 1 0 0 1]\n" <<
+//"\t\"float uv\" [0 0 1 0 1 1 0 1]\n" <<
+"\t\"integer quadindices\" [0 1 2 3]\n";
+
 
 QString LuxProcessObject(DzObject *daz_obj);
 QString LuxProcessMaterial(DzMaterial *material, QString &mesg, QString matLabel);

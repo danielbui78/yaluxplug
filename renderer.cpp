@@ -49,7 +49,7 @@
 
 #include "dzrenderdata.h"
 
-#include "renderoptions.h"
+#include "optionsframe.h"
 
 #include "dazToPLY.h"
 #include "renderer.h"
@@ -65,7 +65,10 @@
 **/
 YaLuxRender::YaLuxRender() 
 {
-    
+    // DEBUG
+    // DEFAULT LuxPath
+    YaLuxGlobal.LuxExecPath = "/Applications/LuxRender1.3.1/LuxRender.app/Contents/MacOS/luxconsole";
+
 //    dzApp->log("yaluxplug: initializing options");
     YaLuxGlobal.activeFrame = -1;
     YaLuxGlobal.frame_counter = 0;
@@ -86,21 +89,6 @@ YaLuxRender::YaLuxRender()
 ///////////////////////////////////////////////////////////////////////
 
 
-/*
-void TreRenderProgress::cancel()
-{
-    this->finish();
-
-    YaLuxGlobal.handler->finishRender();
-
-}
-
-TreRenderProgress::TreRenderProgress(QString string, int steps)
-    : DzProgress(string, steps)
-{
-
-}
-*/
 
 bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &opt)
 {
@@ -116,6 +104,8 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
     dzApp->log("\nyaluxplug: render() called.");
 
     YaLuxGlobal.inProgress = true;
+
+    YaLuxGlobal.optFrame->applyChanges();
 
     YaLuxGlobal.RenderProgress = new DzProgress("yaluxplug Render Started", steps, true, true);
 //    YaLuxGlobal.RenderProgress->setShowTimeElapsed(DI_TRUE);
@@ -160,7 +150,6 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
 
     YaLuxGlobal.RenderProgress->step();
 
-//    LuxMakeSceneFile(fileNameLXS, this, camera, opt);
 ///////////////////////////////
 
     emit aboutToRender(this);
@@ -175,18 +164,33 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
             handler, SLOT(beginRender()) );
     connect(this, SIGNAL(renderFinished()),
             handler, SLOT(finishRender()) );
+    connect(handler, SIGNAL(killRender()),
+            this, SLOT(killRender()) );
 
     YaLuxGlobal.handler = handler;
 
-    // Spawn luxconsole!!!
+    //////////////////////////
+    // Set up external process
+    ///////////////////////////
     QProcess *process = new QProcess(this);
     YaLuxGlobal.luxRenderProc = process;
+    QString logFile = QString("%1/yaluxplug.log").arg(YaLuxGlobal.tempPath);
+    process->setStandardErrorFile(logFile, QIODevice::Append);
 
     connect(process, SIGNAL( finished(int, QProcess::ExitStatus) ),
             this, SLOT( handleRenderProcessComplete(int, QProcess::ExitStatus) ) );
 
-    QString file = QString("/Applications/LuxRender1.3.1/LuxRender.app/Contents/MacOS/luxrender");
-    QStringList args = QStringList() << "-l" << "-V" << "-t4" << fullPathFileNameLXS;
+    QString file;
+    if (bIsAnimation)
+        file = YaLuxGlobal.LuxExecPath;
+    else
+        file = YaLuxGlobal.LuxExecPath;
+//        file = DzFileIO::getFilePath(YaLuxGlobal.LuxExecPath)+ "/luxrender";
+    QStringList userargs = QStringList::split(" ", YaLuxGlobal.CmdLineArgs);
+    QStringList args = QStringList() << "-l" << userargs << fullPathFileNameLXS;
+    //DEBUG
+    dzApp->log( args.join(","));
+//    args << "-uphenom-ubuntu";
 //    process->start(file, args);
 //    dzApp->log( QString("yaluxplug: SPAWNING: %1 %2").arg(file).arg(args.join(" ")) );
 
@@ -218,10 +222,18 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
         dzScene->setFrame(YaLuxGlobal.activeFrame);
         LuxMakeSceneFile(fullPathFileNameLXS, this, camera, opt);
 
+        // DEBUG
+        // can't do spotrenders yet (code incomplete) so abort if this is one
+        if (YaLuxGlobal.bIsSpotRender == true)
+        {
+            YaLuxGlobal.RenderProgress->finish();
+            YaLuxGlobal.inProgress = false;
+            return false;
+        }
         process->start(file, args);
         process->waitForStarted();
 
-        tmr.start(1000);
+        tmr.start(2000);
         handler->beginFrame(YaLuxGlobal.activeFrame);
         while (process->state() == QProcess::Running)
         {
@@ -234,6 +246,14 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
                 break;
             } else
             QCoreApplication::processEvents(QEventLoop::AllEvents,TimeOut);
+            int timeout2 = 500;
+#ifdef Q_OS_WIN
+            Sleep(uint(timeout2));
+#else
+            struct timespec ts = { timeout2 / 1000, (timeout2 % 1000) * 1000 * 1000 };
+            nanosleep(&ts, NULL);
+#endif
+
         }
         tmr.stop();
         disconnect(&tmr, SIGNAL(timeout()),
@@ -245,11 +265,15 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
         YaLuxGlobal.activeFrame++;
 
     }
+
+    disconnect(process, SIGNAL( finished(int, QProcess::ExitStatus) ),
+            this, SLOT( handleRenderProcessComplete(int, QProcess::ExitStatus) ) );
     YaLuxGlobal.luxRenderProc->deleteLater();
 
     YaLuxGlobal.inProgress = false;
 //    handler->finishRender();
     YaLuxGlobal.RenderProgress->finish();
+
 
     return true;
 }
@@ -261,12 +285,11 @@ void YaLuxRender::updateData()
 
     if (qimg->load(YaLuxGlobal.workingRenderFilename) == true)
     {
-        data = new DzRenderData(0, 0, qimg->convertToFormat(QImage::Format_ARGB32));
+        data = new DzRenderData(YaLuxGlobal.cropWindow.top(), YaLuxGlobal.cropWindow.left(), qimg->convertToFormat(QImage::Format_ARGB32));
         YaLuxGlobal.handler->passData( (*data) );
     }
-    // delete qimg;
+    delete qimg;
     // delete data;
-
 }
 
 
@@ -275,12 +298,16 @@ void YaLuxRender::handleRenderProcessComplete( int exitCode, QProcess::ExitStatu
     QImage *qimg = new QImage();
     DzRenderData *data;
 
+    if (YaLuxGlobal.inProgress == false)
+        return;
+
     if (qimg->load(YaLuxGlobal.workingRenderFilename) == true)
     {
-        data = new DzRenderData(0, 0, qimg->convertToFormat(QImage::Format_ARGB32));
+        data = new DzRenderData(YaLuxGlobal.cropWindow.top(), YaLuxGlobal.cropWindow.left(), qimg->convertToFormat(QImage::Format_ARGB32));
         YaLuxGlobal.handler->passData( (*data) );
         QString tempRenderName = dzApp->getTempRenderFilename() + ".png";
         qimg->save(tempRenderName);
+        delete qimg;
     }
 
     emit frameFinished();
@@ -310,7 +337,7 @@ bool YaLuxRender::customRender(DzRenderHandler *handler, DzCamera *camera, DzLig
 
 DzOptionsFrame* YaLuxRender::getOptionsFrame() const
 {
-    YaLuxGlobal.optFrame = new YaLuxRenderOptions();
+    YaLuxGlobal.optFrame = new YaLuxOptionsFrame();
     
     dzApp->log("yaluxplug: creating options frame");
     

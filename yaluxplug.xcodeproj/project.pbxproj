@@ -10,8 +10,8 @@
 		77FF8ABE1AF9735B0074D927 /* renderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 77FF8ABD1AF9735B0074D927 /* renderer.cpp */; };
 		77FF8AC51AF9737C0074D927 /* renderer.h in Sources */ = {isa = PBXBuildFile; fileRef = 77FF8AC01AF9737C0074D927 /* renderer.h */; };
 		77FF8AC61AF9737C0074D927 /* pluginmain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 77FF8AC11AF9737C0074D927 /* pluginmain.cpp */; };
-		77FF8AC71AF9737C0074D927 /* renderoptions.h in Sources */ = {isa = PBXBuildFile; fileRef = 77FF8AC21AF9737C0074D927 /* renderoptions.h */; };
-		77FF8AC81AF9737C0074D927 /* renderoptions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 77FF8AC31AF9737C0074D927 /* renderoptions.cpp */; };
+		77FF8AC71AF9737C0074D927 /* optionsframe.h in Sources */ = {isa = PBXBuildFile; fileRef = 77FF8AC21AF9737C0074D927 /* optionsframe.h */; };
+		77FF8AC81AF9737C0074D927 /* optionsframe.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 77FF8AC31AF9737C0074D927 /* optionsframe.cpp */; };
 		77FF8ACF1AF976E90074D927 /* QtCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 77FF8ACB1AF976E90074D927 /* QtCore.framework */; };
 		77FF8AD01AF976E90074D927 /* QtGui.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 77FF8ACC1AF976E90074D927 /* QtGui.framework */; };
 		77FF8AD11AF976E90074D927 /* QtScript.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 77FF8ACD1AF976E90074D927 /* QtScript.framework */; };
@@ -40,14 +40,15 @@
 /* End PBXBuildRule section */
 
 /* Begin PBXFileReference section */
+		771CFF851AFB8CA2007D005A /* log.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = log.txt; path = "../../../../../../../Application Support/DAZ 3D/Studio4 Public Build/log.txt"; sourceTree = BUILT_PRODUCTS_DIR; wrapsLines = 0; };
 		77FF8AB41AF972FE0074D927 /* libyaluxplug.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libyaluxplug.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		77FF8ABB1AF973410074D927 /* plugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = plugin.h; sourceTree = "<group>"; };
 		77FF8ABD1AF9735B0074D927 /* renderer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = renderer.cpp; sourceTree = "<group>"; };
 		77FF8ABF1AF9737C0074D927 /* dazToPLY.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dazToPLY.h; sourceTree = "<group>"; };
 		77FF8AC01AF9737C0074D927 /* renderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = renderer.h; sourceTree = "<group>"; };
 		77FF8AC11AF9737C0074D927 /* pluginmain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pluginmain.cpp; sourceTree = "<group>"; };
-		77FF8AC21AF9737C0074D927 /* renderoptions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = renderoptions.h; sourceTree = "<group>"; };
-		77FF8AC31AF9737C0074D927 /* renderoptions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = renderoptions.cpp; sourceTree = "<group>"; };
+		77FF8AC21AF9737C0074D927 /* optionsframe.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = optionsframe.h; sourceTree = "<group>"; };
+		77FF8AC31AF9737C0074D927 /* optionsframe.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = optionsframe.cpp; sourceTree = "<group>"; };
 		77FF8ACB1AF976E90074D927 /* QtCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtCore.framework; path = "../../../../Shared/My DAZ 3D Library/DAZStudio4.5+ SDK/lib/Mac64/QtCore.framework"; sourceTree = "<group>"; };
 		77FF8ACC1AF976E90074D927 /* QtGui.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtGui.framework; path = "../../../../Shared/My DAZ 3D Library/DAZStudio4.5+ SDK/lib/Mac64/QtGui.framework"; sourceTree = "<group>"; };
 		77FF8ACD1AF976E90074D927 /* QtScript.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtScript.framework; path = "../../../../Shared/My DAZ 3D Library/DAZStudio4.5+ SDK/lib/Mac64/QtScript.framework"; sourceTree = "<group>"; };
@@ -81,6 +82,7 @@
 				77FF8ACA1AF9769C0074D927 /* Source */,
 				77FF8AD51AF9770F0074D927 /* External Libraries */,
 				77FF8AB51AF972FE0074D927 /* Products */,
+				771CFF851AFB8CA2007D005A /* log.txt */,
 			);
 			sourceTree = "<group>";
 		};
@@ -102,8 +104,8 @@
 				77FF8ADC1AF982140074D927 /* dazToPLY.cpp */,
 				77FF8ABB1AF973410074D927 /* plugin.h */,
 				77FF8AC11AF9737C0074D927 /* pluginmain.cpp */,
-				77FF8AC21AF9737C0074D927 /* renderoptions.h */,
-				77FF8AC31AF9737C0074D927 /* renderoptions.cpp */,
+				77FF8AC21AF9737C0074D927 /* optionsframe.h */,
+				77FF8AC31AF9737C0074D927 /* optionsframe.cpp */,
 				77FF8AC01AF9737C0074D927 /* renderer.h */,
 				77FF8ABD1AF9735B0074D927 /* renderer.cpp */,
 			);
@@ -194,10 +196,10 @@
 			files = (
 				77FF8ADB1AF981680074D927 /* utility_classes.h in Sources */,
 				77FF8AC51AF9737C0074D927 /* renderer.h in Sources */,
-				77FF8AC71AF9737C0074D927 /* renderoptions.h in Sources */,
+				77FF8AC71AF9737C0074D927 /* optionsframe.h in Sources */,
 				77FF8ADA1AF981680074D927 /* utility_classes.cpp in Sources */,
 				77FF8ADD1AF982140074D927 /* dazToPLY.cpp in Sources */,
-				77FF8AC81AF9737C0074D927 /* renderoptions.cpp in Sources */,
+				77FF8AC81AF9737C0074D927 /* optionsframe.cpp in Sources */,
 				77FF8ABE1AF9735B0074D927 /* renderer.cpp in Sources */,
 				77FF8AC61AF9737C0074D927 /* pluginmain.cpp in Sources */,
 			);

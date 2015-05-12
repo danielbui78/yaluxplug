@@ -32,11 +32,16 @@ struct G
     int frame_counter;
     int activeFrame;
     int endFrame;
+    bool bDefaultLightsOn;
+    bool bIsSpotRender;
+    QRect cropWindow;
 
     DzRenderHandler *handler;
     DzRenderSettings *settings; // used when calling node->render
     DzRenderOptions options;
 
+    QString LuxExecPath;
+    QString CmdLineArgs;
     QString cachePath;
     QString tempPath;
     QString tempFilenameBase;
