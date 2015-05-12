@@ -24,7 +24,7 @@ const QStringList LXSfilm = QStringList() <<
 "\t\"bool premultiplyalpha\"\t[\"false\"]\n" <<
 "\t\"float gamma\"\t[2.2]\n" <<
 "\t\"integer displayinterval\"\t[5]\n" <<
-"\t\"integer writeinterval\"\t[5]\n" <<
+"\t\"integer writeinterval\"\t[1]\n" <<
 //"\t\"string tonemapkernel\"\t[\"autolinear\"]\n" <<
 "\t\"string tonemapkernel\"\t[\"linear\"]\n" <<
 "\t\"float linear_sensitivity\"\t[400]\n" <<
@@ -49,7 +49,7 @@ const QStringList LXSfilm = QStringList() <<
 //colorspace...
 //haltconditions
 "\t\"integer haltspp\"\t[0]\n" <<
-"\t\"integer halttime\"\t[0]\n" <<
+"\t\"integer halttime\"\t[120]\n" <<
 "\t\"float haltthreshold\"\t[0.0000001]\n" <<
 "\t\"bool debug\"\t[\"true\"]\n";
 

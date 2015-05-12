@@ -72,10 +72,18 @@ void WorkerPrepareImage::doPrepareImage()
     
     // resize
     int ResizeWidth = 2000;
-    if (qimg.width() > ResizeWidth) {
+    if (qimg.width() > ResizeWidth)
+    {
         qImgScaled = qimg.scaledToWidth(ResizeWidth);
     }
-    
+    else
+    {
+        // use the current file
+        emit prepareImageComplete(this, img, filename);
+        emit finished();
+        return;
+    }
+
     // make cached name
     QString newName = DzFileIO::getBaseFileName(filename);
     newName += ".png";
@@ -1056,7 +1064,7 @@ QString LuxProcessMaterial(DzMaterial *material, QString &mesg, QString matLabel
     // diffuse image and color
     float diffuse_vscale =-1;
     float diffuse_uscale =1;
-    float diffuse_gamma =1;
+    float diffuse_gamma = 2.2;
     float diffuse_voffset =0; // vdelta
     float diffuse_uoffset =0; // udelta
     QString diffuse_wrap ="repeat"; // repeat|black|clamp
@@ -1069,7 +1077,7 @@ QString LuxProcessMaterial(DzMaterial *material, QString &mesg, QString matLabel
     // specular image and color
     float spec_vscale =-1;
     float spec_uscale =1;
-    float spec_gamma =1;
+    float spec_gamma = 2.2;
     float spec_voffset =0;
     float spec_uoffset =0;
     QString spec_wrap = "repeat"; // repeat|black|clamp
@@ -1177,15 +1185,15 @@ QString LuxProcessMaterial(DzMaterial *material, QString &mesg, QString matLabel
     // Diffuse Texture Block
     if ( diffuse_exists )
         ret_str += GenerateTextureBlock(matLabel + ".diffuse_color", "color", diffuse_mapfile, 
-                                        QString("%1 %2 %3").arg(diffuse_value.redF()).arg(diffuse_value.greenF()).arg(diffuse_value.blueF()), 
+                                        QString("%1 %2 %3").arg(diffuse_value.redF()).arg(diffuse_value.greenF()).arg(diffuse_value.blueF()),
                                         diffuse_uscale, diffuse_vscale, diffuse_uoffset, diffuse_voffset, 
                                         diffuse_gamma, diffuse_wrap, diffuse_filtertype, diffuse_channel);
     
     // Specular Block
     if (spec_exists)
         ret_str += GenerateTextureBlock(matLabel + ".specular_color", "color", spec_mapfile, 
-                                        QString("%1 %2 %3").arg(spec_value.redF()).arg(spec_value.greenF()).arg(spec_value.blueF()), 
-                                        spec_uscale, spec_vscale, spec_uoffset, spec_voffset, spec_gamma, 
+                                        QString("%1 %2 %3").arg(spec_value.redF()*diffuse_value.redF()).arg(spec_value.greenF()*diffuse_value.greenF()).arg(spec_value.blueF()*diffuse_value.blueF()),
+                                        spec_uscale, spec_vscale, spec_uoffset, spec_voffset, spec_gamma,
                                         spec_wrap, spec_filtertype, spec_channel);
     
     // Bumpmap Block
@@ -1488,7 +1496,7 @@ QString LuxMakeSceneFile(QString fileNameLXS, DzRenderer *r, DzCamera *camera, c
     } else
     {
         outLXS.write("\nRenderer \"slg\"\n");
-        mesg = QString("\t\"string config\" [\"renderengine.type = %1\" \"opencl.cpu.use = 0\" \"opencl.kernelcache = %2\"]\n").arg("PATHOCL").arg("VOLATILE");
+        mesg = QString("\t\"string config\" [\"renderengine.type = %1\" \"opencl.cpu.use = 0\" \"opencl.kernelcache = %2\"]\n").arg("PATHOCL").arg("PERSISTENT");
         outLXS.write(mesg);
     }
 

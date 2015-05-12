@@ -233,7 +233,7 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
         process->start(file, args);
         process->waitForStarted();
 
-        tmr.start(2000);
+        tmr.start(1000);
         handler->beginFrame(YaLuxGlobal.activeFrame);
         while (process->state() == QProcess::Running)
         {
@@ -246,7 +246,7 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
                 break;
             } else
             QCoreApplication::processEvents(QEventLoop::AllEvents,TimeOut);
-            int timeout2 = 500;
+            int timeout2 = 100;
 #ifdef Q_OS_WIN
             Sleep(uint(timeout2));
 #else
