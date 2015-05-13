@@ -19,6 +19,7 @@
 #include "dznode.h"
 #include <QtCore/QThread>
 #include "dztexture.h"
+#include "dztokenbuffer.h"
 
 #include "utility_classes.h"
 
@@ -36,17 +37,31 @@ struct G
     bool bIsSpotRender;
     QRect cropWindow;
 
-    DzRenderHandler *handler;
+    DzRenderHandler *handler; // is only alive during render() function
     DzRenderSettings *settings; // used when calling node->render
     DzRenderOptions options;
 
     QString LuxExecPath;
     QString CmdLineArgs;
+    bool bShowLuxRenderWindow;
+    bool bSaveAlphaChannel;
+    int haltAtTime;
+    int haltAtSamplesPerPixel;
+    float haltAtThreshold;
+    int debugLevel;
+    float cameraGamma;
+    float cameraFstop;
+    float cameraExposureTime;
+    int cameraISO;
+    QString LuxToneMapper;
+    QStringList slaveNodeList;
+
     QString cachePath;
     QString tempPath;
     QString tempFilenameBase;
     QString workingRenderFilename;
     QStringList tokenList;
+    DzTokenBuffer tokenBuffer;
     QProcess *luxRenderProc;
     int tempCounter;
 };

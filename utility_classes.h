@@ -29,7 +29,7 @@ const QStringList LXSfilm = QStringList() <<
 "\t\"string tonemapkernel\"\t[\"linear\"]\n" <<
 "\t\"float linear_sensitivity\"\t[400]\n" <<
 //"\t\"float linear_exposure\"\t[0.033]\n" <<
-"\t\"float linear_fstop\"\t[2.8]\n" <<
+"\t\"float linear_fstop\"\t[5]\n" <<
 "\t\"float linear_gamma\"\t[2.2]\n" <<
 "\t\"string ldr_clamp_method\"\t[\"lum\"]\n" <<
 //png
@@ -92,14 +92,14 @@ const QStringList classNamesProperties = QStringList() << "DzStringProperty" << 
 const QStringList areaLightPlane = QStringList() <<
 "Shape \"mesh\"\n" <<
 "\t\"point P\" [-2 -2 0 2 -2 0 2 2 0 -2 2 0]\n" <<
-//"\t\"normal N\" [0 0 1 0 0 1 0 0 1 0 0 1]\n" <<
+"\t\"normal N\" [0 0 1 0 0 1 0 0 1 0 0 1]\n" <<
 //"\t\"float uv\" [0 0 1 0 1 1 0 1]\n" <<
 "\t\"integer quadindices\" [0 1 2 3]\n";
 
 const QStringList spotLightPlane = QStringList() <<
 "Shape \"mesh\"\n" <<
 "\t\"point P\" [-0.5 -0.5 0 0.5 -0.5 0 0.5 0.5 0 -0.5 0.5 0]\n" <<
-//"\t\"normal N\" [0 0 1 0 0 1 0 0 1 0 0 1]\n" <<
+"\t\"normal N\" [0 0 1 0 0 1 0 0 1 0 0 1]\n" <<
 //"\t\"float uv\" [0 0 1 0 1 1 0 1]\n" <<
 "\t\"integer quadindices\" [0 1 2 3]\n";
 

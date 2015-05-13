@@ -89,6 +89,16 @@ YaLuxRender::YaLuxRender()
 ///////////////////////////////////////////////////////////////////////
 
 
+QString YaLuxRender::getLuxExecPath() const
+{
+    return YaLuxGlobal.LuxExecPath;
+}
+
+void YaLuxRender::setLuxExecPath(const QString &execPath)
+{
+    YaLuxGlobal.LuxExecPath = execPath;
+}
+
 
 bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &opt)
 {
@@ -234,9 +244,11 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
         process->waitForStarted();
 
         tmr.start(1000);
-        handler->beginFrame(YaLuxGlobal.activeFrame);
+        handler->beginFrame(YaLuxGlobal.frame_counter);
         while (process->state() == QProcess::Running)
         {
+            // DEBUG
+            process->waitForFinished();
             // double check process
             // DEBUG
             if ( (process->state() != QProcess::Running) || (YaLuxGlobal.RenderProgress->isCancelled() == true) )

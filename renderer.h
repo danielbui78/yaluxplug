@@ -18,10 +18,13 @@
 
 class YaLuxRender : public DzRenderer {
     Q_OBJECT
+    Q_PROPERTY( QString LuxExecPath READ getLuxExecPath WRITE setLuxExecPath )
 public:
     YaLuxRender();
 
-    
+    void    setLuxExecPath( const QString &execPath );
+    QString getLuxExecPath() const;
+
     // ------------------ Basic control flow, scoping, stacks
     
     virtual DtVoid			DiWorldBegin() { dzApp->log("yaluxplug: unimplemented basic control1"); };
@@ -430,7 +433,10 @@ private:
     
     //struct	Data;
     //Data	*m_data;
-    
+
+
+
+
 };
 
 

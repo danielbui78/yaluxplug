@@ -16,6 +16,10 @@ class DzSideNavPropertyListView;
 class DzFileProperty;
 class DzStringProperty;
 class DzAppSettings;
+class DzBoolProperty;
+class DzIntProperty;
+class DzFloatProperty;
+class DzEnumProperty;
 
 class YaLuxOptionsFrame : public DzOptionsFrame {
     Q_OBJECT
@@ -30,22 +34,40 @@ public slots:
     virtual void	restoreOptions( DzRenderOptions *options );
     
 signals:
-    void	optionsChanged();
-
+//    void	optionsChanged();
 
 public:
     DzAppSettings *settings;
 
-private:
-    void loadSavedSettings();
+public slots:
+    void execPathChanged();
 
+private:
+    void loadSettings();
+    void saveSettings();
 
 private:
     DzFilterNavigationBar *filterBar;
     DzSideNavPropertyListView *listView;
-    DzFileProperty *fileProperty;
-    DzStringProperty *argumentsProperty;
 
+    QStringList debugLevelList = QStringList() << "Errors Only" << "Errors and Info" << "Errors, Info, Debug";
+    QStringList toneMapMethodList = QStringList() << "linear" << "autolinear" << "maxwhite" << "contrast" << "reinhard";
+
+    // property-widget list
+    DzFileProperty      *execPath;
+    DzStringProperty    *argumentList;
+    DzBoolProperty      *showLuxWindow;
+    DzBoolProperty      *saveAlphaChannel;
+    DzIntProperty       *haltTime;
+    DzIntProperty       *haltSPP;
+    DzFloatProperty     *haltThreshold;
+    DzEnumProperty      *debugLevel;
+    DzFloatProperty     *tonemapGamma;
+    DzFloatProperty     *tonemapFstop;
+    DzFloatProperty     *tonemapExposureTime;
+    DzIntProperty       *tonemapISO;
+    DzEnumProperty      *toneMapMethod;
+    DzStringProperty    *renderServerList;
 
 };
 
