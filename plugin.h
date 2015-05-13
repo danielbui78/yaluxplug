@@ -49,10 +49,10 @@ struct G
     int haltAtSamplesPerPixel;
     float haltAtThreshold;
     int debugLevel;
-    float cameraGamma;
-    float cameraFstop;
-    float cameraExposureTime;
-    int cameraISO;
+    float tonemapGamma;
+    float tonemapFstop;
+    float tonemapExposureTime;
+    int tonemapISO;
     QString LuxToneMapper;
     QStringList slaveNodeList;
 

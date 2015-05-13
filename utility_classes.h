@@ -49,7 +49,7 @@ const QStringList LXSfilm = QStringList() <<
 //colorspace...
 //haltconditions
 "\t\"integer haltspp\"\t[0]\n" <<
-"\t\"integer halttime\"\t[120]\n" <<
+"\t\"integer halttime\"\t[60]\n" <<
 "\t\"float haltthreshold\"\t[0.0000001]\n" <<
 "\t\"bool debug\"\t[\"true\"]\n";
 
