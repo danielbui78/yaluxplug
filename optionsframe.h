@@ -43,6 +43,7 @@ public slots:
     void execPathChanged();
 
 private:
+    void createDefaultSettings();
     void loadSettings();
     void saveSettings();
 

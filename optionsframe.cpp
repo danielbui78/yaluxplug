@@ -92,7 +92,7 @@ YaLuxOptionsFrame::YaLuxOptionsFrame() : DzOptionsFrame("yaluxplug Options Frame
 
     // Save-related settings
     // Save Alpha Channel
-    saveAlphaChannel = new DzBoolProperty("yalux_save_alpha", true, false, false);
+    saveAlphaChannel = new DzBoolProperty("yalux_save_alpha", true, false, true);
     saveAlphaChannel->setLabel("Save alpha channel in PNG");
     listView->addProperty(saveAlphaChannel);
 
@@ -101,7 +101,7 @@ YaLuxOptionsFrame::YaLuxOptionsFrame() : DzOptionsFrame("yaluxplug Options Frame
     haltTime->setLabel("[halttime] Maximum time to render a frame (seconds)");
     haltSPP = new DzIntProperty("yalux_halt_spp", false, false, 0);
     haltSPP->setLabel("[haltspp] Target samples per pixel");
-    haltThreshold = new DzFloatProperty("yalux_halt_threshold", false, false, 0.0);
+    haltThreshold = new DzFloatProperty("yalux_halt_threshold", false, false, 1.0);
     haltThreshold->setLabel("Target convergence threshold (1-haltthrehold)");
     listView->addProperty(haltTime);
     listView->addProperty(haltSPP);
@@ -122,9 +122,9 @@ YaLuxOptionsFrame::YaLuxOptionsFrame() : DzOptionsFrame("yaluxplug Options Frame
     }
     tonemapGamma = new DzFloatProperty("yalux_tonemap_gamma", false, false, 2.2);
     tonemapGamma->setLabel("Linear Tonemapper Gamma");
-    tonemapFstop = new DzFloatProperty("yalux_tonemap_fstop", false, false, 5);
+    tonemapFstop = new DzFloatProperty("yalux_tonemap_fstop", false, false, 2.8);
     tonemapFstop->setLabel("Linear Tonemapper F-stop");
-    tonemapExposureTime = new DzFloatProperty("yalux_tonemap_exposure", false, false, 0.5);
+    tonemapExposureTime = new DzFloatProperty("yalux_tonemap_exposure", false, false, 3);
     tonemapExposureTime->setLabel("Linear Tonemapper Exposure time (seconds)");
     tonemapISO = new DzIntProperty("yalux_tonemap_iso", false, false, 400);
     tonemapISO->setLabel("Linear Tonemapper ISO");
@@ -146,9 +146,24 @@ YaLuxOptionsFrame::YaLuxOptionsFrame() : DzOptionsFrame("yaluxplug Options Frame
 
     this->setLayout(layout1);
 
+    createDefaultSettings();
     loadSettings();
 
     return;
+}
+
+void YaLuxOptionsFrame::createDefaultSettings()
+{
+    showLuxWindow->setDefaultBoolValue(false);
+    saveAlphaChannel->setDefaultBoolValue(true);
+    haltTime->setDefaultValue(300);
+    haltSPP->setDefaultValue(0);
+    haltThreshold->setDefaultValue(1.0);
+    debugLevel->setDefaultValue(0);
+    tonemapGamma->setDefaultValue(2.2);
+    tonemapFstop->setDefaultValue(2.8);
+    tonemapISO->setDefaultValue(400);
+    toneMapMethod->setDefaultValue(0);
 }
 
 ///////////
@@ -156,21 +171,23 @@ YaLuxOptionsFrame::YaLuxOptionsFrame() : DzOptionsFrame("yaluxplug Options Frame
 ///////////
 void	YaLuxOptionsFrame::loadSettings()
 {
-    execPath->setValue( settings->getStringValue( execPath->getName()) );
-    argumentList->setValue( settings->getStringValue( argumentList->getName()) );
-    showLuxWindow->setBoolValue( settings->getBoolValue( showLuxWindow->getName()) );
-    saveAlphaChannel->setBoolValue( settings->getBoolValue( saveAlphaChannel->getName()) );
-    haltTime->setValue( settings->getIntValue( haltTime->getName()) );
-    haltSPP->setValue( settings->getIntValue( haltSPP->getName()) );
-    haltThreshold->setValue( settings->getFloatValue( haltThreshold->getName()) );
-    debugLevel->setValue( settings->getIntValue( debugLevel->getName()) );
-    tonemapGamma->setValue( settings->getFloatValue( tonemapGamma->getName()) );
-    tonemapFstop->setValue( settings->getFloatValue( tonemapFstop->getName()) );
-    tonemapExposureTime->setValue( settings->getFloatValue( tonemapExposureTime->getName()) );
-    tonemapISO->setValue( settings->getIntValue( tonemapISO->getName()) );
-    toneMapMethod->setValue( settings->getIntValue( toneMapMethod->getName()) );
-    renderServerList->setValue( settings->getStringValue( renderServerList->getName()) );
-
+    if ( settings->getBoolValue("yalux_savedsettings_exist") )
+    {
+        execPath->setValue( settings->getStringValue( execPath->getName()) );
+        argumentList->setValue( settings->getStringValue( argumentList->getName()) );
+        showLuxWindow->setBoolValue( settings->getBoolValue( showLuxWindow->getName()) );
+        saveAlphaChannel->setBoolValue( settings->getBoolValue( saveAlphaChannel->getName()) );
+        haltTime->setValue( settings->getIntValue( haltTime->getName()) );
+        haltSPP->setValue( settings->getIntValue( haltSPP->getName()) );
+        haltThreshold->setValue( settings->getFloatValue( haltThreshold->getName()) );
+        debugLevel->setValue( settings->getIntValue( debugLevel->getName()) );
+        tonemapGamma->setValue( settings->getFloatValue( tonemapGamma->getName()) );
+        tonemapFstop->setValue( settings->getFloatValue( tonemapFstop->getName()) );
+        tonemapExposureTime->setValue( settings->getFloatValue( tonemapExposureTime->getName()) );
+        tonemapISO->setValue( settings->getIntValue( tonemapISO->getName()) );
+        toneMapMethod->setValue( settings->getIntValue( toneMapMethod->getName()) );
+        renderServerList->setValue( settings->getStringValue( renderServerList->getName()) );
+    }
 }
 
 ///////////
@@ -192,6 +209,8 @@ void	YaLuxOptionsFrame::saveSettings()
     settings->setIntValue(tonemapISO->getName(), tonemapISO->getValue());
     settings->setIntValue(toneMapMethod->getName(), toneMapMethod->getValue());
     settings->setStringValue(renderServerList->getName(), renderServerList->getValue());
+
+    settings->setBoolValue("yalux_savedsettings_exist", true);
 
 }
 

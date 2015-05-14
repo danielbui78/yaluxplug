@@ -1458,9 +1458,28 @@ QString LuxMakeSceneFile(QString fileNameLXS, DzRenderer *r, DzCamera *camera, c
      */
     outLXS.write(QString("\t\"float screenwindow\"\t[%1 %2 %3 %4]\n").arg(screenWindow[0]).arg(screenWindow[1]).arg(screenWindow[2]).arg(screenWindow[3]));
 
-    // Film image settings
+    // Fleximage Film settings
     outLXS.write("\n");
     outLXS.write(LXSfilm.join(""));
+    QString colorChannels;
+    if (YaLuxGlobal.bSaveAlphaChannel)
+        colorChannels = "RGBA";
+    else
+        colorChannels = "RGB";
+    outLXS.write( QString("\t\"string write_png_channels\"\t[\"%1\"]\n").arg(colorChannels) );
+    outLXS.write( QString("\t\"string write_tga_channels\"\t[\"%1\"]\n").arg(colorChannels) );
+    outLXS.write( QString("\t\"string write_exr_channels\"\t[\"%1\"]\n").arg(colorChannels) );
+    outLXS.write( QString("\t\"integer haltspp\"\t[%1]\n").arg(YaLuxGlobal.haltAtSamplesPerPixel) );
+    outLXS.write( QString("\t\"integer halttime\"\t[%1]\n").arg(YaLuxGlobal.haltAtTime) );
+    outLXS.write( QString("\t\"float haltthreshold\"\t[%1]\n").arg(1.0-YaLuxGlobal.haltAtThreshold) );
+    outLXS.write( QString("\t\"string tonemapkernel\"\t[\"%1\"]\n").arg(YaLuxGlobal.LuxToneMapper) );
+    if (YaLuxGlobal.LuxToneMapper == "linear")
+    {
+        outLXS.write( QString("\t\"float linear_exposure\"\t[%1]\n").arg(YaLuxGlobal.tonemapExposureTime) );
+        outLXS.write( QString("\t\"float linear_gamma\"\t[%1]\n").arg(YaLuxGlobal.tonemapGamma) );
+        outLXS.write( QString("\t\"float linear_fstop\"\t[%1]\n").arg(YaLuxGlobal.tonemapFstop) );
+        outLXS.write( QString("\t\"float linear_sensitivity\"\t[%1]\n").arg(YaLuxGlobal.tonemapISO) );
+    }
 
     // Film resolution
     QRect cropWindow;

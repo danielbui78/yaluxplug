@@ -25,32 +25,20 @@ const QStringList LXSfilm = QStringList() <<
 "\t\"float gamma\"\t[2.2]\n" <<
 "\t\"integer displayinterval\"\t[5]\n" <<
 "\t\"integer writeinterval\"\t[1]\n" <<
-//"\t\"string tonemapkernel\"\t[\"autolinear\"]\n" <<
-"\t\"string tonemapkernel\"\t[\"linear\"]\n" <<
-"\t\"float linear_sensitivity\"\t[400]\n" <<
-//"\t\"float linear_exposure\"\t[0.033]\n" <<
-"\t\"float linear_fstop\"\t[5]\n" <<
-"\t\"float linear_gamma\"\t[2.2]\n" <<
 "\t\"string ldr_clamp_method\"\t[\"lum\"]\n" <<
 //png
 "\t\"bool write_png\"\t[\"true\"]\n" <<
-"\t\"string write_png_channels\"\t[\"RGBA\"]\n" <<
 "\t\"bool write_png_16bit\"\t[\"false\"]\n" <<
 "\t\"bool write_png_gamutclamp\"\t[\"true\"]\n" <<
 //tga...
 "\t\"bool write_tga\"\t[\"false\"]\n" <<
-"\t\"string write_tga_channels\"\t[\"RGBA\"]\n" <<
 //exr...
 "\t\"bool write_exr\"\t[\"false\"]\n" <<
-"\t\"string write_exr_channels\"\t[\"RGBA\"]\n" <<
 "\t\"string write_exr_compressiontype\"\t[\"PIZ (lossless)\"]\n" <<
 "\t\"string write_exr_zbuf_normalizationtype\"\t[\"None\"]\n" <<
 //flm...
 //colorspace...
 //haltconditions
-"\t\"integer haltspp\"\t[0]\n" <<
-"\t\"integer halttime\"\t[60]\n" <<
-"\t\"float haltthreshold\"\t[0.0000001]\n" <<
 "\t\"bool debug\"\t[\"true\"]\n";
 
 const QStringList LXSpixelfilter = QStringList() <<

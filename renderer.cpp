@@ -194,8 +194,20 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
     if (bIsAnimation)
         file = YaLuxGlobal.LuxExecPath;
     else
-        file = YaLuxGlobal.LuxExecPath;
-//        file = DzFileIO::getFilePath(YaLuxGlobal.LuxExecPath)+ "/luxrender";
+    {
+        if (YaLuxGlobal.bShowLuxRenderWindow)
+        {
+#if defined( Q_OS_WIN )
+            file = DzFileIO::getFilePath(YaLuxGlobal.LuxExecPath) + "/luxrender.exe";
+#elif defined( Q_WS_MAC )
+            file = DzFileIO::getFilePath(YaLuxGlobal.LuxExecPath) + "/luxrender";
+#endif
+        }
+        else
+        {
+            file = YaLuxGlobal.LuxExecPath;
+        }
+    }
     QStringList userargs = QStringList::split(" ", YaLuxGlobal.CmdLineArgs);
     QStringList args = QStringList() << "-l" << userargs << fullPathFileNameLXS;
     //DEBUG
@@ -248,7 +260,7 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
         while (process->state() == QProcess::Running)
         {
             // DEBUG
-            process->waitForFinished();
+            //process->waitForFinished();
             // double check process
             // DEBUG
             if ( (process->state() != QProcess::Running) || (YaLuxGlobal.RenderProgress->isCancelled() == true) )
