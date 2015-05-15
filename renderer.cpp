@@ -295,7 +295,7 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
     YaLuxGlobal.luxRenderProc->deleteLater();
 
     YaLuxGlobal.inProgress = false;
-//    handler->finishRender();
+    handler->finishRender();
     YaLuxGlobal.RenderProgress->finish();
 
 

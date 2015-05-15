@@ -31,15 +31,15 @@ const QStringList LXSfilm = QStringList() <<
 "\t\"bool write_png_16bit\"\t[\"false\"]\n" <<
 "\t\"bool write_png_gamutclamp\"\t[\"true\"]\n" <<
 //tga...
-"\t\"bool write_tga\"\t[\"false\"]\n" <<
+//"\t\"bool write_tga\"\t[\"false\"]\n" <<
 //exr...
-"\t\"bool write_exr\"\t[\"false\"]\n" <<
-"\t\"string write_exr_compressiontype\"\t[\"PIZ (lossless)\"]\n" <<
-"\t\"string write_exr_zbuf_normalizationtype\"\t[\"None\"]\n" <<
+//"\t\"bool write_exr\"\t[\"false\"]\n" <<
+//"\t\"string write_exr_compressiontype\"\t[\"PIZ (lossless)\"]\n" <<
+//"\t\"string write_exr_zbuf_normalizationtype\"\t[\"None\"]\n" <<
 //flm...
 //colorspace...
 //haltconditions
-"\t\"bool debug\"\t[\"true\"]\n";
+"\t\"bool debug\"\t[\"false\"]\n";
 
 const QStringList LXSpixelfilter = QStringList() <<
 "PixelFilter \"mitchell\"\n" <<
