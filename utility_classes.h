@@ -39,7 +39,7 @@ const QStringList LXSfilm = QStringList() <<
 //flm...
 //colorspace...
 //haltconditions
-//"\t\"bool debug\"\t[\"false\"]\n";
+"\t\"bool debug\"\t[\"false\"]\n";
 
 const QStringList LXSpixelfilter = QStringList() <<
 "PixelFilter \"mitchell\"\n" <<
