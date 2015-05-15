@@ -1128,15 +1128,15 @@ QString LuxProcessMaterial(DzMaterial *material, QString &mesg, QString matLabel
     if (currentProperty != NULL)
     {
         diffuse_uscale = 1/((DzFloatProperty*)currentProperty)->getValue();
-        spec_uscale = 1/diffuse_uscale;
-        bump_uscale = 1/diffuse_uscale;
+        spec_uscale = diffuse_uscale;
+        bump_uscale = diffuse_uscale;
     }
     currentProperty = material->findProperty("Vertical Tiles");
     if (currentProperty != NULL)
     {
         diffuse_vscale = -1/((DzFloatProperty*)currentProperty)->getValue();
-        spec_vscale = 1/diffuse_vscale;
-        bump_vscale = 1/diffuse_vscale;
+        spec_vscale = diffuse_vscale;
+        bump_vscale = diffuse_vscale;
     }
     currentProperty = material->findProperty("Horizontal Offset");
     if (currentProperty != NULL)
@@ -1181,7 +1181,13 @@ QString LuxProcessMaterial(DzMaterial *material, QString &mesg, QString matLabel
         if ( (opacity_value != 1) || (opacity_mapfile != "") )
             opacity_exists = true;
     }
-    
+    currentProperty = material->findProperty("Glossiness");
+    if (currentProperty != NULL)
+    {
+        uroughness = 1 - ((DzFloatProperty*)currentProperty)->getValue();
+        vroughness = uroughness;
+    }
+
     // Diffuse Texture Block
     if ( diffuse_exists )
         ret_str += GenerateTextureBlock(matLabel + ".diffuse_color", "color", diffuse_mapfile, 
