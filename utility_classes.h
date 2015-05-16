@@ -24,7 +24,7 @@ const QStringList LXSfilm = QStringList() <<
 "\t\"bool premultiplyalpha\"\t[\"false\"]\n" <<
 "\t\"float gamma\"\t[2.2]\n" <<
 "\t\"integer displayinterval\"\t[5]\n" <<
-"\t\"integer writeinterval\"\t[1]\n" <<
+"\t\"integer writeinterval\"\t[5]\n" <<
 "\t\"string ldr_clamp_method\"\t[\"lum\"]\n" <<
 //png
 "\t\"bool write_png\"\t[\"true\"]\n" <<

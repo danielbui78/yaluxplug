@@ -456,7 +456,7 @@ DazToPLY::DazToPLY(DzFacetMesh *arg_mesh, QString arg_objMatName, DzMaterial *ar
     if (facetIndexList == NULL)
     {
         // make an error call and return
-        dzApp->log("yaluxplug: LukeMakePLY - ERROR, no facetIndex found");
+        dzApp->log("yaluxplug: LuxMakePLY - ERROR, no facetIndex found");
     }
     
     ptrAllFaces = mesh->getFacetsPtr();
@@ -466,3 +466,6 @@ DazToPLY::DazToPLY(DzFacetMesh *arg_mesh, QString arg_objMatName, DzMaterial *ar
     ptrAllVertices = mesh->getVerticesPtr();
     
 }
+
+
+

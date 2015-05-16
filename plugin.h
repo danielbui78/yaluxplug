@@ -23,6 +23,8 @@
 
 #include "utility_classes.h"
 
+class QTextEdit;
+
 struct G
 {
     DzOptionsFrame *optFrame;
@@ -55,6 +57,12 @@ struct G
     int tonemapISO;
     QString LuxToneMapper;
     QStringList slaveNodeList;
+    int specularMode;
+    int renderMode;
+    QString customRenderString;
+
+    QFrame *logWindow;
+    QTextEdit *logText;
 
     QString cachePath;
     QString tempPath;
@@ -63,6 +71,7 @@ struct G
     QStringList tokenList;
     DzTokenBuffer tokenBuffer;
     QProcess *luxRenderProc;
+    bool bRenderisFinished;
     int tempCounter;
 };
 

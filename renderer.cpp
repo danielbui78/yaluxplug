@@ -48,8 +48,13 @@
 #include "dzfacegroup.h"
 
 #include "dzrenderdata.h"
+#include "dzmainwindow.h"
 
 #include "optionsframe.h"
+#include <QtGui/QFrame>
+#include <QtGUI/QLayout>
+#include <QtGUI/QTextEdit>
+#include <QtCore/QByteArray>
 
 #include "dazToPLY.h"
 #include "renderer.h"
@@ -81,6 +86,21 @@ YaLuxRender::YaLuxRender()
     // create cache working directory
     DzFileIO::pathExists(YaLuxGlobal.cachePath,true);
     dzApp->log("yaluxplug: Initialized.");
+
+
+    ///////////
+    // Create Log window
+    ////////////
+    YaLuxGlobal.logWindow = new QFrame();
+    YaLuxGlobal.logWindow->setParent( (QWidget*) dzApp->getInterface() );
+    YaLuxGlobal.logWindow->setName("LogWindow");
+    YaLuxGlobal.logWindow->setMinimumSize(800, 100);
+    QVBoxLayout *layout = new QVBoxLayout(YaLuxGlobal.logWindow);
+    YaLuxGlobal.logText = new QTextEdit(YaLuxGlobal.logWindow);
+    layout->add(YaLuxGlobal.logText);
+    QPushButton *stopButton = new QPushButton;
+    layout->add(stopButton);
+
     return;
 }
 
@@ -184,8 +204,9 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
     ///////////////////////////
     QProcess *process = new QProcess(this);
     YaLuxGlobal.luxRenderProc = process;
-    QString logFile = QString("%1/yaluxplug.log").arg(YaLuxGlobal.tempPath);
-    process->setStandardErrorFile(logFile, QIODevice::Append);
+    QString logFileName = QString("%1/yaluxplug.log").arg(YaLuxGlobal.tempPath);
+//    process->setStandardErrorFile(logFile, QIODevice::Append);
+    process->setReadChannel(QProcess::StandardError);
 
     connect(process, SIGNAL( finished(int, QProcess::ExitStatus) ),
             this, SLOT( handleRenderProcessComplete(int, QProcess::ExitStatus) ) );
@@ -228,11 +249,13 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
 
 //    QImage qimg;
 //    DzRenderData *data;
-    int TimeOut = 5000;
-    QTimer tmr;
-    connect(&tmr, SIGNAL(timeout()),
-            this, SLOT(updateData()) );
+    int TimeOut = 500;
+//    QTimer tmr;
+//    connect(&tmr, SIGNAL(timeout()),
+//            this, SLOT(updateData()) );
     handler->beginRender();
+    QFile logFile(logFileName);
+    logFile.open(QIODevice::WriteOnly);
     while (YaLuxGlobal.frame_counter < YaLuxGlobal.totalFrames)
     {
 
@@ -255,9 +278,15 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
         process->start(file, args);
         process->waitForStarted();
 
-        tmr.start(1000);
+//        tmr.start(1000);
         handler->beginFrame(YaLuxGlobal.frame_counter);
-        while (process->state() == QProcess::Running)
+        YaLuxGlobal.bRenderisFinished = false;
+        connect(dzApp->getInterface(), SIGNAL(aboutToClose()),
+                YaLuxGlobal.logWindow, SLOT(close()) );
+        YaLuxGlobal.logWindow->show();
+        YaLuxGlobal.logWindow->activateWindow();
+
+        while (YaLuxGlobal.bRenderisFinished == false)
         {
             // DEBUG
             //process->waitForFinished();
@@ -269,8 +298,41 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
                 YaLuxGlobal.luxRenderProc->terminate();
                 break;
             } else
-            QCoreApplication::processEvents(QEventLoop::AllEvents,TimeOut);
-            int timeout2 = 100;
+
+            // Update the log window
+
+//            process->waitForFinished();
+
+//            process->waitForReadyRead(5000);
+            while (process->canReadLine() )
+            {
+                QByteArray qa = process->readLine();
+
+                if (qa.contains("Writing Tonemapped"))
+                {
+                    updateData();
+                }
+                if (qa.contains("INFO"))
+                {
+                    QString newInfo = QString( qa.data() );
+                    newInfo = newInfo.replace("\n", "");
+                    YaLuxGlobal.logText->setTextColor( QColor(255,255,255) );
+                    YaLuxGlobal.logText->append( newInfo );
+                }
+                if (qa.contains("ERROR"))
+                {
+                    QString newInfo = QString( qa.data() );
+                    newInfo = newInfo.replace("\n", "");
+                    YaLuxGlobal.logText->setTextColor( QColor(255,0,0) );
+                    YaLuxGlobal.logText->append( newInfo );
+                }
+                logFile.write(qa);
+            }
+
+
+            QCoreApplication::processEvents(QEventLoop::AllEvents,0);
+
+            int timeout2 = 50;
 #ifdef Q_OS_WIN
             Sleep(uint(timeout2));
 #else
@@ -279,9 +341,9 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
 #endif
 
         }
-        tmr.stop();
-        disconnect(&tmr, SIGNAL(timeout()),
-                this, SLOT(updateData()) );
+//        tmr.stop();
+//        disconnect(&tmr, SIGNAL(timeout()),
+//                this, SLOT(updateData()) );
 
         if (YaLuxGlobal.RenderProgress->isCancelled() == true)
             break;
@@ -289,6 +351,7 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
         YaLuxGlobal.activeFrame++;
 
     }
+
 
     disconnect(process, SIGNAL( finished(int, QProcess::ExitStatus) ),
             this, SLOT( handleRenderProcessComplete(int, QProcess::ExitStatus) ) );
@@ -298,20 +361,56 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
     handler->finishRender();
     YaLuxGlobal.RenderProgress->finish();
 
+    logFile.close();
 
     return true;
 }
 
 void YaLuxRender::updateData()
 {
+    int timeout = 500;
+    struct timespec ts = { timeout / 1000, (timeout % 1000) * 1000 * 1000 };
+
+#ifdef Q_OS_WIN
+    Sleep(uint(timeout));
+#else
+    nanosleep(&ts, NULL);
+#endif
+
     QImage *qimg = new QImage();
     DzRenderData *data;
+    QFile imgFile(YaLuxGlobal.workingRenderFilename);
 
-    if (qimg->load(YaLuxGlobal.workingRenderFilename) == true)
+    while (imgFile.open(QIODevice::ReadOnly) == false)
     {
-        data = new DzRenderData(YaLuxGlobal.cropWindow.top(), YaLuxGlobal.cropWindow.left(), qimg->convertToFormat(QImage::Format_ARGB32));
-        YaLuxGlobal.handler->passData( (*data) );
+#ifdef Q_OS_WIN
+        Sleep(uint(timeout));
+#else
+        nanosleep(&ts, NULL);
+#endif
     }
+
+    QByteArray qa;
+    qa = imgFile.readAll();
+
+    bool notRead = true;
+    while ( qimg->loadFromData(qa) == false)
+    {
+#ifdef Q_OS_WIN
+        Sleep(uint(timeout));
+#else
+        nanosleep(&ts, NULL);
+#endif
+        imgFile.close();
+        if (imgFile.open(QIODevice::ReadOnly) == false)
+            break;
+        else
+            qa = imgFile.readAll();
+    }
+    data = new DzRenderData(YaLuxGlobal.cropWindow.top(), YaLuxGlobal.cropWindow.left(), qimg->convertToFormat(QImage::Format_ARGB32));
+    YaLuxGlobal.handler->passData( (*data) );
+    notRead = false;
+
     delete qimg;
     // delete data;
 }
@@ -335,6 +434,7 @@ void YaLuxRender::handleRenderProcessComplete( int exitCode, QProcess::ExitStatu
     }
 
     emit frameFinished();
+    YaLuxGlobal.bRenderisFinished = true;
 
 /*
     if (YaLuxGlobal.activeFrame <= YaLuxGlobal.endFrame)
