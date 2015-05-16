@@ -112,7 +112,7 @@ int whichClass(QObject *obj, const QStringList &classNames)
     int i=0;
     while (i < classNames.count() )   
     {
-        if ( obj->inherits(classNames[i]) )
+        if ( obj->inherits(classNames[i].toAscii()) )
         {
             retval = (i+1);
             return retval;
@@ -1489,7 +1489,7 @@ QString LuxMakeSceneFile(QString fileNameLXS, DzRenderer *r, DzCamera *camera, c
             mesg = "\n" + YaLuxGlobal.customRenderString + "\n";
             break;
         }
-        outLXS.write(mesg);
+        outLXS.write(mesg.toAscii());
     }
 
 
@@ -1497,26 +1497,26 @@ QString LuxMakeSceneFile(QString fileNameLXS, DzRenderer *r, DzCamera *camera, c
     // Fleximage Film settings
     //////////////////////////
     outLXS.write("\n");
-    outLXS.write(LXSfilm.join(""));
+    outLXS.write(LXSfilm.join("").toAscii());
 
     QString colorChannels;
     if (YaLuxGlobal.bSaveAlphaChannel)
         colorChannels = "RGBA";
     else
         colorChannels = "RGB";
-    outLXS.write( QString("\t\"string write_png_channels\"\t[\"%1\"]\n").arg(colorChannels) );
+    outLXS.write( QString("\t\"string write_png_channels\"\t[\"%1\"]\n").arg(colorChannels).toAscii() );
     //    outLXS.write( QString("\t\"string write_tga_channels\"\t[\"%1\"]\n").arg(colorChannels) );
     //    outLXS.write( QString("\t\"string write_exr_channels\"\t[\"%1\"]\n").arg(colorChannels) );
-    outLXS.write( QString("\t\"integer haltspp\"\t[%1]\n").arg(YaLuxGlobal.haltAtSamplesPerPixel) );
-    outLXS.write( QString("\t\"integer halttime\"\t[%1]\n").arg(YaLuxGlobal.haltAtTime) );
-    outLXS.write( QString("\t\"float haltthreshold\"\t[%1]\n").arg(1.0-YaLuxGlobal.haltAtThreshold) );
-    outLXS.write( QString("\t\"string tonemapkernel\"\t[\"%1\"]\n").arg(YaLuxGlobal.LuxToneMapper) );
+    outLXS.write( QString("\t\"integer haltspp\"\t[%1]\n").arg(YaLuxGlobal.haltAtSamplesPerPixel).toAscii() );
+    outLXS.write( QString("\t\"integer halttime\"\t[%1]\n").arg(YaLuxGlobal.haltAtTime).toAscii() );
+    outLXS.write( QString("\t\"float haltthreshold\"\t[%1]\n").arg(1.0-YaLuxGlobal.haltAtThreshold).toAscii() );
+    outLXS.write( QString("\t\"string tonemapkernel\"\t[\"%1\"]\n").arg(YaLuxGlobal.LuxToneMapper).toAscii() );
     if (YaLuxGlobal.LuxToneMapper == "linear")
     {
-        outLXS.write( QString("\t\"float linear_exposure\"\t[%1]\n").arg(YaLuxGlobal.tonemapExposureTime) );
-        outLXS.write( QString("\t\"float linear_gamma\"\t[%1]\n").arg(YaLuxGlobal.tonemapGamma) );
-        outLXS.write( QString("\t\"float linear_fstop\"\t[%1]\n").arg(YaLuxGlobal.tonemapFstop) );
-        outLXS.write( QString("\t\"float linear_sensitivity\"\t[%1]\n").arg(YaLuxGlobal.tonemapISO) );
+        outLXS.write( QString("\t\"float linear_exposure\"\t[%1]\n").arg(YaLuxGlobal.tonemapExposureTime).toAscii() );
+        outLXS.write( QString("\t\"float linear_gamma\"\t[%1]\n").arg(YaLuxGlobal.tonemapGamma).toAscii() );
+        outLXS.write( QString("\t\"float linear_fstop\"\t[%1]\n").arg(YaLuxGlobal.tonemapFstop).toAscii() );
+        outLXS.write( QString("\t\"float linear_sensitivity\"\t[%1]\n").arg(YaLuxGlobal.tonemapISO).toAscii() );
     }
 
     // Film resolution
@@ -1528,36 +1528,36 @@ QString LuxMakeSceneFile(QString fileNameLXS, DzRenderer *r, DzCamera *camera, c
         mesg += QString("\t\"float cropwindow\"\t[%1 %2 %3 %4]\n").arg((float)cropWindow.top()/ImgHeight).arg((float)cropWindow.bottom()/ImgHeight).arg((float)cropWindow.left()/ImgWidth).arg((float)cropWindow.right()/ImgWidth);
     }
     YaLuxGlobal.cropWindow = cropWindow;
-    outLXS.write(mesg);
+    outLXS.write(mesg.toAscii());
 
     ///////////////////////////////////////////////
     // Film image filename
     ///////////////////////////////////////////////
     mesg = QString("\t\"string filename\"\t[\"%1\"]\n").arg(DzFileIO::getBaseFileName(YaLuxGlobal.workingRenderFilename));
-    outLXS.write(mesg);
+    outLXS.write(mesg.toAscii());
     YaLuxGlobal.RenderProgress->step();
     //    YaLuxGlobal.RenderProgress->setCurrentInfo(mesg);
 
 
     // sampler settings
     outLXS.write("\n");
-    outLXS.write(LXSsampler.join(""));
+    outLXS.write(LXSsampler.join("").toAscii());
 
     // surface integrator settings
     outLXS.write("\n");
-    outLXS.write(LXSsurfaceintegrator.join(""));
+    outLXS.write(LXSsurfaceintegrator.join("").toAscii());
 
     // volume integrator settings
     outLXS.write("\n");
-    outLXS.write(LXSvolumeintegrator.join(""));
+    outLXS.write(LXSvolumeintegrator.join("").toAscii());
 
     // pixelfilter settings
     outLXS.write("\n");
-    outLXS.write(LXSpixelfilter.join(""));
+    outLXS.write(LXSpixelfilter.join("").toAscii());
 
     // accelerator settings
     outLXS.write("\n");
-    outLXS.write(LXSaccelerator.join(""));
+    outLXS.write(LXSaccelerator.join("").toAscii());
 
     // Lookat
     const float matrixLux[16] = {
@@ -1575,14 +1575,14 @@ QString LuxMakeSceneFile(QString fileNameLXS, DzRenderer *r, DzCamera *camera, c
     DzVec3 target = luxTransform.multVecMatrix(target1);
     DzVec3 up = luxTransform.multVecMatrix(up1);
     mesg = QString("LookAt %1 %2 %3 %4 %5 %6 %7 %8 %9\n").arg(pos.m_x).arg(pos.m_y).arg(pos.m_z).arg(target.m_x).arg(target.m_y).arg(target.m_z).arg(up.m_x).arg(up.m_y).arg(up.m_z);
-    outLXS.write(mesg);
+    outLXS.write(mesg.toAscii());
 
     // 2. set the camera vector and orientation
     // Camera
     outLXS.write("\nCamera \"perspective\"\n");
     // fov
     double f_fov = camera->getFieldOfView() * 57.295779513; // multiply by (180/pi)
-    outLXS.write(QString("\t\"float fov\"\t[%1]\n").arg(f_fov));
+    outLXS.write(QString("\t\"float fov\"\t[%1]\n").arg(f_fov).toAscii());
     // screenwindow
     double aspectRatio = opt.getAspect();
     if (aspectRatio == 0)
@@ -1601,7 +1601,7 @@ QString LuxMakeSceneFile(QString fileNameLXS, DzRenderer *r, DzCamera *camera, c
      screenWindow[3] = 1/aspectRatio;
      }
      */
-    outLXS.write(QString("\t\"float screenwindow\"\t[%1 %2 %3 %4]\n").arg(screenWindow[0]).arg(screenWindow[1]).arg(screenWindow[2]).arg(screenWindow[3]));
+    outLXS.write(QString("\t\"float screenwindow\"\t[%1 %2 %3 %4]\n").arg(screenWindow[0]).arg(screenWindow[1]).arg(screenWindow[2]).arg(screenWindow[3]).toAscii() );
 
 
     // single image
@@ -1650,7 +1650,7 @@ QString LuxMakeSceneFile(QString fileNameLXS, DzRenderer *r, DzCamera *camera, c
         // DEBUG
         mesg = QString("yaluxplug: Processing Light: AssetId[%1], Label[%2]").arg(currentLight->getAssetId()).arg(currentLight->getLabel());
         outstr = LuxProcessLight(currentLight, mesg);
-        outLXS.write(outstr);
+        outLXS.write(outstr.toAscii());
         dzApp->log(mesg);
 
     }
@@ -1710,7 +1710,7 @@ QString LuxMakeSceneFile(QString fileNameLXS, DzRenderer *r, DzCamera *camera, c
             }
             else
             {
-                outLXS.write("\n# AssetId=[" + nodeAssetId +"],nodeLabel=[" + currentNode->getLabel() + "]\n");
+                outLXS.write( QString("\n# AssetId=[" + nodeAssetId +"],nodeLabel=[" + currentNode->getLabel() + "]\n").toAscii() );
                 QString objectLabel = currentObject->getLabel();
 
                 // FINALIZE Node's geometry cache for rendering
@@ -1718,7 +1718,7 @@ QString LuxMakeSceneFile(QString fileNameLXS, DzRenderer *r, DzCamera *camera, c
                 currentObject->finalize(*currentNode, true, true);
                 
                 mesg = LuxProcessObject(currentObject);
-                outLXS.write(mesg);
+                outLXS.write(mesg.toAscii());
             }
         } else {
             dzApp->log("\tno object found.");
@@ -1743,14 +1743,14 @@ QString LuxMakeSceneFile(QString fileNameLXS, DzRenderer *r, DzCamera *camera, c
         // Create a DEFAULT SUN if no light exists
         outLXS.write("\nAttributeBegin\n");
         outLXS.write("LightSource \"sun\"\n");
-        outLXS.write(QString("\t\"float importance\"\t[%1]\n").arg(1));
-        outLXS.write(QString("\t\"vector sundir\"\t[%1 %2 %3]\n").arg(0).arg(-0.8).arg(0.2));
-        outLXS.write(QString("\t\"float gain\"\t[%1]\n").arg(0.0003));
+        outLXS.write(QString("\t\"float importance\"\t[%1]\n").arg(1).toAscii() );
+        outLXS.write(QString("\t\"vector sundir\"\t[%1 %2 %3]\n").arg(0).arg(-0.8).arg(0.2).toAscii() );
+        outLXS.write(QString("\t\"float gain\"\t[%1]\n").arg(0.0003).toAscii() );
 
         outLXS.write("LightSource \"sky2\"\n");
-        outLXS.write(QString("\t\"float importance\"\t[%1]\n").arg(1));
-        outLXS.write(QString("\t\"vector sundir\"\t[%1 %2 %3]\n").arg(0).arg(-0.8).arg(0.2));
-        outLXS.write(QString("\t\"float gain\"\t[%1]\n").arg(0.0001));
+        outLXS.write(QString("\t\"float importance\"\t[%1]\n").arg(1).toAscii() );
+        outLXS.write(QString("\t\"vector sundir\"\t[%1 %2 %3]\n").arg(0).arg(-0.8).arg(0.2).toAscii() );
+        outLXS.write(QString("\t\"float gain\"\t[%1]\n").arg(0.0001).toAscii() );
         outLXS.write("AttributeEnd\n");
     }
 

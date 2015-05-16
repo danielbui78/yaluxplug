@@ -16,6 +16,13 @@
 #include <QtCore/QTimer>
 #include <QtCore/QProcess>
 
+#include <QtGui/QFrame>
+#include <QtGuI/QLayout>
+#include <QtGui/QBoxLayout>
+#include <QtGUI/QTextEdit>
+#include <QtCore/QByteArray>
+#include <QtGui/QWidget>
+
 #include "dzapp.h"
 #include "dzscene.h"
 #include "dzrenderoptions.h"
@@ -51,10 +58,6 @@
 #include "dzmainwindow.h"
 
 #include "optionsframe.h"
-#include <QtGui/QFrame>
-#include <QtGUI/QLayout>
-#include <QtGUI/QTextEdit>
-#include <QtCore/QByteArray>
 
 #include "dazToPLY.h"
 #include "renderer.h"
@@ -93,13 +96,13 @@ YaLuxRender::YaLuxRender()
     ////////////
     YaLuxGlobal.logWindow = new QFrame();
     YaLuxGlobal.logWindow->setParent( (QWidget*) dzApp->getInterface() );
-    YaLuxGlobal.logWindow->setName("LogWindow");
+    YaLuxGlobal.logWindow->setWindowTitle("LogWindow");
     YaLuxGlobal.logWindow->setMinimumSize(800, 100);
     QVBoxLayout *layout = new QVBoxLayout(YaLuxGlobal.logWindow);
     YaLuxGlobal.logText = new QTextEdit(YaLuxGlobal.logWindow);
-    layout->add(YaLuxGlobal.logText);
+    layout->addWidget(YaLuxGlobal.logText);
     QPushButton *stopButton = new QPushButton;
-    layout->add(stopButton);
+    layout->addWidget(stopButton);
 
     return;
 }
@@ -229,7 +232,7 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
             file = YaLuxGlobal.LuxExecPath;
         }
     }
-    QStringList userargs = QStringList::split(" ", YaLuxGlobal.CmdLineArgs);
+    QStringList userargs = YaLuxGlobal.CmdLineArgs.split(" ");
     QStringList args = QStringList() << "-l" << userargs << fullPathFileNameLXS;
     //DEBUG
     dzApp->log( args.join(","));
