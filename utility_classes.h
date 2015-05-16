@@ -24,7 +24,7 @@ const QStringList LXSfilm = QStringList() <<
 "\t\"bool premultiplyalpha\"\t[\"false\"]\n" <<
 "\t\"float gamma\"\t[2.2]\n" <<
 "\t\"integer displayinterval\"\t[5]\n" <<
-"\t\"integer writeinterval\"\t[1]\n" <<
+"\t\"integer writeinterval\"\t[5]\n" <<
 "\t\"string ldr_clamp_method\"\t[\"lum\"]\n" <<
 //png
 "\t\"bool write_png\"\t[\"true\"]\n" <<
@@ -86,7 +86,7 @@ const QStringList areaLightPlane = QStringList() <<
 
 const QStringList spotLightPlane = QStringList() <<
 "Shape \"mesh\"\n" <<
-"\t\"point P\" [-0.5 -0.5 0 0.5 -0.5 0 0.5 0.5 0 -0.5 0.5 0]\n" <<
+"\t\"point P\" [-0.01 -0.01 0 0.01 -0.01 0 0.01 0.01 0 -0.01 0.01 0]\n" <<
 "\t\"normal N\" [0 0 1 0 0 1 0 0 1 0 0 1]\n" <<
 //"\t\"float uv\" [0 0 1 0 1 1 0 1]\n" <<
 "\t\"integer quadindices\" [0 1 2 3]\n";

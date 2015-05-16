@@ -251,6 +251,29 @@ QString propertyNumericImagetoString(DzNumericProperty *prop)
     return ret_str;
 }
 
+QString MixTextures(QString textureMixName, QString textureName1, QString textureName2, QString textureType, QString mixString)
+{
+    QString ret_str;
+
+    ret_str += QString("Texture \"%1\" \"%2\" \"%3\"\n").arg(textureMixName).arg(textureType).arg("mix");
+    ret_str += QString("\t\"texture tex1\" [\"%1\"]\n").arg(textureName1);
+    ret_str += QString("\t\"texture tex2\" [\"%1\"]\n").arg(textureName2);
+    ret_str += QString("\t\%1\n").arg(mixString);
+
+    return ret_str;
+}
+
+QString ScaleTexture(QString textureScaleName, QString textureName1, QString scaleValue, QString textureType)
+{
+    QString ret_str;
+
+    ret_str += QString("Texture \"%1\" \"%2\" \"%3\"\n").arg(textureScaleName).arg(textureType).arg("scale");
+    ret_str += QString("\t\"texture tex1\" [\"%1\"]\n").arg(textureName1);
+    ret_str += QString("\t\"%1 tex2\" [%2]\n").arg(textureType).arg(scaleValue);
+
+    return ret_str;
+}
+
 
 QString GenerateTextureBlock(QString textureName, QString textureType, QString mapName, QString textureValue,
                              float uscale, float vscale, float uoffset, float voffset, float gamma, 
@@ -1128,15 +1151,15 @@ QString LuxProcessMaterial(DzMaterial *material, QString &mesg, QString matLabel
     if (currentProperty != NULL)
     {
         diffuse_uscale = 1/((DzFloatProperty*)currentProperty)->getValue();
-        spec_uscale = 1/diffuse_uscale;
-        bump_uscale = 1/diffuse_uscale;
+        spec_uscale = diffuse_uscale;
+        bump_uscale = diffuse_uscale;
     }
     currentProperty = material->findProperty("Vertical Tiles");
     if (currentProperty != NULL)
     {
         diffuse_vscale = -1/((DzFloatProperty*)currentProperty)->getValue();
-        spec_vscale = 1/diffuse_vscale;
-        bump_vscale = 1/diffuse_vscale;
+        spec_vscale = diffuse_vscale;
+        bump_vscale = diffuse_vscale;
     }
     currentProperty = material->findProperty("Horizontal Offset");
     if (currentProperty != NULL)
@@ -1181,7 +1204,13 @@ QString LuxProcessMaterial(DzMaterial *material, QString &mesg, QString matLabel
         if ( (opacity_value != 1) || (opacity_mapfile != "") )
             opacity_exists = true;
     }
-    
+    currentProperty = material->findProperty("Glossiness");
+    if (currentProperty != NULL)
+    {
+        uroughness = 1 - ((DzFloatProperty*)currentProperty)->getValue();
+        vroughness = uroughness;
+    }
+
     // Diffuse Texture Block
     if ( diffuse_exists )
         ret_str += GenerateTextureBlock(matLabel + ".diffuse_color", "color", diffuse_mapfile, 
@@ -1191,11 +1220,35 @@ QString LuxProcessMaterial(DzMaterial *material, QString &mesg, QString matLabel
     
     // Specular Block
     if (spec_exists)
+    {
         ret_str += GenerateTextureBlock(matLabel + ".specular_color", "color", spec_mapfile, 
-                                        QString("%1 %2 %3").arg(spec_value.redF()*diffuse_value.redF()).arg(spec_value.greenF()*diffuse_value.greenF()).arg(spec_value.blueF()*diffuse_value.blueF()),
+                                        QString("%1 %2 %3").arg(spec_value.redF()).arg(spec_value.greenF()).arg(spec_value.blueF()),
                                         spec_uscale, spec_vscale, spec_uoffset, spec_voffset, spec_gamma,
                                         spec_wrap, spec_filtertype, spec_channel);
-    
+
+        switch (YaLuxGlobal.specularMode)
+        {
+        case 0: // 90% Diffuse + 10% Specular
+            ret_str += MixTextures(matLabel+".specular_mix", matLabel+".diffuse_color", matLabel+".specular_color", "color", "\"float amount\" [0.1]");
+            break;
+        case 1: // Specular * Glossiness
+            ret_str += ScaleTexture(matLabel+".specular_mix", matLabel+".specular_color", QString("%1 %1 %1").arg(1-uroughness), "color");
+            break;
+        case 2: // (75% Diffuse + 25% Specular) * Glossiness
+            ret_str += MixTextures(matLabel+".specular_mix1", matLabel+".diffuse_color", matLabel+".specular_color", "color", "\"float amount\" [0.25]");
+            ret_str += ScaleTexture(matLabel+".specular_mix", matLabel+".specular_mix1", QString("%1 %1 %1").arg(1-uroughness), "color");
+            break;
+        case 3: // 10% Specular
+            ret_str += ScaleTexture(matLabel+".specular_mix", matLabel+".specular_color", "0.1 0.1 0.1", "color");
+            break;
+        case 4: // Full Specular
+            ret_str += ScaleTexture(matLabel+".specular_mix", matLabel+".specular_color", "1 1 1", "color");
+            break;
+        }
+
+
+    }
+
     // Bumpmap Block
     if (bump_exists)
         ret_str += GenerateTextureBlock(matLabel + ".bump_texture", "float", bump_mapfile, QString("%1").arg(bump_value),
@@ -1216,7 +1269,7 @@ QString LuxProcessMaterial(DzMaterial *material, QString &mesg, QString matLabel
         ret_str += QString("\t\"string type\" [\"%1\"]\n").arg("glossy");
         if (bump_exists) ret_str += QString("\t\"texture bumpmap\" [\"%1\"]\n").arg(matLabel + ".bump_texture");
         if (diffuse_exists) ret_str += QString("\t\"texture Kd\" [\"%1\"]\n").arg(matLabel + ".diffuse_color");
-        if (spec_exists) ret_str += QString("\t\"texture Ks\" [\"%1\"]\n").arg(matLabel + ".specular_color");
+        if (spec_exists) ret_str += QString("\t\"texture Ks\" [\"%1\"]\n").arg(matLabel + ".specular_mix");
         ret_str += QString("\t\"float uroughness\" [%1]\n").arg(uroughness);
         ret_str += QString("\t\"float vroughness\" [%1]\n").arg(vroughness);
         ret_str += QString("\t\"float index\" [%1]\n").arg(index_refraction);
@@ -1228,7 +1281,7 @@ QString LuxProcessMaterial(DzMaterial *material, QString &mesg, QString matLabel
         ret_str += QString("\t\"string type\" [\"%1\"]\n").arg("glossy");
         if (bump_exists) ret_str += QString("\t\"texture bumpmap\" [\"%1\"]\n").arg(matLabel + ".bump_texture");
         if (diffuse_exists) ret_str += QString("\t\"texture Kd\" [\"%1\"]\n").arg(matLabel + ".diffuse_color");
-        if (spec_exists) ret_str += QString("\t\"texture Ks\" [\"%1\"]\n").arg(matLabel + ".specular_color");
+        if (spec_exists) ret_str += QString("\t\"texture Ks\" [\"%1\"]\n").arg(matLabel + ".specular_mix");
         ret_str += QString("\t\"float uroughness\" [%1]\n").arg(uroughness);
         ret_str += QString("\t\"float vroughness\" [%1]\n").arg(vroughness);
         ret_str += QString("\t\"float index\" [%1]\n").arg(index_refraction);
@@ -1343,7 +1396,7 @@ QString LuxProcessObject(DzObject *daz_obj)
 */        
 
         QString plyFileName;
-        if (geo->inherits("DzFacetMesh"))
+        if ( geo->inherits("DzFacetMesh") )
         {
             DazToPLY dzPLYexport((DzFacetMesh *)geo, objMatName, materialList[i]);
             //            plyFileName = dzPLYexport.LuxMakeAsciiPLY();
@@ -1387,12 +1440,104 @@ QString LuxMakeSceneFile(QString fileNameLXS, DzRenderer *r, DzCamera *camera, c
 
     // 1. read render options to set up environment
     YaLuxGlobal.RenderProgress->step();
-    YaLuxGlobal.RenderProgress->setCurrentInfo("LXS write buffer opened.");
+    YaLuxGlobal.RenderProgress->setCurrentInfo("Creating LXS scene file...");
 
     renderImageSize = opt.getImageSize();
     YaLuxGlobal.RenderProgress->step();
     ImgHeight = renderImageSize.height();
     ImgWidth = renderImageSize.width();
+
+
+    QRect cropWindow;
+    cropWindow = YaLuxGlobal.handler->getCropWindow();
+    if ( (cropWindow.top()!= 0) && (cropWindow.bottom()!=1) && (cropWindow.left()!=0) && cropWindow.right()!=1)
+        YaLuxGlobal.bIsSpotRender=true;
+    else
+        YaLuxGlobal.bIsSpotRender=false;
+
+    //////////////////////
+    // Renderer
+    ////////////////////
+    if (YaLuxGlobal.bIsSpotRender)
+    {
+        outLXS.write("\nRenderer \"sampler\"\n");
+    }
+    else
+    {
+        switch (YaLuxGlobal.renderMode)
+        {
+        case 0: // Software
+            mesg = "\nRenderer \"sampler\"\n";
+            break;
+        case 1: // Hybrid
+                mesg = "\nRenderer \"hybrid\"\n";
+                mesg += "\t\"string localconfigfile\" [\"local.cfg\"]\n";
+                break;
+        case 2: // OpenCL GPU only
+            mesg = "\nRenderer \"slg\"\n";
+            mesg += QString("\t\"string config\" [\"renderengine.type = %1\" \"opencl.cpu.use = 0\" \"opencl.kernelcache = %2\"]\n").arg("PATHOCL").arg("PERSISTENT");
+            break;
+        case 3: // OpenCL CPU only
+            mesg = "\nRenderer \"slg\"\n";
+            mesg += QString("\t\"string config\" [\"renderengine.type = %1\" \"opencl.gpu.use = 0\" \"opencl.kernelcache = %2\"]\n").arg("PATHOCL").arg("PERSISTENT");
+            break;
+        case 4: // OpenCL GPU+CPU
+            mesg = "\nRenderer \"slg\"\n";
+            mesg += QString("\t\"string config\" [\"renderengine.type = %1\" \"opencl.cpu.use = 1\" \"opencl.gpu.use = 1\" \"opencl.kernelcache = %2\"]\n").arg("PATHOCL").arg("PERSISTENT");
+            break;
+        case 5: // custom
+            mesg = "\n" + YaLuxGlobal.customRenderString + "\n";
+            break;
+        }
+        outLXS.write(mesg);
+    }
+
+
+    ///////////////////////////
+    // Fleximage Film settings
+    //////////////////////////
+    outLXS.write("\n");
+    outLXS.write(LXSfilm.join(""));
+
+    QString colorChannels;
+    if (YaLuxGlobal.bSaveAlphaChannel)
+        colorChannels = "RGBA";
+    else
+        colorChannels = "RGB";
+    outLXS.write( QString("\t\"string write_png_channels\"\t[\"%1\"]\n").arg(colorChannels) );
+    //    outLXS.write( QString("\t\"string write_tga_channels\"\t[\"%1\"]\n").arg(colorChannels) );
+    //    outLXS.write( QString("\t\"string write_exr_channels\"\t[\"%1\"]\n").arg(colorChannels) );
+    outLXS.write( QString("\t\"integer haltspp\"\t[%1]\n").arg(YaLuxGlobal.haltAtSamplesPerPixel) );
+    outLXS.write( QString("\t\"integer halttime\"\t[%1]\n").arg(YaLuxGlobal.haltAtTime) );
+    outLXS.write( QString("\t\"float haltthreshold\"\t[%1]\n").arg(1.0-YaLuxGlobal.haltAtThreshold) );
+    outLXS.write( QString("\t\"string tonemapkernel\"\t[\"%1\"]\n").arg(YaLuxGlobal.LuxToneMapper) );
+    if (YaLuxGlobal.LuxToneMapper == "linear")
+    {
+        outLXS.write( QString("\t\"float linear_exposure\"\t[%1]\n").arg(YaLuxGlobal.tonemapExposureTime) );
+        outLXS.write( QString("\t\"float linear_gamma\"\t[%1]\n").arg(YaLuxGlobal.tonemapGamma) );
+        outLXS.write( QString("\t\"float linear_fstop\"\t[%1]\n").arg(YaLuxGlobal.tonemapFstop) );
+        outLXS.write( QString("\t\"float linear_sensitivity\"\t[%1]\n").arg(YaLuxGlobal.tonemapISO) );
+    }
+
+    // Film resolution
+    mesg = QString("\t\"integer xresolution\"\t[%1]\n").arg(ImgWidth);
+    mesg += QString("\t\"integer yresolution\"\t[%1]\n").arg(ImgHeight);
+    cropWindow = YaLuxGlobal.handler->getCropWindow();
+    if ( YaLuxGlobal.bIsSpotRender )
+    {
+        mesg += QString("\t\"float cropwindow\"\t[%1 %2 %3 %4]\n").arg((float)cropWindow.top()/ImgHeight).arg((float)cropWindow.bottom()/ImgHeight).arg((float)cropWindow.left()/ImgWidth).arg((float)cropWindow.right()/ImgWidth);
+    }
+    YaLuxGlobal.cropWindow = cropWindow;
+    outLXS.write(mesg);
+
+    ///////////////////////////////////////////////
+    // Film image filename
+    ///////////////////////////////////////////////
+    mesg = QString("\t\"string filename\"\t[\"%1\"]\n").arg(DzFileIO::getBaseFileName(YaLuxGlobal.workingRenderFilename));
+    outLXS.write(mesg);
+    YaLuxGlobal.RenderProgress->step();
+    //    YaLuxGlobal.RenderProgress->setCurrentInfo(mesg);
+
 
     // sampler settings
     outLXS.write("\n");
@@ -1458,66 +1603,6 @@ QString LuxMakeSceneFile(QString fileNameLXS, DzRenderer *r, DzCamera *camera, c
      */
     outLXS.write(QString("\t\"float screenwindow\"\t[%1 %2 %3 %4]\n").arg(screenWindow[0]).arg(screenWindow[1]).arg(screenWindow[2]).arg(screenWindow[3]));
 
-    // Fleximage Film settings
-    outLXS.write("\n");
-    outLXS.write(LXSfilm.join(""));
-    QString colorChannels;
-    if (YaLuxGlobal.bSaveAlphaChannel)
-        colorChannels = "RGBA";
-    else
-        colorChannels = "RGB";
-    outLXS.write( QString("\t\"string write_png_channels\"\t[\"%1\"]\n").arg(colorChannels) );
-    outLXS.write( QString("\t\"string write_tga_channels\"\t[\"%1\"]\n").arg(colorChannels) );
-    outLXS.write( QString("\t\"string write_exr_channels\"\t[\"%1\"]\n").arg(colorChannels) );
-    outLXS.write( QString("\t\"integer haltspp\"\t[%1]\n").arg(YaLuxGlobal.haltAtSamplesPerPixel) );
-    outLXS.write( QString("\t\"integer halttime\"\t[%1]\n").arg(YaLuxGlobal.haltAtTime) );
-    outLXS.write( QString("\t\"float haltthreshold\"\t[%1]\n").arg(1.0-YaLuxGlobal.haltAtThreshold) );
-    outLXS.write( QString("\t\"string tonemapkernel\"\t[\"%1\"]\n").arg(YaLuxGlobal.LuxToneMapper) );
-    if (YaLuxGlobal.LuxToneMapper == "linear")
-    {
-        outLXS.write( QString("\t\"float linear_exposure\"\t[%1]\n").arg(YaLuxGlobal.tonemapExposureTime) );
-        outLXS.write( QString("\t\"float linear_gamma\"\t[%1]\n").arg(YaLuxGlobal.tonemapGamma) );
-        outLXS.write( QString("\t\"float linear_fstop\"\t[%1]\n").arg(YaLuxGlobal.tonemapFstop) );
-        outLXS.write( QString("\t\"float linear_sensitivity\"\t[%1]\n").arg(YaLuxGlobal.tonemapISO) );
-    }
-
-    // Film resolution
-    QRect cropWindow;
-    mesg = QString("\t\"integer xresolution\"\t[%1]\n").arg(ImgWidth);
-    mesg += QString("\t\"integer yresolution\"\t[%1]\n").arg(ImgHeight);
-    cropWindow = YaLuxGlobal.handler->getCropWindow();
-    if ( (cropWindow.top()!= 0) && (cropWindow.bottom()!=1) && (cropWindow.left()!=0) && cropWindow.right()!=1)
-    {
-        mesg += QString("\t\"float cropwindow\"\t[%1 %2 %3 %4]\n").arg((float)cropWindow.top()/ImgHeight).arg((float)cropWindow.bottom()/ImgHeight).arg((float)cropWindow.left()/ImgWidth).arg((float)cropWindow.right()/ImgWidth);
-        YaLuxGlobal.bIsSpotRender=true;
-    }
-    else
-        YaLuxGlobal.bIsSpotRender=false;
-    YaLuxGlobal.cropWindow = cropWindow;
-    outLXS.write(mesg);
-    mesg = QString("Size is %1 x %2").arg(ImgWidth).arg(ImgHeight);
-    YaLuxGlobal.RenderProgress->step();
-    YaLuxGlobal.RenderProgress->setCurrentInfo(mesg);
-
-
-
-    ///////////////////////////////////////////////
-    // Film image filename
-    ///////////////////////////////////////////////
-    mesg = QString("\t\"string filename\"\t[\"%1\"]\n").arg(DzFileIO::getBaseFileName(YaLuxGlobal.workingRenderFilename));
-    outLXS.write(mesg);
-    YaLuxGlobal.RenderProgress->step();
-    //    YaLuxGlobal.RenderProgress->setCurrentInfo(mesg);
-
-    // Renderer
-    if (YaLuxGlobal.bIsSpotRender) {
-        outLXS.write("\nRenderer \"sampler\"\n");
-    } else
-    {
-        outLXS.write("\nRenderer \"slg\"\n");
-        mesg = QString("\t\"string config\" [\"renderengine.type = %1\" \"opencl.cpu.use = 0\" \"opencl.kernelcache = %2\"]\n").arg("PATHOCL").arg("PERSISTENT");
-        outLXS.write(mesg);
-    }
 
     // single image
     switch (opt.getRenderImgToId())
@@ -1594,8 +1679,8 @@ QString LuxMakeSceneFile(QString fileNameLXS, DzRenderer *r, DzCamera *camera, c
      */
     DzImageMgr *imageMgr = dzApp->getImageMgr();
 
-    // imageMgr->prepareAllImages(r);
-    emit imageMgr->prepareAllImages(r);
+    imageMgr->prepareAllImages(r);
+    //emit imageMgr->prepareAllImages(r);
 
 
     ///////////////////////////////////////////////
@@ -1615,12 +1700,9 @@ QString LuxMakeSceneFile(QString fileNameLXS, DzRenderer *r, DzCamera *camera, c
         YaLuxGlobal.settings = new DzRenderSettings(r, &opt);
         dzApp->log("yaluxplug: Looking at Node: AssetId=[" + nodeAssetId + QString("] (%1 of %2 Scene Level Nodes)").arg(parentNodeIndex++).arg(dzScene->getNumNodes()) );
 
-        // FINALIZE Node's geometry cache for rendering
-        currentNode->finalize(true,true);
-
         // Node -> Object
         DzObject *currentObject = currentNode->getObject();
-        if (currentObject != NULL)
+        if ( (currentObject != NULL) && (currentNode->isVisible()) )
         {
             if ( currentNode->getLabel().contains("EnvironmentSphere") )
             {
@@ -1631,6 +1713,10 @@ QString LuxMakeSceneFile(QString fileNameLXS, DzRenderer *r, DzCamera *camera, c
                 outLXS.write("\n# AssetId=[" + nodeAssetId +"],nodeLabel=[" + currentNode->getLabel() + "]\n");
                 QString objectLabel = currentObject->getLabel();
 
+                // FINALIZE Node's geometry cache for rendering
+                //currentNode->finalize(true,true);
+                currentObject->finalize(*currentNode, true, true);
+                
                 mesg = LuxProcessObject(currentObject);
                 outLXS.write(mesg);
             }
@@ -1670,8 +1756,11 @@ QString LuxMakeSceneFile(QString fileNameLXS, DzRenderer *r, DzCamera *camera, c
 
 
     outLXS.write("\nWorldEnd\n");
-    
     outLXS.close();
+
+    mesg = "LXS creation complete.";
+    YaLuxGlobal.RenderProgress->step();
+    YaLuxGlobal.RenderProgress->setCurrentInfo(mesg);
 
 
     return "";

@@ -85,6 +85,27 @@ YaLuxOptionsFrame::YaLuxOptionsFrame() : DzOptionsFrame("yaluxplug Options Frame
     argumentList->setLabel("Executable Arguments");
     listView->addProperty(argumentList);
 
+    // Render Mode
+    renderMode = new DzEnumProperty("yalux_render_mode", false, false);
+    renderMode->setLabel("Render Engine");
+    for (i=0; i<renderModeList.count(); i++) {
+        renderMode->addItem(renderModeList[i]);
+    }
+    listView->addProperty(renderMode);
+
+    // Custom Render String
+    customRenderString = new DzStringProperty("yalux_render_custom", false);
+    customRenderString->setLabel("Custom Render String (use Custom Render Engine)");
+    listView->addProperty(customRenderString);
+
+    // Specular Mode
+    specularMode = new DzEnumProperty("yalux_specular_mode", false, false);
+    specularMode->setLabel("Specular Conversion Algorithm");
+    for (i=0; i<specularModeList.count(); i++) {
+        specularMode->addItem(specularModeList[i]);
+    }
+    listView->addProperty(specularMode);
+
     // Show Luxrender window
     showLuxWindow = new DzBoolProperty("yalux_showwindow", true, false, false);
     showLuxWindow->setLabel("Show Luxrender window");
@@ -124,7 +145,7 @@ YaLuxOptionsFrame::YaLuxOptionsFrame() : DzOptionsFrame("yaluxplug Options Frame
     tonemapGamma->setLabel("Linear Tonemapper Gamma");
     tonemapFstop = new DzFloatProperty("yalux_tonemap_fstop", false, false, 2.8);
     tonemapFstop->setLabel("Linear Tonemapper F-stop");
-    tonemapExposureTime = new DzFloatProperty("yalux_tonemap_exposure", false, false, 3);
+    tonemapExposureTime = new DzFloatProperty("yalux_tonemap_exposure", false, false, 1);
     tonemapExposureTime->setLabel("Linear Tonemapper Exposure time (seconds)");
     tonemapISO = new DzIntProperty("yalux_tonemap_iso", false, false, 400);
     tonemapISO->setLabel("Linear Tonemapper ISO");
@@ -162,8 +183,12 @@ void YaLuxOptionsFrame::createDefaultSettings()
     debugLevel->setDefaultValue(0);
     tonemapGamma->setDefaultValue(2.2);
     tonemapFstop->setDefaultValue(2.8);
+    tonemapExposureTime->setDefaultValue(1);
     tonemapISO->setDefaultValue(400);
     toneMapMethod->setDefaultValue(0);
+    renderMode->setDefaultValue(0);
+    specularMode->setDefaultValue(0);
+
 }
 
 ///////////
@@ -187,6 +212,9 @@ void	YaLuxOptionsFrame::loadSettings()
         tonemapISO->setValue( settings->getIntValue( tonemapISO->getName()) );
         toneMapMethod->setValue( settings->getIntValue( toneMapMethod->getName()) );
         renderServerList->setValue( settings->getStringValue( renderServerList->getName()) );
+        renderMode->setValue( settings->getIntValue( renderMode->getName()) );
+        customRenderString->setValue( settings->getStringValue( customRenderString->getName()) );
+        specularMode->setValue( settings->getIntValue( specularMode->getName()) );
     }
 }
 
@@ -209,6 +237,9 @@ void	YaLuxOptionsFrame::saveSettings()
     settings->setIntValue(tonemapISO->getName(), tonemapISO->getValue());
     settings->setIntValue(toneMapMethod->getName(), toneMapMethod->getValue());
     settings->setStringValue(renderServerList->getName(), renderServerList->getValue());
+    settings->setIntValue(renderMode->getName(), renderMode->getValue());
+    settings->setStringValue(customRenderString->getName(), customRenderString->getValue());
+    settings->setIntValue(specularMode->getName(), specularMode->getValue());
 
     settings->setBoolValue("yalux_savedsettings_exist", true);
 
@@ -238,6 +269,9 @@ void	YaLuxOptionsFrame::applyChanges()
     YaLuxGlobal.tonemapISO = tonemapISO->getValue();
     YaLuxGlobal.LuxToneMapper = toneMapMethod->getStringValue();
     YaLuxGlobal.slaveNodeList = renderServerList->getValue().split(",");
+    YaLuxGlobal.renderMode = renderMode->getValue();
+    YaLuxGlobal.customRenderString = customRenderString->getValue();
+    YaLuxGlobal.specularMode = specularMode->getValue();
 
     // DEBUG - find a place for this
     saveSettings();
