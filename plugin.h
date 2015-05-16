@@ -24,11 +24,19 @@
 #include "utility_classes.h"
 
 class QTextEdit;
+class QTemporaryFile;
 
 struct G
 {
+    DzRenderHandler *handler; // is only alive during render() function
+    DzRenderSettings *settings; // used when calling node->render
+    DzRenderOptions options;
+
     DzOptionsFrame *optFrame;
+    QFrame *logWindow;
+    QTextEdit *logText;
     DzProgress *RenderProgress;
+
     DzNode *currentNode;
     bool inProgress;
     int totalFrames;
@@ -39,9 +47,7 @@ struct G
     bool bIsSpotRender;
     QRect cropWindow;
 
-    DzRenderHandler *handler; // is only alive during render() function
-    DzRenderSettings *settings; // used when calling node->render
-    DzRenderOptions options;
+    QList<QTemporaryFile*> PLYgarbageCollectionList;
 
     QString LuxExecPath;
     QString CmdLineArgs;
@@ -61,18 +67,18 @@ struct G
     int renderMode;
     QString customRenderString;
 
-    QFrame *logWindow;
-    QTextEdit *logText;
-
     QString cachePath;
     QString tempPath;
     QString tempFilenameBase;
     QString workingRenderFilename;
-    QStringList tokenList;
-    DzTokenBuffer tokenBuffer;
+
     QProcess *luxRenderProc;
     bool bRenderisFinished;
     int tempCounter;
+
+    QStringList tokenList;
+    DzTokenBuffer tokenBuffer;
+
 };
 
 extern struct G YaLuxGlobal;

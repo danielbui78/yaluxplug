@@ -267,6 +267,22 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
         dzApp->log( mesg );
         YaLuxGlobal.RenderProgress->setCurrentInfo(mesg);
 
+        ////////////////////////
+        // manage PLYgarbageCollectionList:
+        //   If this is a single frame render, then keep the PLYs in the temp
+        //      directory so that the LXS file can be run manually if desired.
+        //   If this is a multiframe render, then delete the PLYs in the temp
+        //      directory so that we don't run out of harddisk space if rendering
+        //      infinite frames or something.
+        ////////////////////////
+        while ( YaLuxGlobal.PLYgarbageCollectionList.count() > 0)
+        {
+            QTemporaryFile *file = YaLuxGlobal.PLYgarbageCollectionList.last();
+            file->setAutoRemove(bIsAnimation);
+            delete file;
+            YaLuxGlobal.PLYgarbageCollectionList.removeLast();
+        }
+
         dzScene->setFrame(YaLuxGlobal.activeFrame);
         LuxMakeSceneFile(fullPathFileNameLXS, this, camera, opt);
 

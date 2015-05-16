@@ -1409,7 +1409,7 @@ QString LuxProcessObject(DzObject *daz_obj)
             // add in reference to plyFileName
             attributeblock += "Shape \"plymesh\"\n";
             attributeblock += QString("\t\"string filename\" [\"%1\"]\n").arg(plyFileName);
-            
+
             attributeblock += "AttributeEnd\n\n";
         } else {
             // no shapes to render for this material, just scrap this attribute block and move on
