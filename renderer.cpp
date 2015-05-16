@@ -130,7 +130,7 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
     QString fullPathFileNameLXS;
     QString fullPathTempFileNameNoExt;
     QString tempPath;
-    int steps = 10;
+    int steps = 100;
     bool bIsAnimation=false;
     DzTimeRange timeRenderingRange;
 
@@ -172,7 +172,6 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
         YaLuxGlobal.totalFrames = nFramesToRender;
         if (nFramesToRender > 1)
             bIsAnimation = true;
-        YaLuxGlobal.RenderProgress->step();
         mesg = QString("Preparing to render: %1 to %2 (%3 frames)\n").arg(timeRenderingRange.getStart()).arg(timeRenderingRange.getEnd()).arg(nFramesToRender);
         YaLuxGlobal.RenderProgress->setCurrentInfo(mesg);
     } else {
@@ -233,6 +232,10 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
         }
     }
     QStringList userargs = YaLuxGlobal.CmdLineArgs.split(" ");
+    for (int i=0; i<YaLuxGlobal.slaveNodeList.count(); i++)
+    {
+        userargs << QString("-u%1").arg(YaLuxGlobal.slaveNodeList[i]);
+    }
     QStringList args = QStringList() << "-l" << userargs << fullPathFileNameLXS;
     //DEBUG
     dzApp->log( args.join(","));
@@ -297,6 +300,10 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
         process->start(file, args);
         process->waitForStarted();
 
+        mesg = "luxrender process started...";
+        YaLuxGlobal.RenderProgress->setCurrentInfo(mesg);
+        YaLuxGlobal.RenderProgress->update( 10 + (YaLuxGlobal.frame_counter/(YaLuxGlobal.totalFrames + 10)*90) );
+
 //        tmr.start(1000);
         handler->beginFrame(YaLuxGlobal.frame_counter);
         YaLuxGlobal.bRenderisFinished = false;
@@ -313,7 +320,8 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
             // DEBUG
             if ( (process->state() != QProcess::Running) || (YaLuxGlobal.RenderProgress->isCancelled() == true) )
             {
-                dzApp->log("yaluxplug: Renderer - time to break;");
+                if (YaLuxGlobal.debugLevel >= 3)
+                    dzApp->log("yaluxplug: Rendering, progress exited or cancelled.");
                 YaLuxGlobal.luxRenderProc->terminate();
                 break;
             } else
@@ -368,6 +376,10 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
             break;
         YaLuxGlobal.frame_counter++;
         YaLuxGlobal.activeFrame++;
+
+        mesg = "Frame completed.";
+        YaLuxGlobal.RenderProgress->setCurrentInfo(mesg);
+        YaLuxGlobal.RenderProgress->update( 10 + (YaLuxGlobal.frame_counter/(YaLuxGlobal.totalFrames + 10)*90) );
 
     }
 

@@ -268,7 +268,7 @@ void	YaLuxOptionsFrame::applyChanges()
     YaLuxGlobal.tonemapExposureTime = tonemapExposureTime->getValue();
     YaLuxGlobal.tonemapISO = tonemapISO->getValue();
     YaLuxGlobal.LuxToneMapper = toneMapMethod->getStringValue();
-    YaLuxGlobal.slaveNodeList = renderServerList->getValue().split(",");
+    YaLuxGlobal.slaveNodeList = renderServerList->getValue().replace(" ",",").split(",", QString::SkipEmptyParts);
     YaLuxGlobal.renderMode = renderMode->getValue();
     YaLuxGlobal.customRenderString = customRenderString->getValue();
     YaLuxGlobal.specularMode = specularMode->getValue();

@@ -298,14 +298,14 @@ QString DazToPLY::LuxMakeBinPLY()
     numVerts = ply_vertexElList.count();
     numFaces = ply_faceElList.count();
     
-    // create resource directory if doesn't exist
-    DzFileIO::pathExists(YaLuxGlobal.tempPath + "/" + YaLuxGlobal.tempFilenameBase + "-ply", true);
+    // create ply directory if doesn't exist
+//    DzFileIO::pathExists(YaLuxGlobal.tempPath + "/" + YaLuxGlobal.tempFilenameBase + "-ply", true);
     //    DzFileIO::pathExists(YaLuxGlobal.pathTempName + "-resource", true);
     // open meshName.ply for writing inside resource directory
     //    QString tempname = dzApp->getTempFilename();
 //    filenamePLY = QString("%1.%2.ply").arg(YaLuxGlobal.tempCounter++).arg(objMatName);
     // XXXXXX is used to generate numbers by the QTemproraryFile
-    filenamePLY = QString("XXXXXX_%1.ply").arg(objMatName);
+    filenamePLY = QString("%1_XXXXXX.ply").arg(objMatName);
     filenamePLY = DzFileIO::fixName(filenamePLY);
     //DEBUG
     if (YaLuxGlobal.debugLevel >= 3)
@@ -313,7 +313,8 @@ QString DazToPLY::LuxMakeBinPLY()
         dzApp->log("yaluxplug: filenamePLY = [" + filenamePLY + "]");
         dzApp->log("yaluxplug: YaLuxGlobal.pathTempName = [" + YaLuxGlobal.tempPath + "]");
     }
-    filenamePLY = QString("%1/%2-ply/%3").arg(YaLuxGlobal.tempPath).arg(YaLuxGlobal.tempFilenameBase).arg(filenamePLY);
+//    filenamePLY = QString("%1/%2-ply/%3").arg(YaLuxGlobal.tempPath).arg(YaLuxGlobal.tempFilenameBase).arg(filenamePLY);
+    filenamePLY = QString("%1/%2_%3").arg(YaLuxGlobal.tempPath).arg(YaLuxGlobal.tempFilenameBase).arg(filenamePLY);
     //    dzApp->log( QString("meshname = [%1]. filename = [%2]\n").arg(objMatName).arg(filenamePLY) );
     if (YaLuxGlobal.debugLevel >= 3)
         dzApp->log("yaluxplug: creating PLY file: " + filenamePLY);
@@ -406,13 +407,13 @@ QString DazToPLY::LuxMakeAsciiPLY()
     numVerts = ply_vertexElList.count();
     numFaces = ply_faceElList.count();
     
-    // create resource directory if doesn't exist
-    DzFileIO::pathExists(YaLuxGlobal.tempPath + "/" + YaLuxGlobal.tempFilenameBase + "-ply", true);
+    // create ply directory if doesn't exist
+//    DzFileIO::pathExists(YaLuxGlobal.tempPath + "/" + YaLuxGlobal.tempFilenameBase + "-ply", true);
     // open meshName.ply for writing inside resource directory
-    filenamePLY = QString("XXXXXX_%1.ply").arg(objMatName);
+    filenamePLY = QString("%1_XXXXXX.ply").arg(objMatName);
     filenamePLY = DzFileIO::fixName(filenamePLY);
 
-    filenamePLY = QString("$1/%2-ply/%3").arg(YaLuxGlobal.tempPath).arg(YaLuxGlobal.tempFilenameBase).arg(filenamePLY);
+    filenamePLY = QString("$1/%2_%3").arg(YaLuxGlobal.tempPath).arg(YaLuxGlobal.tempFilenameBase).arg(filenamePLY);
     //    dzApp->log( QString("meshname = [%1]. filename = [%2]\n").arg(objMatName).arg(filenamePLY) );
 
     // Use QTemporaryFile instead of QFile, so we can do automatic removal depending on the context
