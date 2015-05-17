@@ -41,6 +41,7 @@
 
 /* Begin PBXFileReference section */
 		771CFF851AFB8CA2007D005A /* log.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = log.txt; path = "../../../../../../../Application Support/DAZ 3D/Studio4 Public Build/log.txt"; sourceTree = BUILT_PRODUCTS_DIR; wrapsLines = 0; };
+		77C860E01B0806130066CB5A /* renderperson.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = renderperson.h; sourceTree = "<group>"; };
 		77FF8AB41AF972FE0074D927 /* libyaluxplug.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libyaluxplug.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		77FF8ABB1AF973410074D927 /* plugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = plugin.h; sourceTree = "<group>"; };
 		77FF8ABD1AF9735B0074D927 /* renderer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = renderer.cpp; sourceTree = "<group>"; };
@@ -79,6 +80,7 @@
 		77FF8AAB1AF972FE0074D927 = {
 			isa = PBXGroup;
 			children = (
+				77C860E01B0806130066CB5A /* renderperson.h */,
 				77FF8ACA1AF9769C0074D927 /* Source */,
 				77FF8AD51AF9770F0074D927 /* External Libraries */,
 				77FF8AB51AF972FE0074D927 /* Products */,

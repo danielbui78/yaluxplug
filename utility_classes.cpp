@@ -436,11 +436,11 @@ QString LuxGetStringProperty(DzElement *el, QString propertyName, QString &mesg)
         {
             case 1: // DzStringProperty
                 outstr = ((DzStringProperty*)currentProperty)->getValue();
-                mesg += QString("[\"%1\"]\n").arg(outstr);
+                mesg += QString("string [\"%1\"]\n").arg(outstr);
                 break;
             case 2: // DzBoolProperty
                 nBoolVal = ((DzBoolProperty*)currentProperty)->getValue(dzScene->getTime());
-                mesg += QString("[%1]\n").arg(nBoolVal);
+                mesg += QString("bool [%1]\n").arg(nBoolVal);
                 if ( nBoolVal == 1 )
                     outstr = "true";
                 else
@@ -449,15 +449,15 @@ QString LuxGetStringProperty(DzElement *el, QString propertyName, QString &mesg)
             case 3: // DzColorProperty
                 colorval = ((DzColorProperty*)currentProperty)->getColorValue();
                 outstr = QString("%1 %2 %3").arg(colorval.red() ).arg(colorval.green() ).arg(colorval.blue() );
-                mesg += QString("[R%1 G%2 B%3]\n").arg(colorval.red() ).arg(colorval.green() ).arg(colorval.blue() );
+                mesg += QString("color [R%1 G%2 B%3]\n").arg(colorval.red() ).arg(colorval.green() ).arg(colorval.blue() );
                 break;
             case 4: // DzFloatProperty
                 outstr = QString("%1").arg( ((DzFloatProperty*)currentProperty)->getValue() );
-                mesg += QString("[%1]\n").arg(outstr);
+                mesg += QString("float [%1]\n").arg(outstr);
                 break;
             case 5: // DzIntProperty
                 outstr = QString("%1").arg( ((DzIntProperty*)currentProperty)->getValue() );
-                mesg += QString("[%1]\n").arg( outstr);
+                mesg += QString("int [%1]\n").arg( outstr);
                 break;
             case 6: // DzNodeProperty
                 outstr = "";
@@ -518,15 +518,16 @@ bool LuxGetIntProperty(DzElement *el, QString propertyName, int &prop_val, QStri
         nClassType = whichClass(currentProperty,classNamesProperties);
         switch (nClassType)
         {
-            case 4: // DzIntProperty
+            case 5: // DzIntProperty
                 prop_val = ((DzIntProperty*)currentProperty)->getValue();
                 retval=true;
                 break;
             case 1: // DzStringProperty
-            case 2: // DzColorProperty
-            case 3: // DzFloatProperty
-            case 5: // DzNodeProperty
-            case 6: // DzImageProperty
+            case 2: // DzBoolProperty
+            case 3: // DzColorProperty
+            case 4: // DzFloatProperty
+            case 6: // DzNodeProperty
+            case 7: // DzImageProperty
             default:;
                 // none of the above
         }
@@ -544,6 +545,9 @@ QString LuxProcessLight(DzLight *currentLight, QString &mesg)
     QString lightLabel, lightAssetId;
     DzVec3 lightVector;
     DzVec3 lightPos;
+
+    if (currentLight->isVisible() == false)
+        return "";
 
     lightLabel = currentLight->getLabel();
     lightAssetId = currentLight->getAssetId();
@@ -564,6 +568,14 @@ QString LuxProcessLight(DzLight *currentLight, QString &mesg)
                 outstr += QString("\t\"integer nsamples\"\t[%1]\n").arg( LuxGetStringProperty(currentLight, "LuxRender_light_sky2_nsamples", mesg));
                 outstr += QString("\t\"float turbidity\"\t[%1]\n").arg( LuxGetStringProperty(currentLight, "LuxRender_light_sky2_turbidity", mesg));
                 break;
+            case 8: // Sun
+                outstr += "LightSource \"sun\"\n";
+                outstr += QString("\t\"vector sundir\"\t[%1 %2 %3]\n").arg(-lightVector.m_x).arg(lightVector.m_z).arg(-lightVector.m_y);
+                outstr += QString("\t\"float gain\"\t[%1]\n").arg( LuxGetStringProperty(currentLight, "LuxRender_light_sun_gain", mesg));
+                outstr += QString("\t\"integer nsamples\"\t[%1]\n").arg( LuxGetStringProperty(currentLight, "LuxRender_light_sun_nsamples", mesg));
+                outstr += QString("\t\"float turbidity\"\t[%1]\n").arg( LuxGetStringProperty(currentLight, "LuxRender_light_sun_turbidity", mesg));
+                outstr += QString("\t\"float relsize\"\t[%1]\n").arg( LuxGetStringProperty(currentLight, "LuxRender_light_sun_relsize", mesg));
+                break;
             case 9: // Sun & sky2
                 outstr += "LightSource \"sun\"\n";
                 outstr += QString("\t\"vector sundir\"\t[%1 %2 %3]\n").arg(-lightVector.m_x).arg(lightVector.m_z).arg(-lightVector.m_y);
@@ -578,16 +590,21 @@ QString LuxProcessLight(DzLight *currentLight, QString &mesg)
                 outstr += QString("\t\"float turbidity\"\t[%1]\n").arg( LuxGetStringProperty(currentLight, "LuxRender_light_sky2_turbidity", mesg));
                 break;
             default:
-                outstr += "";
+                // not implemented, reset the string and break out to continue the normal pathway
+                outstr = "";
+                break;
                 //add area light source reference line
         }
-        outstr += QString("\t\"float importance\"\t[%1]\n").arg( LuxGetStringProperty(currentLight, "LuxRender_light_importance", mesg));
-        outstr += QString("%1\n").arg( LuxGetStringProperty(currentLight, "LuxRender_light_extrasettings", mesg));
-        outstr += "\nAttributeEnd\n";
-
-        YaLuxGlobal.bDefaultLightsOn = false;
-        // don't need to continue
-        return outstr;
+        // If the Lux_light_type was implemented, then this string has not been reset. Finish up and return str
+        if (outstr != "" )
+        {
+            outstr += QString("\t\"float importance\"\t[%1]\n").arg( LuxGetStringProperty(currentLight, "LuxRender_light_importance", mesg));
+            outstr += QString("%1\n").arg( LuxGetStringProperty(currentLight, "LuxRender_light_extrasettings", mesg));
+            outstr += "\nAttributeEnd\n";
+            YaLuxGlobal.bDefaultLightsOn = false;
+            // don't need to continue
+            return outstr;
+        }
     }
 
 
@@ -630,7 +647,18 @@ QString LuxProcessLight(DzLight *currentLight, QString &mesg)
         outstr += QString("\t\"float gain\"\t[%1]\n").arg(0.0005 * ((DzDistantLight*)currentLight)->getIntensity() );
         YaLuxGlobal.bDefaultLightsOn = false;
     }
-    if ( !(lightLabel.contains("Sun")) && !(lightLabel.contains("Sky")) )
+    if (lightLabel.contains("Infinite"))
+    {
+        outstr += "LightSource \"infinite\"\n";
+        QColor lightColor = currentLight->getDiffuseColor();
+        outstr += QString("\t\"color L\"\t[%1 %2 %3]\n").arg(lightColor.redF()).arg(lightColor.greenF()).arg(lightColor.blueF());
+        // TODO: implement HDRI map
+//        QString mapname = propertyNumericImagetoString(...);
+//        outstr += QString("\t\"string mapname\"\t[\"%1\"]\n").arg(mapname);
+        outstr += QString("\t\"float gain\"\t[%1]\n").arg( ((DzDistantLight*)currentLight)->getIntensity() );
+        YaLuxGlobal.bDefaultLightsOn = false;
+    }
+    if ( !(lightLabel.contains("Sun")) && !(lightLabel.contains("Sky")) && !(lightLabel.contains("Infinite")) )
     {
         YaLuxGlobal.bDefaultLightsOn = false;
         // convert everything else to a mesh light

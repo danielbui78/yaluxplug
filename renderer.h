@@ -398,6 +398,7 @@ public:
     void                    handlePrepareImageComplete(  WorkerPrepareImage *worker, const DzTexture *img, const QString &filename );
     void                    handleRenderProcessComplete( int exitCode, QProcess::ExitStatus status );
     void                    updateData();
+    void                    handleRenderProcessStateChange( QProcess::ProcessState newstate );
 
     
 public:

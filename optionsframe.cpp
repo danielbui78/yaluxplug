@@ -145,9 +145,9 @@ YaLuxOptionsFrame::YaLuxOptionsFrame() : DzOptionsFrame("yaluxplug Options Frame
     tonemapGamma->setLabel("Linear Tonemapper Gamma");
     tonemapFstop = new DzFloatProperty("yalux_tonemap_fstop", false, false, 2.8);
     tonemapFstop->setLabel("Linear Tonemapper F-stop");
-    tonemapExposureTime = new DzFloatProperty("yalux_tonemap_exposure", false, false, 1);
+    tonemapExposureTime = new DzFloatProperty("yalux_tonemap_exposure", false, false, 0.5);
     tonemapExposureTime->setLabel("Linear Tonemapper Exposure time (seconds)");
-    tonemapISO = new DzIntProperty("yalux_tonemap_iso", false, false, 400);
+    tonemapISO = new DzIntProperty("yalux_tonemap_iso", false, false, 200);
     tonemapISO->setLabel("Linear Tonemapper ISO");
     listView->addProperty(toneMapMethod);
     listView->addProperty(tonemapGamma);
@@ -183,8 +183,8 @@ void YaLuxOptionsFrame::createDefaultSettings()
     debugLevel->setDefaultValue(0);
     tonemapGamma->setDefaultValue(2.2);
     tonemapFstop->setDefaultValue(2.8);
-    tonemapExposureTime->setDefaultValue(1);
-    tonemapISO->setDefaultValue(400);
+    tonemapExposureTime->setDefaultValue(0.5);
+    tonemapISO->setDefaultValue(200);
     toneMapMethod->setDefaultValue(0);
     renderMode->setDefaultValue(0);
     specularMode->setDefaultValue(0);
