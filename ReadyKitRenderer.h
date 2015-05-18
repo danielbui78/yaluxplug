@@ -1,38 +1,94 @@
 //
 //  ReadyKitRenderer.h
-//  ReadyKitRenderer
+//  yaluxplug
 //
-//  Created by Daniel Bui on 5/16/15.
+//  Created by Daniel Bui on 5/17/15.
 //  Copyright (c) 2015 Daniel Bui. All rights reserved.
 //
 
-#ifndef ReadyKitRenderer_h
-#define ReadyKitRenderer_h
+#ifndef __ReadyKitRenderer__
+#define __ReadyKitRenderer__
 
 
 #include "plugin.h"
 #include "dzrenderer.h"
-#include "dzrenderdata.h"
 #include "dzapp.h"
-#include <QtCore/QStringList>
-#include <QtCore/QProcess>
+
+class DzRenderData;
+class QStringList;
+
+
+////////////////////////
+// RendererGraphicsState
+//      This class will encapsulate all the data and stack functionallity for the graphics state / context.
+//      This class can be subclassed and used to store all the renderer-specific state information.
+//      Terminology:
+//          Options == scene-wide parameters which should not change within a scene
+//          Attributes == parameters which can vary from object to object
+///////////////////////
+class RendererGraphicsState
+{
+public: // methods
+    RendererGraphicsState();
+
+    // placeholder member
+    QString getObjectAttribute();
+
+public: // members
+    QString rendererName;
+    DzRenderOptions *renderOptions;
+    DzOptionsFrame *renderOptionsFrame;
+    DzRenderHandler *activeRenderHandler;
+
+    QFrame *logWindow;
+    QTextEdit *logBuffer;
+    DzProgress *renderProgress;
+    DzProgress *frameProgress;
+
+    // scene-wide render options
+    bool bIsRendering;
+    int totalFrames;
+    int frame_counter;
+    int activeFrame;
+    int endFrame;
+    bool bIsSpotRender;
+    QRect cropWindow;
+
+    // filenames, temporary files
+    QString tempPath; // directory to store all temporary generated files
+    QString imageCachePath; // path to cache the image files that have already been converted to a render engine-specific/compliant format
+    QString sceneFilename;
+    QString temporaryRenderFilename;
+
+    struct ObjectAttributes
+    {
+        DzNode *currentNode;
+        DzShape *currentShape;
+        DzObject *currentObject;
+        DzMaterial *currentMaterial;
+
+        // place holder member
+        QString objectAttribute;
+    };
+    QList<ObjectAttributes> attributeStack;
+
+};
+
 
 class ReadyKitRenderer : public DzRenderer {
     Q_OBJECT
 public:
     ReadyKitRenderer();
 
+    // Each renderer class will have one graphics state.  This will be useful to not only encapsulate graphics-state data, but also
+    // store 
+    RendererGraphicsState *graphicsState;
+
     //////////////////////////
     // RENDERPERSON INTERFACE
     //      The graphics state consists of options, attributes and interface mode.  Options affect the entire scene.  Attributes can
     //      vary between individual objects within a scene.
     /////////////////////////
-
-    class RendererGraphicsState
-    {
-        QString RendererName;
-    };
-
 
 
     ///////////////////////////
@@ -127,7 +183,7 @@ public:
     virtual DtVoid  DiPatchMeshV( DtToken type, DtInt nu, DtToken uwrap, DtInt nv, DtToken vwrap, DtInt n, const DtToken tokens[], DtPointer params[] ) { dzApp->log("ReadyKitRenderer: unimplemented method: DiPatchMeshV( DtToken type, DtInt nu, DtToken uwrap, DtInt nv, DtToken vwrap, DtInt n, const DtToken tokens[], DtPointer params[] )"); }
     virtual DtVoid  DiPointsV( DtInt npts, DtInt n, const DtToken tokens[], DtPointer params[] )    { dzApp->log("ReadyKitRenderer: unimplemented method: DiPointsV( DtInt npts, DtInt n, const DtToken tokens[], DtPointer params[] )"); }
     virtual DtVoid  DiPointsGeneralPolygonsV( DtInt npolys, DtInt *nloops, DtInt *nverts, DtInt *verts, DtInt n, const DtToken tokens[], DtPointer params[] )   { dzApp->log("ReadyKitRenderer: unimplemented method: DiPointsGeneralPolygonsV( DtInt npolys, DtInt *nloops, DtInt *nverts, DtInt *verts, DtInt n, const DtToken tokens[], DtPointer params[] )"); }
-    virtual DtVoid  DiPointsPolygonsV( DtInt npolys, DtInt *nverts, DtInt *verts, DtInt n, const DtToken tokens[], DtPointer params[] ) { dzApp->log("ReadyKitRenderer: unimplemented method: DiPointsPolygonsV( DtInt npolys, DtInt *nverts, DtInt *verts, DtInt n, const DtToken tokens[], DtPointer params[] )");
+    virtual DtVoid  DiPointsPolygonsV( DtInt npolys, DtInt *nverts, DtInt *verts, DtInt n, const DtToken tokens[], DtPointer params[] ) { dzApp->log("ReadyKitRenderer: unimplemented method: DiPointsPolygonsV( DtInt npolys, DtInt *nverts, DtInt *verts, DtInt n, const DtToken tokens[], DtPointer params[] )"); }
     virtual DtVoid  DiPolygonV( DtInt nvertices, DtInt n, const DtToken tokens[], DtPointer params[] )  { dzApp->log("ReadyKitRenderer: unimplemented method: DiPolygonV( DtInt nvertices, DtInt n, const DtToken tokens[], DtPointer params[] )"); }
     virtual DtVoid  DiSphereV( DtFloat radius, DtFloat zmin, DtFloat zmax, DtFloat thetamax, DtInt n, const DtToken tokens[], DtPointer params[] )  { dzApp->log("ReadyKitRenderer: unimplemented method: DiSphereV( DtFloat radius, DtFloat zmin, DtFloat zmax, DtFloat thetamax, DtInt n, const DtToken tokens[], DtPointer params[] )"); }
     virtual DtVoid  DiSubdivisionMeshV( DtToken scheme, DtInt nfaces, DtInt nvertices[], DtInt vertices[], DtInt ntags, const DtToken tags[], DtInt nargs[], DtInt intargs[], DtFloat floatargs[], DtInt n, const DtToken tokens[], DtPointer params[] )    { dzApp->log("ReadyKitRenderer: unimplemented method: DiSubdivisionMeshV( DtToken scheme, DtInt nfaces, DtInt nvertices[], DtInt vertices[], DtInt ntags, const DtToken tags[], DtInt nargs[], DtInt intargs[], DtFloat floatargs[], DtInt n, const DtToken tokens[], DtPointer params[] )"); }
@@ -261,7 +317,7 @@ public:
 public:
 
     virtual DzOptionsFrame* getOptionsFrame() const ;
-    virtual DtFilterFunc    getFilterFunction( DzRenderOptions::PixelFilter filterType ) const  { dzApp->log("ReadyKitRenderer: unimplemented method: getFilterFunction( DzRenderOptions::PixelFilter filterType )");
+    virtual DtFilterFunc    getFilterFunction( DzRenderOptions::PixelFilter filterType ) const  { dzApp->log("ReadyKitRenderer: unimplemented method: getFilterFunction( DzRenderOptions::PixelFilter filterType )"); }
 
 protected:
 
@@ -276,9 +332,8 @@ private:
 
 
 
-    
+
 };
 
 
-
-#endif // ReadyKitRenderer_h
+#endif /* defined(__ReadyKitRenderer__) */
