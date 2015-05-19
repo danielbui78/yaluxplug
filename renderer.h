@@ -11,10 +11,12 @@
 
 #include "plugin.h"
 #include "dzrenderer.h"
-#include "dzrenderdata.h"
 #include "dzapp.h"
-#include <QtCore/QStringList>
-#include <QtCore/QProcess>
+
+class DzRenderData;
+class QStringList;
+class QProcess;
+class QFile;
 
 class YaLuxRender : public DzRenderer {
     Q_OBJECT
@@ -399,7 +401,7 @@ public:
     void                    handleRenderProcessComplete( int exitCode, QProcess::ExitStatus status );
     void                    updateData();
     void                    handleRenderProcessStateChange( QProcess::ProcessState newstate );
-
+    void                    processRenderLog(QProcess *process, QFile &logFile, bool bUpdateRender);
     
 public:
     

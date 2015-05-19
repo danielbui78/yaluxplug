@@ -99,8 +99,10 @@ const QStringList distantLightPlane = QStringList() <<
 "\t\"integer quadindices\" [0 1 2 3]\n";
 
 
-QString LuxProcessObject(DzObject *daz_obj);
-QString LuxProcessMaterial(DzMaterial *material, QString &mesg, QString matLabel);
+QString LuxProcessObject(DzObject *daz_obj, QString &mesg);
+QString LuxProcessGenMaterial(DzMaterial *material, QString &mesg, QString matLabel);
+QString LuxProcessGlossyMaterial(DzMaterial *material, QString &mesg, QString matLabel);
+QString LuxProcessMatteMaterial(DzMaterial *material, QString &mesg, QString matLabel);
 QString LuxProcessProperties(DzElement *el, QString &mesg);
 QString LuxProcessLight(DzLight *currentLight, QString &mesg);
 QString LuxMakeSceneFile(QString filenameLXS, DzRenderer *r, DzCamera *camera, const DzRenderOptions &opt);

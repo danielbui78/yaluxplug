@@ -307,17 +307,17 @@ QString DazToPLY::LuxMakeBinPLY()
     // XXXXXX is used to generate numbers by the QTemproraryFile
     filenamePLY = QString("%1_XXXXXX.ply").arg(objMatName);
     filenamePLY = DzFileIO::fixName(filenamePLY);
-    //DEBUG
-    if (YaLuxGlobal.debugLevel >= 3)
+    //DEBUG: levels 0-2
+    if (YaLuxGlobal.debugLevel >= 3) // verbose debugging data
     {
-        dzApp->log("yaluxplug: filenamePLY = [" + filenamePLY + "]");
-        dzApp->log("yaluxplug: YaLuxGlobal.pathTempName = [" + YaLuxGlobal.tempPath + "]");
+        dzApp->log("yaluxplug: DEBUG2: filenamePLY = [" + filenamePLY + "]");
+        dzApp->log("yaluxplug: DEBUG2: YaLuxGlobal.pathTempName = [" + YaLuxGlobal.tempPath + "]");
     }
 //    filenamePLY = QString("%1/%2-ply/%3").arg(YaLuxGlobal.tempPath).arg(YaLuxGlobal.tempFilenameBase).arg(filenamePLY);
     filenamePLY = QString("%1/%2_%3").arg(YaLuxGlobal.tempPath).arg(YaLuxGlobal.tempFilenameBase).arg(filenamePLY);
     //    dzApp->log( QString("meshname = [%1]. filename = [%2]\n").arg(objMatName).arg(filenamePLY) );
-    if (YaLuxGlobal.debugLevel >= 3)
-        dzApp->log("yaluxplug: creating PLY file: " + filenamePLY);
+    if (YaLuxGlobal.debugLevel >= 2) // debugging data
+        dzApp->log("yaluxplug: DEBUG: creating PLY file: " + filenamePLY);
 
     // Use QTemporaryFile instead of QFile, so we can do automatic removal depending on the context
     // QFile plyOut(filenamePLY);
@@ -371,7 +371,8 @@ QString DazToPLY::LuxMakeBinPLY()
         {
             // DEBUG
             dzApp->log("yaluxplug: ERROR writing faces in ply bin. byteswritten= " + QString("%1").arg(len));
-        }        i++;
+        }
+        i++;
     }
     
     plyOut->close();

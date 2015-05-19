@@ -134,6 +134,7 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
     bool bIsAnimation=false;
     DzTimeRange timeRenderingRange;
 
+    if (YaLuxGlobal.debugLevel >=2) // debugging data
     dzApp->log("\nyaluxplug: render() called.");
 
     YaLuxGlobal.inProgress = true;
@@ -142,8 +143,8 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
 
     YaLuxGlobal.RenderProgress = new DzProgress("yaluxplug Render Started", steps, true, true);
 //    YaLuxGlobal.RenderProgress->setShowTimeElapsed(DI_TRUE);
-//    YaLuxGlobal.RenderProgress->setCloseOnFinish(DI_FALSE);
-//    YaLuxGlobal.RenderProgress->setUseCloseCheckbox(DI_TRUE);
+//    YaLuxGlobal.RenderProgress->setCloseOnFinish(DI_TRUE);
+    YaLuxGlobal.RenderProgress->setUseCloseCheckbox(DI_TRUE);
 
     fullPathTempFileNameNoExt = dzApp->getTempFilename();
     YaLuxGlobal.workingRenderFilename = fullPathTempFileNameNoExt + ".png";
@@ -153,7 +154,8 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
 
     // DEBUG
     mesg = "Writing to LXS file = " + fullPathFileNameLXS;
-    dzApp->log( QString("yaluxplug: pathTempName=[%1], workingRenderFilename=[%2], fileNameLXS=[%3]").arg(YaLuxGlobal.tempPath).arg(YaLuxGlobal.workingRenderFilename).arg(fullPathFileNameLXS) );
+    if (YaLuxGlobal.debugLevel >= 2) // debugging data
+        dzApp->log( QString("yaluxplug: pathTempName=[%1], workingRenderFilename=[%2], fileNameLXS=[%3]").arg(YaLuxGlobal.tempPath).arg(YaLuxGlobal.workingRenderFilename).arg(fullPathFileNameLXS) );
 
     // Get Render Settings
     // time range
@@ -167,7 +169,8 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
         DzTime timeDuration = timeRenderingRange.getDuration();
         int nFramesToRender = (timeDuration / dzScene->getTimeStep() )+1;
         // DEBUG
-        dzApp->log( QString("number of frames to render is %1").arg(nFramesToRender));
+        if (YaLuxGlobal.debugLevel >=1) // user data
+            dzApp->log( QString("number of frames to render is %1").arg(nFramesToRender));
         YaLuxGlobal.endFrame = YaLuxGlobal.activeFrame + nFramesToRender;
         YaLuxGlobal.totalFrames = nFramesToRender;
         if (nFramesToRender > 1)
@@ -240,7 +243,8 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
     }
     QStringList args = QStringList() << "-l" << userargs << fullPathFileNameLXS;
     //DEBUG
-    dzApp->log( args.join(","));
+    if (YaLuxGlobal.debugLevel >=2) // debugging data
+        dzApp->log( QString("yaluxplug: DEBUG: render process argument list = [%1]").arg(args.join(",")) );
 //    args << "-uphenom-ubuntu";
 //    process->start(file, args);
 //    dzApp->log( QString("yaluxplug: SPAWNING: %1 %2").arg(file).arg(args.join(" ")) );
@@ -269,7 +273,8 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
 
         //DEBUG
         mesg = "Preparing new frame:";
-        dzApp->log( mesg );
+        if (YaLuxGlobal.debugLevel >=1) // user info
+            dzApp->log( mesg );
         YaLuxGlobal.RenderProgress->setCurrentInfo(mesg);
 
         ////////////////////////
@@ -299,6 +304,7 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
             YaLuxGlobal.inProgress = false;
             return false;
         }
+        YaLuxGlobal.FrameProgress = new DzProgress("Current Frame Progress", 100);
         process->start(file, args);
         process->waitForStarted();
 
@@ -331,7 +337,7 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
             if ( (processState == QProcess::NotRunning) || (YaLuxGlobal.RenderProgress->isCancelled() == true) )
 //            if ( (YaLuxGlobal.RenderProgress->isCancelled() == true) )
             {
-                if (YaLuxGlobal.debugLevel >= 3)
+                if (YaLuxGlobal.debugLevel >= 2) // debugging data
                     dzApp->log("yaluxplug: Rendering, progress exited or cancelled.");
                 YaLuxGlobal.luxRenderProc->terminate();
                 YaLuxGlobal.bRenderisFinished = true;
@@ -343,46 +349,7 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
 //            process->waitForFinished();
 
 //            process->waitForReadyRead(5000);
-            while (process->canReadLine() )
-            {
-                QByteArray qa = process->readLine();
-
-                if (qa.contains("Writing Tonemapped"))
-                {
-                    updateData();
-                }
-                if (qa.contains("ERROR"))
-                {
-                    QString newInfo = QString( qa.data() );
-                    newInfo = newInfo.replace("\n", "");
-                    YaLuxGlobal.logText->setBold(true);
-                    YaLuxGlobal.logText->setTextColor( QColor(255,0,0) );
-                    YaLuxGlobal.logText->append( newInfo );
-                    YaLuxGlobal.logText->setBold(false);
-                } else if (qa.contains("100% rendering done"))
-                {
-                    QString newInfo = QString( qa.data() );
-                    newInfo = newInfo.replace("\n", "");
-                    YaLuxGlobal.logText->setBold(true);
-                    YaLuxGlobal.logText->setTextColor( QColor(0,255,0) );
-                    YaLuxGlobal.logText->append( newInfo );
-                    YaLuxGlobal.logText->setBold(false);
-                } else if (qa.contains("% T)") || (qa.contains("% Thld)")))
-                {
-                    QString newInfo = QString( qa.data() );
-                    newInfo = newInfo.replace("\n", "");
-                    YaLuxGlobal.logText->setTextColor( QColor(100,200,255) );
-                    YaLuxGlobal.logText->append( newInfo );
-                } else if (qa.contains("INFO"))
-                {
-                    QString newInfo = QString( qa.data() );
-                    newInfo = newInfo.replace("\n", "");
-                    YaLuxGlobal.logText->setTextColor( QColor(255,255,255) );
-                    YaLuxGlobal.logText->append( newInfo );
-                }
-                logFile.write(qa);
-            }
-
+            processRenderLog(process, logFile, true);
 
             QCoreApplication::processEvents(QEventLoop::AllEvents);
 
@@ -399,46 +366,9 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
 //        disconnect(&tmr, SIGNAL(timeout()),
 //                this, SLOT(updateData()) );
 
-        // Process the remainder of the stdoutput to the logfile
-        while (process->canReadLine() )
-        {
-            QByteArray qa = process->readLine();
-
-            if (qa.contains("Writing Tonemapped"))
-            {
-                updateData();
-            }
-            if (qa.contains("ERROR"))
-            {
-            QString newInfo = QString( qa.data() );
-            newInfo = newInfo.replace("\n", "");
-            YaLuxGlobal.logText->setBold(true);
-            YaLuxGlobal.logText->setTextColor( QColor(255,0,0) );
-            YaLuxGlobal.logText->append( newInfo );
-            YaLuxGlobal.logText->setBold(false);
-            } else if (qa.contains("100% rendering done"))
-            {
-                QString newInfo = QString( qa.data() );
-                newInfo = newInfo.replace("\n", "");
-                YaLuxGlobal.logText->setBold(true);
-                YaLuxGlobal.logText->setTextColor( QColor(0,255,0) );
-                YaLuxGlobal.logText->append( newInfo );
-                YaLuxGlobal.logText->setBold(false);
-            } else if (qa.contains("% T)") || (qa.contains("% Thld)")))
-            {
-                QString newInfo = QString( qa.data() );
-                newInfo = newInfo.replace("\n", "");
-                YaLuxGlobal.logText->setTextColor( QColor(100,200,255) );
-                YaLuxGlobal.logText->append( newInfo );
-            } else if (qa.contains("INFO"))
-            {
-                QString newInfo = QString( qa.data() );
-                newInfo = newInfo.replace("\n", "");
-                YaLuxGlobal.logText->setTextColor( QColor(255,255,255) );
-                YaLuxGlobal.logText->append( newInfo );
-            }
-            logFile.write(qa);
-        }
+        // Read the remainder of the stdoutput to the logfile
+        // but don't update the image since this was already done when process sent the finish() signal.
+        processRenderLog(process, logFile, false);
 
 
         if (YaLuxGlobal.RenderProgress->isCancelled() == true)
@@ -452,6 +382,7 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
         YaLuxGlobal.frame_counter++;
         YaLuxGlobal.activeFrame++;
 
+        YaLuxGlobal.FrameProgress->finish();
         mesg = "Frame completed.";
         YaLuxGlobal.RenderProgress->setCurrentInfo(mesg);
         progressFraction = ((float)YaLuxGlobal.frame_counter)/((float)YaLuxGlobal.totalFrames);
@@ -472,6 +403,63 @@ bool YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRen
     logFile.close();
 
     return true;
+}
+
+void YaLuxRender::processRenderLog(QProcess *process, QFile &logFile, bool bUpdateRender)
+{
+
+    // Read the remainder of the stdoutput to the logfile
+    while (process->canReadLine() )
+    {
+        // NOTE: we don't need to process the "writing tonemapped PNG" because a
+        //   final loading of the file was done when the process called the finish() signal.
+        QByteArray qa = process->readLine();
+
+        if (qa.contains("Writing Tonemapped"))
+        {
+            if (bUpdateRender)
+                updateData();
+        }
+        if (qa.contains("ERROR"))
+        {
+            QString newInfo = QString( qa.data() );
+            newInfo = newInfo.replace("\n", "");
+            YaLuxGlobal.logText->setBold(true);
+            YaLuxGlobal.logText->setTextColor( QColor(255,0,0) );
+            YaLuxGlobal.logText->append( newInfo );
+            YaLuxGlobal.logText->setBold(false);
+        } else if (qa.contains("100% rendering done"))
+        {
+            QString newInfo = QString( qa.data() );
+            newInfo = newInfo.replace("\n", "");
+            YaLuxGlobal.logText->setBold(true);
+            YaLuxGlobal.logText->setTextColor( QColor(0,255,0) );
+            YaLuxGlobal.logText->append( newInfo );
+            YaLuxGlobal.logText->setBold(false);
+        } else if ( (qa.contains("% T)") || qa.contains("% Thld)") ) && YaLuxGlobal.debugLevel >= 1)
+        {
+            QString newInfo = QString( qa.data() );
+            newInfo = newInfo.replace("\n", "");
+            YaLuxGlobal.logText->setTextColor( QColor(100,200,255) );
+            YaLuxGlobal.logText->append( newInfo );
+            QRegExp regexp("\\(([\\d]*)% T\\)");
+            if ( regexp.search( QString(qa) ) )
+            {
+                QString percentString = regexp.cap(1);
+//                YaLuxGlobal.FrameProgress->setInfo( QString("Frame render: %1\% completed").arg(percentString));
+                YaLuxGlobal.FrameProgress->update(percentString.toInt());
+            }
+
+        } else if (qa.contains("INFO") && YaLuxGlobal.debugLevel >= 2)
+        {
+            QString newInfo = QString( qa.data() );
+            newInfo = newInfo.replace("\n", "");
+            YaLuxGlobal.logText->setTextColor( QColor(255,255,255) );
+            YaLuxGlobal.logText->append( newInfo );
+        }
+        logFile.write(qa);
+    }
+
 }
 
 void YaLuxRender::updateData()
@@ -502,7 +490,8 @@ void YaLuxRender::updateData()
     qa = imgFile.readAll();
 
     bool notRead = true;
-    while ( qimg->loadFromData(qa) == false)
+    for (int i=0; ( qimg->loadFromData(qa) == false) && i < 2; i++)
+//    if ( qimg->loadFromData(qa) == false)
     {
 #ifdef Q_OS_WIN
         Sleep(uint(timeout));
@@ -510,10 +499,11 @@ void YaLuxRender::updateData()
         nanosleep(&ts, NULL);
 #endif
         imgFile.close();
-        if (imgFile.open(QIODevice::ReadOnly) == false)
-            break;
-        else
+        if (imgFile.open(QIODevice::ReadOnly) == true)
             qa = imgFile.readAll();
+        else
+            if (YaLuxGlobal.debugLevel >= 0)
+                dzApp->log("yaluxplug: ERROR: Unable to update Daz with rendered image from luxrender.");
     }
     data = new DzRenderData(YaLuxGlobal.cropWindow.top(), YaLuxGlobal.cropWindow.left(), qimg->convertToFormat(QImage::Format_ARGB32));
     YaLuxGlobal.handler->passData( (*data) );
@@ -571,7 +561,8 @@ void YaLuxRender::handleRenderProcessComplete( int exitCode, QProcess::ExitStatu
 
 bool YaLuxRender::customRender(DzRenderHandler *handler, DzCamera *camera, DzLightList &lights, DzNodeList &nodes, const DzRenderOptions &opt)
 {
-    dzApp->log("yaluxplug: unimplemented call customRender()");
+    if (YaLuxGlobal.debugLevel >=2) // debugging data
+        dzApp->log("yaluxplug: unimplemented call customRender()");
     
     return true;
 }
@@ -580,7 +571,8 @@ DzOptionsFrame* YaLuxRender::getOptionsFrame() const
 {
     YaLuxGlobal.optFrame = new YaLuxOptionsFrame();
     
-    dzApp->log("yaluxplug: creating options frame");
+    if (YaLuxGlobal.debugLevel >=2) // debugging data
+        dzApp->log("yaluxplug: creating options frame");
     
     return YaLuxGlobal.optFrame;
 }
@@ -588,7 +580,8 @@ DzOptionsFrame* YaLuxRender::getOptionsFrame() const
 DtFilterFunc YaLuxRender::getFilterFunction(DzRenderOptions::PixelFilter filterType) const
 {
     DtFilterFunc fpResult = DI_NULL;
-    dzApp->log("yaluxplug: unimplemented call getFilterFunction()");
+    if (YaLuxGlobal.debugLevel >=2) // debugging data
+        dzApp->log("yaluxplug: unimplemented call getFilterFunction()");
         
     return fpResult;
 }
@@ -628,7 +621,8 @@ void YaLuxRender::prepareImage(const DzTexture *img, const QString &filename)
 
     // otherwise, spawn a thread to do it after loading completed
 
-    dzApp->log("yaluxplug: prepareImage( " + filename + " ) - Starting New Thread" );    
+    if (YaLuxGlobal.debugLevel >=2) // debugging data
+        dzApp->log("yaluxplug: prepareImage( " + filename + " ) - Starting New Thread" );
 //    QThread *thread = new QThread;
     WorkerPrepareImage *worker = new WorkerPrepareImage(img, filename);
     worker->myThread = new QThread;
@@ -658,7 +652,8 @@ void YaLuxRender::handlePrepareImageComplete( WorkerPrepareImage *worker, const 
 QString YaLuxRender::compileShader(const QString &shaderPath)
 {
     QString sResult = shaderPath;
-    dzApp->log("yaluxplug: compiling shader (" + shaderPath + ").");
+    if (YaLuxGlobal.debugLevel >=2) // debugging data
+        dzApp->log("yaluxplug: DEBUG: unimplemented call: compileShader (" + shaderPath + ").");
 
     return sResult;
 };
@@ -666,7 +661,8 @@ QString YaLuxRender::compileShader(const QString &shaderPath)
 QString YaLuxRender::compileShader(const QString &shaderPath, QString &output)
 {
     QString sResult = shaderPath;
-    dzApp->log("yaluxplug: compiling shader (" + shaderPath + ").");
+    if (YaLuxGlobal.debugLevel >=2) // debugging data
+        dzApp->log("yaluxplug: DEBUG: compileshader (" + shaderPath + "," + output +").");
     output = "yaluxplug: compiling shader for " + shaderPath;
     
     return sResult;
@@ -675,14 +671,16 @@ QString YaLuxRender::compileShader(const QString &shaderPath, QString &output)
 DzShaderDescription* YaLuxRender::getShaderInfo(const QString &shaderPath)
 {
     DzShaderDescription* oResult = NULL;
-    dzApp->log("yaluxplug: getShaderInfo called (" + shaderPath + ").");   
+    if (YaLuxGlobal.debugLevel >=2) // debugging data
+        dzApp->log("yaluxplug: DEBUG: getShaderInfo called (" + shaderPath + ").");
     return oResult;
 }
 
 void YaLuxRender::killRender()
 {
     // stop rendering now
-    dzApp->log("yaluxplug: killRender was called.");
+    if (YaLuxGlobal.debugLevel >=2) // debugging data
+        dzApp->log("yaluxplug: killRender was called.");
     // Kill Render process
     YaLuxGlobal.luxRenderProc->kill();
 
@@ -691,32 +689,37 @@ void YaLuxRender::killRender()
 
 bool YaLuxRender::bake( DzRenderHandler *handler, DzCamera *camera, DzLightListIterator &lights, DzNodeListIterator &nodes, const DzBakerOptions &opt )
 {
-    dzApp->log("yaluxplug: unimplemented call bake().");
+    if (YaLuxGlobal.debugLevel >=2) // debugging data
+        dzApp->log("yaluxplug: unimplemented call bake().");
     return false;
 }
 
 bool YaLuxRender::autoBake( DzRenderHandler *handler, DzCamera *camera, DzLightListIterator &lights, DzNodeListIterator &nodes, const DzBakerOptions &opt )
 {
-    dzApp->log("yaluxplug: unimplemented call autoBake();");
+    if (YaLuxGlobal.debugLevel >=2) // debugging data
+        dzApp->log("yaluxplug: unimplemented call autoBake();");
     return false;
 }
 
 void YaLuxRender::stopBaking()
 {
-    dzApp->log("yaluxplug: unimplemented call stopBaking();");
+    if (YaLuxGlobal.debugLevel >=2) // debugging data
+        dzApp->log("yaluxplug: unimplemented call stopBaking();");
     return;
 }
 
 void YaLuxRender::saveBakeImage( const DzBakerOptions &opt, bool wait )
 {
-    dzApp->log("yaluxplug: unimplemented call saveBakeImage()");
+    if (YaLuxGlobal.debugLevel >=2) // debugging data
+        dzApp->log("yaluxplug: unimplemented call saveBakeImage()");
     return;
 }
 
 bool YaLuxRender::textureConvert( DzRenderHandler *handler, DzCamera *camera, const DzTextureConvertorOptions &opt )
 {
     // convert a texture for rendering?
-    dzApp->log("yaluxplug: unimplemented call textureConvert()");
+    if (YaLuxGlobal.debugLevel >=2) // debugging data
+        dzApp->log("yaluxplug: unimplemented call textureConvert()");
 
     return false;
 }    
@@ -728,7 +731,8 @@ bool YaLuxRender::textureConvert( DzRenderHandler *handler, DzCamera *camera, co
 
 QString YaLuxRender::getShaderCompilerPath()
 {
-    dzApp->log("yaluxplug: unimplemented call getShaderCompilerPath()");
+    if (YaLuxGlobal.debugLevel >=2) // debugging data
+        dzApp->log("yaluxplug: unimplemented call getShaderCompilerPath()");
     QString sResult = "";
     
     return sResult;
@@ -737,7 +741,8 @@ QString YaLuxRender::getShaderCompilerPath()
 
 QString YaLuxRender::getTextureUtilityPath()
 {
-    dzApp->log("yaluxplug: unimplemented call getTextureUtilityPath()");
+    if (YaLuxGlobal.debugLevel >=2) // debugging data
+        dzApp->log("yaluxplug: unimplemented call getTextureUtilityPath()");
     QString sResult = "";
     
     return sResult;
@@ -746,14 +751,16 @@ QString YaLuxRender::getTextureUtilityPath()
 
 QStringList YaLuxRender::getShaderSearchPaths() const
 {
-    dzApp->log("yaluxplug: unimplemented call getShaderSearchPaths()");
+    if (YaLuxGlobal.debugLevel >=2) // debugging data
+        dzApp->log("yaluxplug: unimplemented call getShaderSearchPaths()");
     QStringList oResult = QStringList() << "";
     return oResult;
 };
 
 QString YaLuxRender::processShaderName( const QString &shaderName ) const
 {
-    dzApp->log("yaluxplug: unimplemented call processShaderName()");
+    if (YaLuxGlobal.debugLevel >=2) // debugging data
+        dzApp->log("yaluxplug: unimplemented call processShaderName()");
     QString sResult = NULL;
     
     return sResult;
@@ -762,7 +769,8 @@ QString YaLuxRender::processShaderName( const QString &shaderName ) const
 
 QString YaLuxRender::getShaderPath( const QString &shaderName, bool withExtension ) const
 {
-    dzApp->log("yaluxplug: unimplemented call getShaderPath()");
+    if (YaLuxGlobal.debugLevel >=2) // debugging data
+        dzApp->log("yaluxplug: unimplemented call getShaderPath()");
     QString sResult = NULL;
     
     return sResult;
@@ -771,7 +779,8 @@ QString YaLuxRender::getShaderPath( const QString &shaderName, bool withExtensio
 
 QString YaLuxRender::getShaderFileName( const QString &shaderName ) const
 {
-    dzApp->log("yaluxplug: unimplemented call getShaderFileName()");
+    if (YaLuxGlobal.debugLevel >=2) // debugging data
+        dzApp->log("yaluxplug: unimplemented call getShaderFileName()");
     QString sResult = NULL;
     
     return sResult;
@@ -779,7 +788,8 @@ QString YaLuxRender::getShaderFileName( const QString &shaderName ) const
 
 QString YaLuxRender::getShaderExtension() const
 {
-    dzApp->log("yaluxplug: unimplemented call getShaderExtension()");
+    if (YaLuxGlobal.debugLevel >=2) // debugging data
+        dzApp->log("yaluxplug: unimplemented call getShaderExtension()");
     QString sResult = NULL;
     
     return sResult;
@@ -788,13 +798,15 @@ QString YaLuxRender::getShaderExtension() const
 
 bool YaLuxRender::isRendering() const
 {
-    dzApp->log( QString("yaluxplug: call to isRendering() - returning %1").arg(YaLuxGlobal.inProgress) );
+    if (YaLuxGlobal.debugLevel >=2) // debugging data
+        dzApp->log( QString("yaluxplug: call to isRendering() - returning %1").arg(YaLuxGlobal.inProgress) );
     return YaLuxGlobal.inProgress;
 };
 
 QString YaLuxRender::getName() const
 {
-    dzApp->log("yaluxplug: unimplemented call getName()");
+    if (YaLuxGlobal.debugLevel >=2) // debugging data
+        dzApp->log("yaluxplug: unimplemented call getName()");
     QString sResult = "yaluxplug Render";
     
     return sResult;
@@ -803,7 +815,8 @@ QString YaLuxRender::getName() const
 
 DzNode* YaLuxRender::getCurrentNode() const
 {    
-    dzApp->log("yaluxplug: unimplemented call getCurrentNode()");
+    if (YaLuxGlobal.debugLevel >=2) // debugging data
+        dzApp->log("yaluxplug: unimplemented call getCurrentNode()");
     return YaLuxGlobal.currentNode;
 }
 
@@ -815,14 +828,16 @@ DzNode* YaLuxRender::getCurrentNode() const
 DtVoid YaLuxRender::DiBegin(DtToken name)
 {
     // Create new RenderMan rendering context
-    dzApp->log("yaluxplug: DiBegin called ( " + QString(name) + " ).");
+    if (YaLuxGlobal.debugLevel >=2) // debugging data
+        dzApp->log("yaluxplug: DiBegin called ( " + QString(name) + " ).");
     
 };
 
 DtVoid YaLuxRender::DiEnd()
 {
     // Terminate the active rendering context
-    dzApp->log("yaluxplug: DiEnd called.");
+    if (YaLuxGlobal.debugLevel >=2) // debugging data
+        dzApp->log("yaluxplug: DiEnd called.");
     
 };
 
@@ -831,14 +846,16 @@ DtVoid YaLuxRender::DiFrameBegin(DtInt number)
     // Mark beginning of single frame of animated sequence
     // All information that is frame specific should be removed after DiFrameEnd()
     // Not needed for a single image
-    dzApp->log("yaluxplug: DiFrameBegin called ( " + QString(number) + " .");
+    if (YaLuxGlobal.debugLevel >=2) // debugging data
+        dzApp->log("yaluxplug: DiFrameBegin called ( " + QString(number) + " .");
 
 };
 
 DtVoid YaLuxRender::DiFrameEnd()
 {
     // Mark end of single frame of animated sequence
-    dzApp->log("yaluxplug: DiFrameEnd called.");
+    if (YaLuxGlobal.debugLevel >=2) // debugging data
+        dzApp->log("yaluxplug: DiFrameEnd called.");
 
 };
 
@@ -857,7 +874,8 @@ DtToken YaLuxRender::DiDeclare( const char *name, const char *declaration )
     QString newToken = QString(name);
     YaLuxGlobal.tokenList.append(newToken);
     
-    dzApp->log( QString("yaluxplug: DiDeclare( %1, \"%2\" ) == newToken: [%3]").arg(name).arg(declaration).arg((DtToken)newToken.toAscii()) );
+    if (YaLuxGlobal.debugLevel >=2) // debugging data
+        dzApp->log( QString("yaluxplug: DiDeclare( %1, \"%2\" ) == newToken: [%3]").arg(name).arg(declaration).arg((DtToken)newToken.toAscii()) );
     
     return newToken.toAscii();
 };
@@ -866,6 +884,10 @@ DtToken YaLuxRender::DiDeclare( const char *name, const char *declaration )
 DtVoid YaLuxRender::DiAttributeV( DtToken name, DtInt n, const DtToken tokens[], DtPointer params[] )
 {
     int count = 0;
+
+    if (YaLuxGlobal.debugLevel <2) // debugging data
+        return;
+
     while (count < n) {
         QString sToken = QString( (char*)tokens[count] );
         DtPointer ptr = params[count];
@@ -888,13 +910,15 @@ DtVoid YaLuxRender::DiAttributeV( DtToken name, DtInt n, const DtToken tokens[],
         count++;
     }
 
+
 };
 
 
 DtVoid YaLuxRender::DiColor( DtColor Cs )
 { 
     DtFloat *fltArray = Cs;
-    dzApp->log( QString("yaluxplug: DiColor( [%1 %2 %3] )").arg( fltArray[0] ).arg( fltArray[1] ).arg( fltArray[2] ) ); 
+    if (YaLuxGlobal.debugLevel >=2) // debugging data
+        dzApp->log( QString("yaluxplug: DiColor( [%1 %2 %3] )").arg( fltArray[0] ).arg( fltArray[1] ).arg( fltArray[2] ) );
 
 };
 
@@ -902,7 +926,8 @@ DtVoid YaLuxRender::DiColor( DtColor Cs )
 DtVoid YaLuxRender::DiOpacity( DtColor Cs )
 { 
     DtFloat *fltArray = Cs;
-    dzApp->log( QString("yaluxplug: DiOpacity( [%1 %2 %3] )").arg( fltArray[0] ).arg( fltArray[1] ).arg( fltArray[2] ) ); 
+    if (YaLuxGlobal.debugLevel >=2) // debugging data
+        dzApp->log( QString("yaluxplug: DiOpacity( [%1 %2 %3] )").arg( fltArray[0] ).arg( fltArray[1] ).arg( fltArray[2] ) );
    
 };
 
@@ -910,7 +935,8 @@ DtVoid YaLuxRender::DiOpacity( DtColor Cs )
 DtVoid YaLuxRender::DiTransform( DtMatrix transform )
 { 
     DtFloat *mat4 = (DtFloat*)&transform;
-    dzApp->log( QString("yaluxplug: DiTransform( [%1 %2 %3 %4] )").arg(mat4[0]).arg(mat4[1]).arg(mat4[2]).arg(mat4[3]) ); 
+    if (YaLuxGlobal.debugLevel >=2) // debugging data
+        dzApp->log( QString("yaluxplug: DiTransform( [%1 %2 %3 %4] )").arg(mat4[0]).arg(mat4[1]).arg(mat4[2]).arg(mat4[3]) );
 
 };
 
@@ -918,7 +944,10 @@ DtVoid YaLuxRender::DiTransform( DtMatrix transform )
 DtVoid YaLuxRender::DiPointsPolygonsV( DtInt npolys, DtInt *nverts, DtInt *verts,
                                           DtInt n, const DtToken tokens[], DtPointer params[] )
 { 
-    QString mesg = QString("yaluxplug: DiPointsPolygonsV( npolys=%1:\n\tnverts=[").arg(npolys); 
+    if (YaLuxGlobal.debugLevel <2) // debugging data
+        return;
+
+    QString mesg = QString("yaluxplug: DiPointsPolygonsV( npolys=%1:\n\tnverts=[").arg(npolys);
     int count = 0;
     int numVerts = 0;
     while (count < npolys) {
@@ -977,7 +1006,10 @@ DtVoid YaLuxRender::DiHierarchicalSubdivisionMeshV(	DtToken scheme,
 DtVoid YaLuxRender::DiResourceV(DtToken handle, DtToken type,
                                     DtInt n, const DtToken tokens[], DtPointer params[])
 { 
-    dzApp->log( QString("yaluxplug: DiResourceV( handle=\"%1\",\n\ttype=\"%2\",").arg(handle).arg(type) ); 
+    if (YaLuxGlobal.debugLevel <2) // debugging data
+        return;
+
+    dzApp->log( QString("yaluxplug: DiResourceV( handle=\"%1\",\n\ttype=\"%2\",").arg(handle).arg(type) );
     int count = 0;
     while (count < n) {
         QString sToken = QString( (char*)tokens[count] );

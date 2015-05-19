@@ -10,11 +10,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "dazToPLY.cpp"
-            timestampString = "453486607.432059"
+            timestampString = "453746228.222081"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "411"
-            endingLineNumber = "411"
+            startingLineNumber = "412"
+            endingLineNumber = "412"
             landmarkName = "DazToPLY::LuxMakeAsciiPLY()"
             landmarkType = "5">
          </BreakpointContent>
@@ -26,11 +26,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453594454.30041"
+            timestampString = "453760976.536829"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "392"
-            endingLineNumber = "392"
+            startingLineNumber = "359"
+            endingLineNumber = "359"
             landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
             landmarkType = "5">
          </BreakpointContent>
@@ -58,11 +58,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "utility_classes.cpp"
-            timestampString = "453570940.603578"
+            timestampString = "453760381.156709"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1702"
-            endingLineNumber = "1702"
+            startingLineNumber = "2202"
+            endingLineNumber = "2202"
             landmarkName = "LuxMakeSceneFile(QString fileNameLXS, DzRenderer *r, DzCamera *camera, const DzRenderOptions &amp;opt)"
             landmarkType = "7">
          </BreakpointContent>
@@ -74,12 +74,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "utility_classes.cpp"
-            timestampString = "453570940.603578"
+            timestampString = "453760381.156709"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1347"
-            endingLineNumber = "1347"
-            landmarkName = "LuxProcessObject(DzObject *daz_obj)"
+            startingLineNumber = "1832"
+            endingLineNumber = "1832"
+            landmarkName = "LuxProcessObject(DzObject *daz_obj, QString &amp;mesg)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -90,12 +90,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "utility_classes.cpp"
-            timestampString = "453570940.603578"
+            timestampString = "453760381.156709"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1362"
-            endingLineNumber = "1362"
-            landmarkName = "LuxProcessObject(DzObject *daz_obj)"
+            startingLineNumber = "1849"
+            endingLineNumber = "1849"
+            landmarkName = "LuxProcessObject(DzObject *daz_obj, QString &amp;mesg)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -106,12 +106,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "utility_classes.cpp"
-            timestampString = "453570940.603578"
+            timestampString = "453760381.156709"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1369"
-            endingLineNumber = "1369"
-            landmarkName = "LuxProcessObject(DzObject *daz_obj)"
+            startingLineNumber = "1855"
+            endingLineNumber = "1855"
+            landmarkName = "LuxProcessObject(DzObject *daz_obj, QString &amp;mesg)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -122,12 +122,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "utility_classes.cpp"
-            timestampString = "453570940.603578"
+            timestampString = "453760381.156709"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1353"
-            endingLineNumber = "1353"
-            landmarkName = "LuxProcessObject(DzObject *daz_obj)"
+            startingLineNumber = "1838"
+            endingLineNumber = "1838"
+            landmarkName = "LuxProcessObject(DzObject *daz_obj, QString &amp;mesg)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -138,12 +138,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "utility_classes.cpp"
-            timestampString = "453570940.603578"
+            timestampString = "453760381.156709"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1345"
-            endingLineNumber = "1345"
-            landmarkName = "LuxProcessObject(DzObject *daz_obj)"
+            startingLineNumber = "1830"
+            endingLineNumber = "1830"
+            landmarkName = "LuxProcessObject(DzObject *daz_obj, QString &amp;mesg)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -154,11 +154,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453594454.30041"
+            timestampString = "453760976.536829"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "680"
-            endingLineNumber = "680"
+            startingLineNumber = "677"
+            endingLineNumber = "677"
             landmarkName = "YaLuxRender::getShaderInfo(const QString &amp;shaderPath)"
             landmarkType = "5">
          </BreakpointContent>
@@ -170,11 +170,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453594454.30041"
+            timestampString = "453760976.536829"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "655"
-            endingLineNumber = "655"
+            startingLineNumber = "649"
+            endingLineNumber = "649"
             landmarkName = "YaLuxRender::handlePrepareImageComplete( WorkerPrepareImage *worker, const DzTexture *img, const QString &amp;filename)"
             landmarkType = "5">
          </BreakpointContent>
@@ -202,11 +202,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453593292.391368"
+            timestampString = "453760976.536829"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "327"
-            endingLineNumber = "327"
+            startingLineNumber = "333"
+            endingLineNumber = "333"
             landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
             landmarkType = "5">
          </BreakpointContent>
@@ -234,11 +234,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "optionsframe.cpp"
-            timestampString = "453432319.783388"
+            timestampString = "453746228.222081"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "251"
-            endingLineNumber = "251"
+            startingLineNumber = "252"
+            endingLineNumber = "252"
             landmarkName = "YaLuxOptionsFrame::applyChanges()"
             landmarkType = "5">
          </BreakpointContent>
@@ -250,11 +250,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "optionsframe.cpp"
-            timestampString = "453432319.783388"
+            timestampString = "453746228.222081"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "289"
-            endingLineNumber = "289"
+            startingLineNumber = "292"
+            endingLineNumber = "292"
             landmarkName = "YaLuxOptionsFrame::applyValid()"
             landmarkType = "5">
          </BreakpointContent>
@@ -266,7 +266,71 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453512805.142268"
+            timestampString = "453746228.222081"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "213"
+            endingLineNumber = "213"
+            landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "renderer.cpp"
+            timestampString = "453746228.222081"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "262"
+            endingLineNumber = "262"
+            landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "renderer.cpp"
+            timestampString = "453760976.536829"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "583"
+            endingLineNumber = "583"
+            landmarkName = "YaLuxRender::getFilterFunction(DzRenderOptions::PixelFilter filterType)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "renderer.cpp"
+            timestampString = "453760976.536829"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "548"
+            endingLineNumber = "548"
+            landmarkName = "YaLuxRender::handleRenderProcessComplete( int exitCode, QProcess::ExitStatus status )"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "renderer.cpp"
+            timestampString = "453746228.222081"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "210"
@@ -282,75 +346,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453591528.334121"
+            timestampString = "453760976.536829"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "258"
-            endingLineNumber = "258"
-            landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "renderer.cpp"
-            timestampString = "453594454.30041"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "591"
-            endingLineNumber = "591"
-            landmarkName = "YaLuxRender::getFilterFunction(DzRenderOptions::PixelFilter filterType)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "renderer.cpp"
-            timestampString = "453594454.30041"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "558"
-            endingLineNumber = "558"
-            landmarkName = "YaLuxRender::handleRenderProcessComplete( int exitCode, QProcess::ExitStatus status )"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "renderer.cpp"
-            timestampString = "453512805.142268"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "207"
-            endingLineNumber = "207"
-            landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "renderer.cpp"
-            timestampString = "453594454.30041"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "668"
-            endingLineNumber = "668"
+            startingLineNumber = "663"
+            endingLineNumber = "663"
             landmarkName = "YaLuxRender::compileShader(const QString &amp;shaderPath, QString &amp;output)"
             landmarkType = "5">
          </BreakpointContent>
@@ -362,11 +362,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453594454.30041"
+            timestampString = "453760976.536829"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "621"
-            endingLineNumber = "621"
+            startingLineNumber = "614"
+            endingLineNumber = "614"
             landmarkName = "YaLuxRender::prepareImage(const DzTexture *img, const QString &amp;filename)"
             landmarkType = "5">
          </BreakpointContent>
@@ -378,11 +378,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453594454.30041"
+            timestampString = "453760976.536829"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "581"
-            endingLineNumber = "581"
+            startingLineNumber = "572"
+            endingLineNumber = "572"
             landmarkName = "YaLuxRender::getOptionsFrame()"
             landmarkType = "5">
          </BreakpointContent>
@@ -394,11 +394,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453594454.30041"
+            timestampString = "453760976.536829"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "627"
-            endingLineNumber = "627"
+            startingLineNumber = "620"
+            endingLineNumber = "620"
             landmarkName = "YaLuxRender::prepareImage(const DzTexture *img, const QString &amp;filename)"
             landmarkType = "5">
          </BreakpointContent>
@@ -410,11 +410,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453594454.30041"
+            timestampString = "453760976.536829"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "533"
-            endingLineNumber = "533"
+            startingLineNumber = "523"
+            endingLineNumber = "523"
             landmarkName = "YaLuxRender::handleRenderProcessComplete( int exitCode, QProcess::ExitStatus status )"
             landmarkType = "5">
          </BreakpointContent>
@@ -426,12 +426,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "utility_classes.cpp"
-            timestampString = "453570940.603578"
+            timestampString = "453760381.156709"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1421"
-            endingLineNumber = "1421"
-            landmarkName = "LuxProcessObject(DzObject *daz_obj)"
+            startingLineNumber = "1918"
+            endingLineNumber = "1918"
+            landmarkName = "LuxProcessObject(DzObject *daz_obj, QString &amp;mesg)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -442,11 +442,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "utility_classes.cpp"
-            timestampString = "453570940.603578"
+            timestampString = "453760381.156709"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1755"
-            endingLineNumber = "1755"
+            startingLineNumber = "2267"
+            endingLineNumber = "2267"
             landmarkName = "LuxMakeSceneFile(QString fileNameLXS, DzRenderer *r, DzCamera *camera, const DzRenderOptions &amp;opt)"
             landmarkType = "7">
          </BreakpointContent>
@@ -458,11 +458,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453591528.334121"
+            timestampString = "453746228.222081"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "268"
-            endingLineNumber = "268"
+            startingLineNumber = "272"
+            endingLineNumber = "272"
             landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
             landmarkType = "5">
          </BreakpointContent>
@@ -474,11 +474,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453591528.334121"
+            timestampString = "453746228.222081"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "270"
-            endingLineNumber = "270"
+            startingLineNumber = "274"
+            endingLineNumber = "274"
             landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
             landmarkType = "5">
          </BreakpointContent>
@@ -490,11 +490,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453591528.334121"
+            timestampString = "453746228.222081"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "269"
-            endingLineNumber = "269"
+            startingLineNumber = "273"
+            endingLineNumber = "273"
             landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
             landmarkType = "5">
          </BreakpointContent>
@@ -506,11 +506,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453594454.30041"
+            timestampString = "453760976.536829"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "602"
-            endingLineNumber = "602">
+            startingLineNumber = "595"
+            endingLineNumber = "595">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -520,11 +520,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453594454.30041"
+            timestampString = "453760976.536829"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "593"
-            endingLineNumber = "593"
+            startingLineNumber = "586"
+            endingLineNumber = "586"
             landmarkName = "YaLuxRender::getFilterFunction(DzRenderOptions::PixelFilter filterType)"
             landmarkType = "5">
          </BreakpointContent>
@@ -536,11 +536,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453594454.30041"
+            timestampString = "453760976.536829"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "592"
-            endingLineNumber = "592"
+            startingLineNumber = "585"
+            endingLineNumber = "585"
             landmarkName = "YaLuxRender::getFilterFunction(DzRenderOptions::PixelFilter filterType)"
             landmarkType = "5">
          </BreakpointContent>
@@ -552,11 +552,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453594454.30041"
+            timestampString = "453760976.536829"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "594"
-            endingLineNumber = "594"
+            startingLineNumber = "587"
+            endingLineNumber = "587"
             landmarkName = "YaLuxRender::getFilterFunction(DzRenderOptions::PixelFilter filterType)"
             landmarkType = "5">
          </BreakpointContent>
@@ -568,11 +568,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453594454.30041"
+            timestampString = "453760976.536829"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "471"
-            endingLineNumber = "471"
+            startingLineNumber = "402"
+            endingLineNumber = "402"
             landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
             landmarkType = "5">
          </BreakpointContent>
@@ -584,11 +584,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453594454.30041"
+            timestampString = "453760976.536829"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "386"
-            endingLineNumber = "386"
+            startingLineNumber = "353"
+            endingLineNumber = "353"
             landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
             landmarkType = "5">
          </BreakpointContent>
@@ -600,11 +600,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453593292.391368"
+            timestampString = "453760976.536829"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "332"
-            endingLineNumber = "332"
+            startingLineNumber = "338"
+            endingLineNumber = "338"
             landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
             landmarkType = "5">
          </BreakpointContent>
@@ -616,11 +616,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453594454.30041"
+            timestampString = "453760976.536829"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "397"
-            endingLineNumber = "397"
+            startingLineNumber = "364"
+            endingLineNumber = "364"
             landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
             landmarkType = "5">
          </BreakpointContent>
@@ -632,7 +632,39 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453593292.391368"
+            timestampString = "453760976.536829"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "347"
+            endingLineNumber = "347"
+            landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "renderer.cpp"
+            timestampString = "453760976.536829"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "543"
+            endingLineNumber = "543"
+            landmarkName = "YaLuxRender::handleRenderProcessComplete( int exitCode, QProcess::ExitStatus status )"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "renderer.cpp"
+            timestampString = "453760976.536829"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "341"
@@ -648,43 +680,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453594454.30041"
+            timestampString = "453760976.536829"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "553"
-            endingLineNumber = "553"
-            landmarkName = "YaLuxRender::handleRenderProcessComplete( int exitCode, QProcess::ExitStatus status )"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "renderer.cpp"
-            timestampString = "453593292.391368"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "335"
-            endingLineNumber = "335"
-            landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "renderer.cpp"
-            timestampString = "453594454.30041"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "478"
-            endingLineNumber = "478"
+            startingLineNumber = "466"
+            endingLineNumber = "466"
             landmarkName = "YaLuxRender::updateData()"
             landmarkType = "5">
          </BreakpointContent>
@@ -696,11 +696,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453594454.30041"
+            timestampString = "453760976.536829"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "504"
-            endingLineNumber = "504"
+            startingLineNumber = "492"
+            endingLineNumber = "492"
             landmarkName = "YaLuxRender::updateData()"
             landmarkType = "5">
          </BreakpointContent>
@@ -712,11 +712,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453594454.30041"
+            timestampString = "453760976.536829"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "496"
-            endingLineNumber = "496"
+            startingLineNumber = "484"
+            endingLineNumber = "484"
             landmarkName = "YaLuxRender::updateData()"
             landmarkType = "5">
          </BreakpointContent>
@@ -728,11 +728,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453594454.30041"
+            timestampString = "453760976.536829"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "509"
-            endingLineNumber = "509"
+            startingLineNumber = "498"
+            endingLineNumber = "498"
             landmarkName = "YaLuxRender::updateData()"
             landmarkType = "5">
          </BreakpointContent>
@@ -744,11 +744,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453594454.30041"
+            timestampString = "453760976.536829"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "517"
-            endingLineNumber = "517"
+            startingLineNumber = "507"
+            endingLineNumber = "507"
             landmarkName = "YaLuxRender::updateData()"
             landmarkType = "5">
          </BreakpointContent>
@@ -760,27 +760,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453594454.30041"
+            timestampString = "453760976.536829"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "515"
-            endingLineNumber = "515"
-            landmarkName = "YaLuxRender::updateData()"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "renderer.cpp"
-            timestampString = "453594454.30041"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "511"
-            endingLineNumber = "511"
+            startingLineNumber = "500"
+            endingLineNumber = "500"
             landmarkName = "YaLuxRender::updateData()"
             landmarkType = "5">
          </BreakpointContent>
@@ -792,11 +776,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "utility_classes.cpp"
-            timestampString = "453570940.603578"
+            timestampString = "453760381.156709"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1735"
-            endingLineNumber = "1735"
+            startingLineNumber = "2236"
+            endingLineNumber = "2236"
             landmarkName = "LuxMakeSceneFile(QString fileNameLXS, DzRenderer *r, DzCamera *camera, const DzRenderOptions &amp;opt)"
             landmarkType = "7">
          </BreakpointContent>
@@ -936,11 +920,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "utility_classes.cpp"
-            timestampString = "453569898.766825"
+            timestampString = "453752622.943806"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "652"
-            endingLineNumber = "652"
+            startingLineNumber = "649"
+            endingLineNumber = "649"
             landmarkName = "LuxProcessLight(DzLight *currentLight, QString &amp;mesg)"
             landmarkType = "7">
          </BreakpointContent>
@@ -952,11 +936,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "utility_classes.cpp"
-            timestampString = "453570940.603578"
+            timestampString = "453752622.943806"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "663"
-            endingLineNumber = "663"
+            startingLineNumber = "660"
+            endingLineNumber = "660"
             landmarkName = "LuxProcessLight(DzLight *currentLight, QString &amp;mesg)"
             landmarkType = "7">
          </BreakpointContent>
@@ -968,11 +952,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453593292.391368"
+            timestampString = "453760976.536829"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "323"
-            endingLineNumber = "323"
+            startingLineNumber = "329"
+            endingLineNumber = "329"
             landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
             landmarkType = "5">
          </BreakpointContent>
@@ -984,11 +968,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453594454.30041"
+            timestampString = "453760976.536829"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "394"
-            endingLineNumber = "394"
+            startingLineNumber = "361"
+            endingLineNumber = "361"
             landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
             landmarkType = "5">
          </BreakpointContent>
@@ -1000,11 +984,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453593292.391368"
+            timestampString = "453760976.536829"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "331"
-            endingLineNumber = "331"
+            startingLineNumber = "337"
+            endingLineNumber = "337"
             landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
             landmarkType = "5">
          </BreakpointContent>
@@ -1016,11 +1000,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453593292.391368"
+            timestampString = "453760976.536829"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "334"
-            endingLineNumber = "334"
+            startingLineNumber = "340"
+            endingLineNumber = "340"
             landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
             landmarkType = "5">
          </BreakpointContent>
@@ -1046,23 +1030,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453593292.391368"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "339"
-            endingLineNumber = "339"
-            landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "renderer.cpp"
-            timestampString = "453593292.391368"
+            timestampString = "453760976.536829"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "345"
@@ -1078,11 +1046,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453593292.391368"
+            timestampString = "453760976.536829"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "346"
-            endingLineNumber = "346"
+            startingLineNumber = "351"
+            endingLineNumber = "351"
             landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
             landmarkType = "5">
          </BreakpointContent>
@@ -1094,11 +1062,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453594454.30041"
+            timestampString = "453760976.536829"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "551"
-            endingLineNumber = "551"
+            startingLineNumber = "541"
+            endingLineNumber = "541"
             landmarkName = "YaLuxRender::handleRenderProcessComplete( int exitCode, QProcess::ExitStatus status )"
             landmarkType = "5">
          </BreakpointContent>
@@ -1110,7 +1078,215 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453593292.391368"
+            timestampString = "453760976.536829"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "321"
+            endingLineNumber = "321"
+            landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "renderer.cpp"
+            timestampString = "453746228.222081"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "271"
+            endingLineNumber = "271"
+            landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "renderer.cpp"
+            timestampString = "453760976.536829"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "325"
+            endingLineNumber = "325"
+            landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "renderer.cpp"
+            timestampString = "453746228.222081"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "144"
+            endingLineNumber = "144"
+            landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "renderer.cpp"
+            timestampString = "453760976.536829"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "316"
+            endingLineNumber = "316"
+            landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "renderer.cpp"
+            timestampString = "453746228.222081"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "179"
+            endingLineNumber = "179"
+            landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "renderer.cpp"
+            timestampString = "453746228.222081"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "186"
+            endingLineNumber = "186"
+            landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "renderer.cpp"
+            timestampString = "453746228.222081"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "278"
+            endingLineNumber = "278"
+            landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "renderer.cpp"
+            timestampString = "453746228.222081"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "303"
+            endingLineNumber = "303"
+            landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "renderer.cpp"
+            timestampString = "453760976.536829"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "314"
+            endingLineNumber = "314"
+            landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "renderer.cpp"
+            timestampString = "453760976.536829"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "390"
+            endingLineNumber = "390"
+            landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "renderer.cpp"
+            timestampString = "453760976.536829"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "518"
+            endingLineNumber = "518"
+            landmarkName = "YaLuxRender::handleRenderProcessStateChange( QProcess::ProcessState newstate )"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "renderer.cpp"
+            timestampString = "453760976.536829"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "524"
+            endingLineNumber = "524"
+            landmarkName = "YaLuxRender::handleRenderProcessComplete( int exitCode, QProcess::ExitStatus status )"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "renderer.cpp"
+            timestampString = "453760976.536829"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "315"
@@ -1126,12 +1302,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453591528.334121"
+            timestampString = "453760976.536829"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "267"
-            endingLineNumber = "267"
-            landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
+            startingLineNumber = "499"
+            endingLineNumber = "499"
+            landmarkName = "YaLuxRender::updateData()"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1142,188 +1318,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "renderer.cpp"
-            timestampString = "453593292.391368"
+            timestampString = "453760976.536829"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "319"
-            endingLineNumber = "319"
-            landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "renderer.cpp"
-            timestampString = "453588201.695713"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "143"
-            endingLineNumber = "143"
-            landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "renderer.cpp"
-            timestampString = "453593292.391368"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "310"
-            endingLineNumber = "310"
-            landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "renderer.cpp"
-            timestampString = "453588321.446178"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "176"
-            endingLineNumber = "176"
-            landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "renderer.cpp"
-            timestampString = "453588324.403218"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "183"
-            endingLineNumber = "183"
-            landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "renderer.cpp"
-            timestampString = "453591528.334121"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "273"
-            endingLineNumber = "273"
-            landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "renderer.cpp"
-            timestampString = "453591528.334121"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "298"
-            endingLineNumber = "298"
-            landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "renderer.cpp"
-            timestampString = "453593292.391368"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "308"
-            endingLineNumber = "308"
-            landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "renderer.cpp"
-            timestampString = "453594454.30041"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "459"
-            endingLineNumber = "459"
-            landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "renderer.cpp"
-            timestampString = "453594454.30041"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "528"
-            endingLineNumber = "528"
-            landmarkName = "YaLuxRender::handleRenderProcessStateChange( QProcess::ProcessState newstate )"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "renderer.cpp"
-            timestampString = "453594454.30041"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "534"
-            endingLineNumber = "534"
-            landmarkName = "YaLuxRender::handleRenderProcessComplete( int exitCode, QProcess::ExitStatus status )"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "renderer.cpp"
-            timestampString = "453593292.391368"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "309"
-            endingLineNumber = "309"
-            landmarkName = "YaLuxRender::render(DzRenderHandler *handler, DzCamera *camera, const DzRenderOptions &amp;opt)"
+            startingLineNumber = "505"
+            endingLineNumber = "505"
+            landmarkName = "YaLuxRender::updateData()"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>

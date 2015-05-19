@@ -248,6 +248,7 @@ void	YaLuxOptionsFrame::saveSettings()
 void	YaLuxOptionsFrame::applyChanges()
 {
     // DEBUG
+    if (YaLuxGlobal.debugLevel >= 1) // user info
     dzApp->log("yaluxplug: Render Options Panel: applying Changes.");
     // DEBUG FIX: THIS IS ONLY FOR MAC platform
 #if defined( Q_OS_WIN )
@@ -279,7 +280,9 @@ void	YaLuxOptionsFrame::applyChanges()
 
 void	YaLuxOptionsFrame::resetOptions()
 {
+    // TODO: should I set to default or reload from saved data?
     // DEBUG
+    if (YaLuxGlobal.debugLevel >=1) // user data
     dzApp->log("yaluxplug: Render Options Panel: resetting options.");
 };
 

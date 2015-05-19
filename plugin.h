@@ -36,6 +36,7 @@ struct G
     QFrame *logWindow;
     QTextEdit *logText;
     DzProgress *RenderProgress;
+    DzProgress *FrameProgress;
 
     DzNode *currentNode;
     bool inProgress;

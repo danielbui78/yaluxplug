@@ -51,7 +51,7 @@ private:
     DzFilterNavigationBar *filterBar;
     DzSideNavPropertyListView *listView;
 
-    QStringList debugLevelList = QStringList() << "Errors Only" << "Errors and Info" << "Errors, Info, Debug";
+    QStringList debugLevelList = QStringList() << "0: Errors Only" << "1: Errors and Info" << "2: Errors, Info, Debug" << "3: Verbose Debugging Data";
     QStringList toneMapMethodList = QStringList() << "linear" << "autolinear" << "maxwhite" << "contrast" << "reinhard";
     QStringList renderModeList = QStringList() << "Software" << "Hybrid" << "(PATH)OpenCL GPU only" << "(PATH)OpenCL CPU only" << "(PATH)OpenCL GPU+CPU" << "Custom Render String...";
     QStringList specularModeList = QStringList() << "90% Diffuse + 10% Specular" << "Specular * Glossiness" << "(75% Diffuse + 25% Specular) * Glossiness" << "10% Specular" << "Full Specular (may wash-out Diffuse color)" << "Specular Off";
