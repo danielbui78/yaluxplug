@@ -82,7 +82,7 @@ YaLuxOptionsFrame::YaLuxOptionsFrame() : DzOptionsFrame("yaluxplug Options Frame
 
     // Luxrender executable arguments
     argumentList = new DzStringProperty("yalux_exec_arguments", false);
-    argumentList->setLabel("Executable Arguments");
+    argumentList->setLabel("Luxrender Commandline Arguments");
     listView->addProperty(argumentList);
 
     // Render Mode
@@ -97,6 +97,32 @@ YaLuxOptionsFrame::YaLuxOptionsFrame() : DzOptionsFrame("yaluxplug Options Frame
     customRenderString = new DzStringProperty("yalux_render_custom", false);
     customRenderString->setLabel("Custom Render String (use Custom Render Engine)");
     listView->addProperty(customRenderString);
+
+    // Max Texture Size
+    maxTextureSize = new DzEnumProperty("yalux_max_texturesize", false, false);
+    maxTextureSize->setLabel("Maximum Texture Size");
+    for (i=0; i<maxTextureSizeList.count(); i++) {
+        maxTextureSize->addItem(maxTextureSizeList[i]);
+    }
+    listView->addProperty(maxTextureSize);
+
+    // Debug output level
+    debugLevel = new DzEnumProperty("yalux_debug_level", true, false);
+    debugLevel->setLabel("Debug Output");
+    for (i=0; i<debugLevelList.count(); i++) {
+        debugLevel->addItem(debugLevelList[i]);
+    }
+    listView->addProperty(debugLevel);
+
+    // network render on/off
+    networkRenderOn = new DzBoolProperty("yalux_network_render", false, false, false);
+    networkRenderOn->setLabel("Enable Network Rendering");
+    listView->addProperty(networkRenderOn);
+
+    // render server list
+    renderServerList = new DzStringProperty("yalux_network_serverlist", false);
+    renderServerList->setLabel("Network Render Servers (IP/hostnames)");
+    listView->addProperty(renderServerList);
 
     // Specular Mode
     specularMode = new DzEnumProperty("yalux_specular_mode", false, false);
@@ -128,13 +154,6 @@ YaLuxOptionsFrame::YaLuxOptionsFrame() : DzOptionsFrame("yaluxplug Options Frame
     listView->addProperty(haltSPP);
     listView->addProperty(haltThreshold);
 
-    debugLevel = new DzEnumProperty("yalux_debug_level", true, false);
-    debugLevel->setLabel("Debug Output");
-    for (i=0; i<debugLevelList.count(); i++) {
-        debugLevel->addItem(debugLevelList[i]);
-    }
-    listView->addProperty(debugLevel);
-
     // camera/film lighting correction
     toneMapMethod = new DzEnumProperty("yalux_tonemap_method", false, false);
     toneMapMethod->setLabel("Tonemapping Method");
@@ -155,11 +174,6 @@ YaLuxOptionsFrame::YaLuxOptionsFrame() : DzOptionsFrame("yaluxplug Options Frame
     listView->addProperty(tonemapExposureTime);
     listView->addProperty(tonemapISO);
 
-    // render server list
-    renderServerList = new DzStringProperty("yalux_network_serverlist", false);
-    renderServerList->setLabel("Network Render Servers (IP/hostnames)");
-    listView->addProperty(renderServerList);
-
 //    DzStyledFilePropertyWgt *widget = new DzStyledFilePropertyWgt(listView, "test string");
 //    widget->addProperty(fileProperty);
 //    layout2->addWidget(widget);
@@ -169,6 +183,7 @@ YaLuxOptionsFrame::YaLuxOptionsFrame() : DzOptionsFrame("yaluxplug Options Frame
 
     createDefaultSettings();
     loadSettings();
+    applyChanges(); // call this method to update the YaLuxGlobals values with saved settings
 
     return;
 }
@@ -188,6 +203,8 @@ void YaLuxOptionsFrame::createDefaultSettings()
     toneMapMethod->setDefaultValue(0);
     renderMode->setDefaultValue(0);
     specularMode->setDefaultValue(0);
+    maxTextureSize->setDefaultValue(4);
+    networkRenderOn->setDefaultBoolValue(false);
 
 }
 
@@ -215,6 +232,8 @@ void	YaLuxOptionsFrame::loadSettings()
         renderMode->setValue( settings->getIntValue( renderMode->getName()) );
         customRenderString->setValue( settings->getStringValue( customRenderString->getName()) );
         specularMode->setValue( settings->getIntValue( specularMode->getName()) );
+        networkRenderOn->setBoolValue( settings->getBoolValue( networkRenderOn->getName()) );
+        maxTextureSize->setValue( settings->getIntValue( maxTextureSize->getName()) );
     }
 }
 
@@ -240,7 +259,9 @@ void	YaLuxOptionsFrame::saveSettings()
     settings->setIntValue(renderMode->getName(), renderMode->getValue());
     settings->setStringValue(customRenderString->getName(), customRenderString->getValue());
     settings->setIntValue(specularMode->getName(), specularMode->getValue());
-
+    settings->setIntValue(maxTextureSize->getName(), maxTextureSize->getValue());
+    settings->setBoolValue(networkRenderOn->getName(), networkRenderOn->getBoolValue());
+    
     settings->setBoolValue("yalux_savedsettings_exist", true);
 
 }
@@ -269,10 +290,15 @@ void	YaLuxOptionsFrame::applyChanges()
     YaLuxGlobal.tonemapExposureTime = tonemapExposureTime->getValue();
     YaLuxGlobal.tonemapISO = tonemapISO->getValue();
     YaLuxGlobal.LuxToneMapper = toneMapMethod->getStringValue();
+    YaLuxGlobal.bNetworkRenderOn = networkRenderOn->getBoolValue();
     YaLuxGlobal.slaveNodeList = renderServerList->getValue().replace(" ",",").split(",", QString::SkipEmptyParts);
     YaLuxGlobal.renderMode = renderMode->getValue();
     YaLuxGlobal.customRenderString = customRenderString->getValue();
     YaLuxGlobal.specularMode = specularMode->getValue();
+    if (maxTextureSize->getValue() == 4)
+        YaLuxGlobal.maxTextureSize = -1;
+    else
+        YaLuxGlobal.maxTextureSize = maxTextureSize->getStringValue().toInt();
 
     // DEBUG - find a place for this
     saveSettings();

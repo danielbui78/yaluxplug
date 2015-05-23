@@ -37,6 +37,9 @@ struct G
     QTextEdit *logText;
     DzProgress *RenderProgress;
     DzProgress *FrameProgress;
+    DzBackgroundProgress *backgroundProgress;
+    int numBackgroundThreads=0;
+    float currentBackgroundProgress=0;
 
     DzNode *currentNode;
     bool inProgress;
@@ -53,28 +56,33 @@ struct G
     QString LuxExecPath;
     QString CmdLineArgs;
     bool bShowLuxRenderWindow;
+    int maxTextureSize;
+    bool bNetworkRenderOn;
+    QStringList slaveNodeList;
+    int renderMode;
+    QString customRenderString;
+    int debugLevel;
     bool bSaveAlphaChannel;
     int haltAtTime;
     int haltAtSamplesPerPixel;
     float haltAtThreshold;
-    int debugLevel;
     float tonemapGamma;
     float tonemapFstop;
     float tonemapExposureTime;
     int tonemapISO;
     QString LuxToneMapper;
-    QStringList slaveNodeList;
     int specularMode;
-    int renderMode;
-    QString customRenderString;
+
 
     QString cachePath;
     QString tempPath;
     QString tempFilenameBase;
     QString workingRenderFilename;
 
+
     QProcess *luxRenderProc;
-    bool bRenderisFinished;
+    bool bFrameisFinished;
+    bool bIsCancelled;
     int tempCounter;
 
     QStringList tokenList;

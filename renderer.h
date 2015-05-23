@@ -402,7 +402,13 @@ public:
     void                    updateData();
     void                    handleRenderProcessStateChange( QProcess::ProcessState newstate );
     void                    processRenderLog(QProcess *process, QFile &logFile, bool bUpdateRender);
-    
+    void                    handleStopRender();
+    void                    handleNextFrame();
+    void                    handlePreviewCurrentFrame();
+    void                    handleShowLXS();
+    void                    resetRenderServers();
+    void                    logToWindow( QString data, QColor textcolor=QColor(255,255,255), bool bIsBold=false );
+
 public:
     
     virtual DzOptionsFrame*	getOptionsFrame() const ;

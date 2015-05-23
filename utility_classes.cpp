@@ -16,6 +16,7 @@
 #include "dzmaterial.h"
 #include "dzdefaultmaterial.h"
 #include "dztarray.h"
+#include "dzimagemgr.h"
 
 #include "dzpropertygroup.h"
 
@@ -49,6 +50,7 @@ struct G YaLuxGlobal;
 
 void WorkerPrepareImage::doPrepareImage()
 {
+    // DO NOT CALL DzImageMgr in this thread ( DzImageMgr is not threadsafe!). Instead, use QImage calls.
     // 1. do a lookup to see if there is a cached texture
     // 2. if true, then return the img and filename of the cached texture
     // 3. if not, then continue
@@ -58,27 +60,42 @@ void WorkerPrepareImage::doPrepareImage()
     //      6.1 generate filename
     //      6.2 place in lookup table
     // 7. emit signal and return
-    
+
+    int ResizeWidth;
     QImage qimg, qImgScaled;
-    
+
+    if (YaLuxGlobal.maxTextureSize == -1)
+    {
+        // ERROR: this code should not have been called if maxtexturesize is -1
+        dzApp->log("yaluxplug: ERROR: workerPrepareImage() thread instantiated but maxTextureSize = no maximum. This is probably a bug in yaluxplug.");
+        // return the original filename and exit
+        emit prepareImageComplete(this, img, filename);
+        emit finished();
+        return;
+    }
+
+    ResizeWidth = YaLuxGlobal.maxTextureSize;
+
     // DEBUG
     if (qimg.load(filename) == false)
     {
         // DEBUG
         // issue error and cancel
-        dzApp->log("yaluxplug: Worker prepareImage Error - couldn't save scaled image");
+        dzApp->log("yaluxplug: ERROR: Workerthread prepareImage() couldn't load original image for scaling: " + filename);
         emit prepareImageComplete(this, img, filename);
+        emit finished();
+        return;
     }
     
-    // resize
-    int ResizeWidth = 2000;
+    // Do a sanity check, then resize
     if (qimg.width() > ResizeWidth)
     {
         qImgScaled = qimg.scaledToWidth(ResizeWidth);
     }
     else
     {
-        // use the current file
+        // Failed sanity check.  This thread should not have been called.  Log the error and return.
+        dzApp->log( QString("yaluxplug: ERROR: workerPrepareImage thread instantiated but image width (%1) is smaller than maxTexturesize(%2). This is probably a bug in yaluxplug.").arg(qimg.width()).arg(ResizeWidth) );
         emit prepareImageComplete(this, img, filename);
         emit finished();
         return;
@@ -88,7 +105,7 @@ void WorkerPrepareImage::doPrepareImage()
     QString newName = DzFileIO::getBaseFileName(filename);
     newName += ".png";
     
-    if ( qImgScaled.save( YaLuxGlobal.cachePath+newName ) )
+    if ( qImgScaled.save( YaLuxGlobal.cachePath+newName, "PNG") )
     {
         dzApp->log("yaluxplug: Worker prepareImage( " + filename + " ) changed to PNG" );
         //        DzTexture *tex = imgMgr->getImage(filename);
@@ -97,10 +114,10 @@ void WorkerPrepareImage::doPrepareImage()
     }
     else 
     {
-        dzApp->log("yaluxplug: Worker prepareImage Error - couldn't save scaled image");
+        dzApp->log("yaluxplug: ERROR: Workerthread prepareImage() couldn't save scaled image: " + YaLuxGlobal.cachePath + newName);
         emit prepareImageComplete(this, img, filename);
     }
-    
+
     emit finished();
 };
 
@@ -212,41 +229,78 @@ QString propertyValuetoString(DzProperty *prop)
     return ret_str;
 }
 
+// make a scaled temp image if needed, return a filename to use in luxrender
+QString makeScaledTempImage(DzTexture *texture)
+{
+    DzImageMgr *imgMgr = dzApp->getImageMgr();
+    QString origFilename, newFilename;
+    QSize size;
+    QImage originalImg, scaledImg;
+
+    if (texture->getImageData(originalImg) == true)
+    {
+        scaledImg = originalImg.scaledToWidth(YaLuxGlobal.maxTextureSize);
+        origFilename = texture->getFilename();
+        newFilename = YaLuxGlobal.cachePath + DzFileIO::getBaseFileName(origFilename) + ".png";
+        scaledImg.save(newFilename);
+        texture->setTempFilename(newFilename);
+    } else {
+        return origFilename;
+    }
+
+    return newFilename;
+}
+
 
 QString propertyNumericImagetoString(DzNumericProperty *prop)
 {
     DzTexture *propTex;
-    QString ret_str, newFileName;
+    QString ret_str;
+    QString tempFilename, newFilename;
     QSize size;
-    QImage qimg, scaledImg;
-    
+    QImage cachedImg;
+
     if ( ((DzNumericProperty*)prop)->isMappable() )
     {
         // get image name
         propTex = prop->getMapValue();
         if (propTex != NULL)
         {
-            ret_str = propTex->getTempFilename();
-            if (ret_str.contains(YaLuxGlobal.cachePath)==false)
+            // if maxTextureSize == -1 (no maximum), then return the original filename
+            if ( YaLuxGlobal.maxTextureSize == -1)
+                return propTex->getFilename();
+            // *** I will assume all instructions past this point are only reachable when maxTextureSize != -1 ***
+
+            tempFilename = propTex->getTempFilename();
+            if (tempFilename.contains(YaLuxGlobal.cachePath)==false)
             {
-                // image may not be prepped. Create one now if needed
-                ret_str = propTex->getFilename();
+                // the original file has not been cached yet
+                // check if the original image needs scaling
                 size = propTex->getOriginalImageSize();
-                if (size.width() > 2000)
-                {
+                if ( (size.width() > YaLuxGlobal.maxTextureSize) )
                     // yes, we do need to prepare image
-                    qimg.load(ret_str);
-                    scaledImg = qimg.scaledToWidth(2000);
-                    newFileName = YaLuxGlobal.cachePath + DzFileIO::getBaseFileName(ret_str) + ".png";
-                    scaledImg.save(newFileName);
-                    propTex->setTempFilename(newFileName);
-                    return newFileName;
+                    ret_str = makeScaledTempImage(propTex);
+                else
+                    ret_str = propTex->getFilename();
+            }
+            else // the original file has already been cached
+            {
+                // If the cached tempFile size is not equal to the max_texturesize, check if the original
+                // should be rescaled.
+                ret_str = tempFilename; // prepare to return tempFilename... this filename should actually not change, even if we rescale below
+                cachedImg.load(tempFilename);
+                if (cachedImg.width() != YaLuxGlobal.maxTextureSize)
+                {
+                    // if the original is larger than maxTextureSize, rescale the image to maxTextureSize
+                    // otherwise, just use the current tempfilename
+                    if (propTex->getOriginalImageSize().width() > YaLuxGlobal.maxTextureSize)
+                        ret_str = makeScaledTempImage(propTex);
                 }
             }
         }
-        else
+        else // there is no image file associated with this property
             ret_str= "";
-    }    
+    }
     
     return ret_str;
 }
@@ -284,13 +338,13 @@ QString GenerateTextureBlock(QString textureName, QString textureType, QString m
     if (mapName != "")
     {
         ret_str += QString("Texture \"%1\" \"%2\" \"%3\"\n").arg(textureName+"map").arg(textureType).arg("imagemap");
-        ret_str += QString("\t\"float uscale\" [%1]\n").arg(uscale);
-        ret_str += QString("\t\"float vscale\" [%1]\n").arg(vscale);    
-        ret_str += QString("\t\"float udelta\" [%1]\n").arg(uoffset);
-        ret_str += QString("\t\"float vdelta\" [%1]\n").arg(voffset);
-        ret_str += QString("\t\"float gamma\" [%1]\n").arg(gamma);
-        ret_str += QString("\t\"string wrap\" [\"%1\"]\n").arg(wrap);
-        ret_str += QString("\t\"string filtertype\" [\"%1\"]\n").arg(filtertype);
+        if (uscale != 1) ret_str += QString("\t\"float uscale\" [%1]\n").arg(uscale);
+        if (vscale != 1) ret_str += QString("\t\"float vscale\" [%1]\n").arg(vscale);
+        if (uoffset != 0) ret_str += QString("\t\"float udelta\" [%1]\n").arg(uoffset);
+        if (voffset != 0) ret_str += QString("\t\"float vdelta\" [%1]\n").arg(voffset);
+        if (gamma != 1) ret_str += QString("\t\"float gamma\" [%1]\n").arg(gamma);
+        if (wrap != "repeat") ret_str += QString("\t\"string wrap\" [\"%1\"]\n").arg(wrap);
+        if (filtertype != "bilinear") ret_str += QString("\t\"string filtertype\" [\"%1\"]\n").arg(filtertype);
         if (channel != "")
             ret_str += QString("\t\"string channel\" [\"%1\"]\n").arg(channel);
         ret_str += QString("\t\"string filename\" [\"%1\"]\n").arg(mapName);        
@@ -1031,7 +1085,7 @@ QString processChildNodes(DzNode *parentNode, QString &mesg, QString parentLabel
         //Process Node
         //YaLuxGlobal.currentNode = currentNode;
         //YaLuxGlobal.settings = new DzRenderSettings(this, &opt);
-        mesg += QString("yaluxplug: DEBUG: processChildNode(#%1) - Looking at %2->%3: ").arg(childNumber++).arg(parentLabel).arg(label);
+        mesg += QString("yaluxplug: DEBUG: processChildNode(#%1) - Looking at %2->%3:\n").arg(childNumber++).arg(parentLabel).arg(label);
         
         // Node -> Object
         DzObject *currentObject = currentNode->getObject();
@@ -1049,15 +1103,15 @@ QString processChildNodes(DzNode *parentNode, QString &mesg, QString parentLabel
             DzGeometry *currentGeometry = currentShape->getGeometry();
             QString geoLabel = QString("numvertices = %1").arg(currentGeometry->getNumVertices() );
             
-            mesg += QString("object = [%1], shape = [%2], %3\n").arg(parentLabel+"."+label+"."+objectLabel).arg(shapeLabel).arg(geoLabel) ;
+            mesg += QString("\tobject = [%1], shape = [%2], %3\n").arg(parentLabel+"."+label+"."+objectLabel).arg(shapeLabel).arg(geoLabel) ;
 
             //LuxMakeTextureList(currentShape);
             //mesg += LuxMakeMaterialList(currentShape);
             //outLXS.write(mesg);
 
             // Call process object for this childnode
-            currentObject->finalize(*parentNode, true, true);
-            ret_str = LuxProcessObject(currentObject, mesg);
+            // currentObject->finalize(*parentNode, true, true);
+            // ret_str = LuxProcessObject(currentObject, mesg);
 
         } else {
             mesg += "no object found.\n";
@@ -1839,7 +1893,7 @@ QString LuxProcessObject(DzObject *daz_obj, QString &mesg)
 
     // DEBUG
     if (YaLuxGlobal.debugLevel > 2)
-        mesg += QString("\tobject(node label) = [%1], shape = [%2], %3").arg(nodeLabel).arg(shapeLabel).arg(geoLabel) ;
+        mesg += QString("\tobject(node label) = [%1], shape = [%2], %3\n").arg(nodeLabel).arg(shapeLabel).arg(geoLabel) ;
     //  dzApp->log( QString("\tobject(node label) = [%1], shape = [%2], %3").arg(nodeLabel).arg(shapeLabel).arg(geoLabel) ) ;
 
     // Shape -> MaterialList
@@ -1967,7 +2021,7 @@ QString LuxMakeSceneFile(QString fileNameLXS, DzRenderer *r, DzCamera *camera, c
     // open stream to write to file
     dzApp->log("yaluxplug: opening LXSFile = " + fileNameLXS );
     QFile outLXS(fileNameLXS);
-    outLXS.open(QIODevice::ReadWrite);
+    outLXS.open(QIODevice::WriteOnly | QIODevice::Truncate);
     outLXS.write("# Generated by yaluxplug \n");
 
     // 1. read render options to set up environment
@@ -2037,7 +2091,7 @@ QString LuxMakeSceneFile(QString fileNameLXS, DzRenderer *r, DzCamera *camera, c
         colorChannels = "RGB";
     outLXS.write( QString("\t\"string write_png_channels\"\t[\"%1\"]\n").arg(colorChannels).toAscii() );
     //    outLXS.write( QString("\t\"string write_tga_channels\"\t[\"%1\"]\n").arg(colorChannels) );
-    //    outLXS.write( QString("\t\"string write_exr_channels\"\t[\"%1\"]\n").arg(colorChannels) );
+    outLXS.write( QString("\t\"string write_exr_channels\"\t[\"%1\"]\n").arg(colorChannels) );
     outLXS.write( QString("\t\"integer haltspp\"\t[%1]\n").arg(YaLuxGlobal.haltAtSamplesPerPixel).toAscii() );
     outLXS.write( QString("\t\"integer halttime\"\t[%1]\n").arg(YaLuxGlobal.haltAtTime).toAscii() );
     outLXS.write( QString("\t\"float haltthreshold\"\t[%1]\n").arg(1.0-YaLuxGlobal.haltAtThreshold).toAscii() );
@@ -2238,7 +2292,7 @@ QString LuxMakeSceneFile(QString fileNameLXS, DzRenderer *r, DzCamera *camera, c
             if ( currentNode->getLabel().contains("EnvironmentSphere") )
             {
                 // DEBUG
-                if (YaLuxGlobal.debugLevel >=2) // debugging data
+                if (YaLuxGlobal.debugLevel >=1) // debugging data
                     dzApp->log("yaluxplug: DEBUG: Skip EnvironmentSphere");
             }
             else if (currentNode->getLabel().contains("Genitalia") )

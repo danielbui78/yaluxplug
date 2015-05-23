@@ -20,60 +20,60 @@
 
 const QStringList LXSfilm = QStringList() <<
 "Film \"fleximage\"\n" <<
-"\t\"integer outlierrejection_k\"\t[3]\n" <<
-"\t\"bool premultiplyalpha\"\t[\"false\"]\n" <<
-"\t\"float gamma\"\t[2.2]\n" <<
-"\t\"integer displayinterval\"\t[5]\n" <<
+"\t\"integer outlierrejection_k\"\t[1]\n" <<
+//"\t\"bool premultiplyalpha\"\t[\"false\"]\n" <<
+//"\t\"float gamma\"\t[2.2]\n" <<
+//"\t\"integer displayinterval\"\t[12]\n" <<
 "\t\"integer writeinterval\"\t[10]\n" <<
+"\t\"integer flmwriteinterval\"\t[10]\n" <<
 "\t\"string ldr_clamp_method\"\t[\"lum\"]\n" <<
 //png
 "\t\"bool write_png\"\t[\"true\"]\n" <<
-"\t\"bool write_png_16bit\"\t[\"false\"]\n" <<
-"\t\"bool write_png_gamutclamp\"\t[\"true\"]\n" <<
+//flm
+"\t\"bool write_resume_flm\"\t[\"true\"]\n" <<
+//"\t\"bool restart_resume_flm\"\t[\"false\"]";
+//"\t\"bool write_png_16bit\"\t[\"false\"]\n" <<
+//"\t\"bool write_png_gamutclamp\"\t[\"true\"]\n" <<
 //tga...
 //"\t\"bool write_tga\"\t[\"false\"]\n" <<
 //exr...
-//"\t\"bool write_exr\"\t[\"false\"]\n" <<
-//"\t\"string write_exr_compressiontype\"\t[\"PIZ (lossless)\"]\n" <<
-//"\t\"string write_exr_zbuf_normalizationtype\"\t[\"None\"]\n" <<
-//flm...
-//colorspace...
-//haltconditions
-"\t\"bool debug\"\t[\"false\"]\n";
+"\t\"bool write_exr\"\t[\"true\"]\n" <<
+"\t\"string write_exr_compressiontype\"\t[\"PIZ (lossless)\"]\n" <<
+"\t\"string write_exr_zbuf_normalizationtype\"\t[\"None\"]\n" <<
+"\t\"bool write_exr_ZBuf\"\t[\"true\"]\n";
 
 const QStringList LXSpixelfilter = QStringList() <<
-"PixelFilter \"mitchell\"\n" <<
-"\t\"float xwidth\"\t[1.5]\n" <<
-"\t\"float ywidth\"\t[1.5]\n" <<
-"\t\"float B\"\t[0.3333]\n" <<
-"\t\"float C\"\t[0.3333]\n" <<
-"\t\"bool supersample\"\t[\"true\"]\n";
+"PixelFilter \"mitchell\"\n";
+//"\t\"float xwidth\"\t[1.5]\n" <<
+//"\t\"float ywidth\"\t[1.5]\n" <<
+//"\t\"float B\"\t[0.3333]\n" <<
+//"\t\"float C\"\t[0.3333]\n" <<
+//"\t\"bool supersample\"\t[\"true\"]\n";
 
 const QStringList LXSaccelerator = QStringList() <<
-"Accelerator \"qbvh\"\n" <<
-"\t\"integer maxprimsperleaf\"\t[4]\n" <<
-"\t\"integer fullsweepthreshold\"\t[16]\n" <<
-"\t\"integer skipfactor\"\t[1]\n";
+"Accelerator \"qbvh\"\n";
+//"\t\"integer maxprimsperleaf\"\t[4]\n" <<
+//"\t\"integer fullsweepthreshold\"\t[16]\n" <<
+//"\t\"integer skipfactor\"\t[1]\n";
 
 const QStringList LXSsampler = QStringList() <<
 "Sampler \"metropolis\"\n" <<
-"\t\"float largemutationprob\"\t[0.40]\n" <<
+//"\t\"float largemutationprob\"\t[0.40]\n" <<
 "\t\"bool noiseaware\"\t[\"true\"]\n" <<
-"\t\"string pixelsampler\"\t[\"vegas\"]\n" <<
 "\t\"bool usevariance\"\t[\"true\"]\n" <<
 "\t\"bool usecooldown\"\t[\"false\"]\n";
 
 const QStringList LXSsurfaceintegrator = QStringList() <<
-"SurfaceIntegrator \"path\"\n" <<
-"\t\"integer maxdepth\"\t[16]\n" <<
-"\t\"string lightstrategy\"\t[\"auto\"]\n" <<
-"\t\"bool directlightsampling\"\t[\"true\"]\n" <<
-"\t\"float rrcontinueprob\"\t[0.65]\n" <<
-"\t\"bool includeenvironment\"\t[\"true\"]\n";
+"SurfaceIntegrator \"path\"\n";
+//"\t\"integer maxdepth\"\t[16]\n" <<
+//"\t\"string lightstrategy\"\t[\"auto\"]\n" <<
+//"\t\"bool directlightsampling\"\t[\"true\"]\n" <<
+//"\t\"float rrcontinueprob\"\t[0.65]\n" <<
+//"\t\"bool includeenvironment\"\t[\"true\"]\n";
 
 const QStringList LXSvolumeintegrator = QStringList() <<
-"VolumeIntegrator \"multi\"\n" <<
-"\t\"float stepsize\"\t[1.0]\n";
+"VolumeIntegrator \"multi\"\n";
+//"\t\"float stepsize\"\t[1.0]\n";
 
 const QStringList classNamesProperties = QStringList() << "DzStringProperty" << "DzBoolProperty" << "DzColorProperty" << "DzFloatProperty" << "DzIntProperty" <<  "DzNodeProperty" << "DzImageProperty" ;
 
@@ -112,10 +112,10 @@ class WorkerPrepareImage : public QObject
     Q_OBJECT
     
 public:
-    WorkerPrepareImage(const DzTexture *arg_i, const QString &arg_f)
+    WorkerPrepareImage(const DzTexture *arg_image, const QString &arg_filename)
     {   
-        img = arg_i;
-        filename = arg_f;
+        img = arg_image;
+        filename = arg_filename;
     };
     QThread *myThread;
     
