@@ -2091,7 +2091,7 @@ QString LuxMakeSceneFile(QString fileNameLXS, DzRenderer *r, DzCamera *camera, c
         colorChannels = "RGB";
     outLXS.write( QString("\t\"string write_png_channels\"\t[\"%1\"]\n").arg(colorChannels).toAscii() );
     //    outLXS.write( QString("\t\"string write_tga_channels\"\t[\"%1\"]\n").arg(colorChannels) );
-    outLXS.write( QString("\t\"string write_exr_channels\"\t[\"%1\"]\n").arg(colorChannels) );
+    outLXS.write( QString("\t\"string write_exr_channels\"\t[\"%1\"]\n").arg(colorChannels).toAscii() );
     outLXS.write( QString("\t\"integer haltspp\"\t[%1]\n").arg(YaLuxGlobal.haltAtSamplesPerPixel).toAscii() );
     outLXS.write( QString("\t\"integer halttime\"\t[%1]\n").arg(YaLuxGlobal.haltAtTime).toAscii() );
     outLXS.write( QString("\t\"float haltthreshold\"\t[%1]\n").arg(1.0-YaLuxGlobal.haltAtThreshold).toAscii() );

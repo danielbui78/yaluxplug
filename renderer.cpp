@@ -646,7 +646,7 @@ void YaLuxRender::logToWindow( QString data, QColor textcolor, bool bIsBold )
     QString formated = data.replace("\n", "");
 //    if (bIsBold) YaLuxGlobal.logText->setBold(true);
     if (bIsBold) YaLuxGlobal.logText->setFontWeight(QFont::Bold);
-    YaLuxGlobal.logText->setTextColor( QColor(0,255,0) );
+    YaLuxGlobal.logText->setTextColor( textcolor );
     YaLuxGlobal.logText->append( formated );
     YaLuxGlobal.logText->setTextColor( QColor(255,255,255) );
 //    if (bIsBold) YaLuxGlobal.logText->setBold(false);
