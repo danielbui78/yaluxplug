@@ -182,7 +182,9 @@ if(DAZ_STUDIO_EXE_DIR)
 endif()
 
 if(WIN32)
-	set(OS_SOURCES "")
+	set(OS_SOURCES 
+		YaLuxPlug.def
+	)
 elseif(APPLE)
 	set(OS_SOURCES "")
 endif()

@@ -658,11 +658,10 @@ void YaLuxRender::logToWindow( QString data, QColor textcolor, bool bIsBold )
 void YaLuxRender::updateData()
 {
     int timeout = 1000;
-    struct timespec ts = { timeout / 1000, (timeout % 1000) * 1000 * 1000 };
-
 #ifdef Q_OS_WIN
     Sleep(uint(timeout));
 #else
+    struct timespec ts = { timeout / 1000, (timeout % 1000) * 1000 * 1000 };
     nanosleep(&ts, NULL);
 #endif
 
@@ -1258,10 +1257,6 @@ DtVoid YaLuxRender::DiResourceV(DtToken handle, DtToken type,
 
 };
 
-
-
-
-
-
+#include "moc_renderer.cpp"
 
 // End of File

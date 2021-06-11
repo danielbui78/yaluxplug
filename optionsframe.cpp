@@ -321,3 +321,5 @@ void	YaLuxOptionsFrame::restoreOptions( DzRenderOptions *options )
 {
 
 };
+
+#include "moc_optionsframe.cpp"

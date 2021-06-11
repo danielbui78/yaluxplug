@@ -31,7 +31,7 @@ public:
     
     virtual DtVoid			DiWorldBegin() { dzApp->log("yaluxplug: unimplemented basic control1"); };
     virtual DtVoid			DiWorldEnd() { dzApp->log("yaluxplug: unimplemented basic control2"); };
-    virtual DtContextHandle DiGetContext() { dzApp->log("yaluxplug: unimplemented basic control"); };
+    virtual DtContextHandle DiGetContext() { dzApp->log("yaluxplug: unimplemented basic control"); return NULL; };
     virtual DtVoid			DiContext( DtContextHandle handle ) { dzApp->log("yaluxplug: unimplemented basic control3"); };
     virtual DtVoid			DiAttributeBegin() { dzApp->log("\nyaluxplug: unimplemented basic DiAttributeBegin()"); };
     virtual DtVoid			DiAttributeEnd() { dzApp->log("yaluxplug: unimplemented basic DiAttributeEnd()\n"); };
@@ -81,7 +81,7 @@ public:
     
     //DtLightHandle			DiAreaLightSource( DtToken name, ... ){ dzApp->log("yaluxplug: unimplemented"); };
     virtual DtLightHandle	DiAreaLightSourceV( DtToken name, DtInt n,
-                                               const DtToken tokens[], DtPointer params[] ){ dzApp->log("yaluxplug: unimplemented shaders call1"); };
+                                               const DtToken tokens[], DtPointer params[] ){ dzApp->log("yaluxplug: unimplemented shaders call1"); return NULL; };
     //DtVoid					DiAtmosphere( DtToken name, ... ){ dzApp->log("yaluxplug: unimplemented"); };
     virtual DtVoid			DiAtmosphereV( DtToken name, DtInt n, const DtToken tokens[], DtPointer params[] ){ dzApp->log("yaluxplug: unimplemented shaders call2"); };
     //DtVoid					DiDisplacement( DtToken name, ... ){ dzApp->log("yaluxplug: unimplemented"); };
@@ -95,7 +95,7 @@ public:
     virtual DtVoid			DiInteriorV( DtToken name, DtInt n, const DtToken tokens[], DtPointer params[] ){ dzApp->log("yaluxplug: unimplemented shaders call6"); };
     //DtLightHandle			DiLightSource( DtToken name, ... ){ dzApp->log("yaluxplug: unimplemented"); };
     virtual DtLightHandle	DiLightSourceV( DtToken name, DtInt n,
-                                           const DtToken tokens[], DtPointer params[] ){ dzApp->log("yaluxplug: unimplemented shaders call7"); };
+                                           const DtToken tokens[], DtPointer params[] ){ dzApp->log("yaluxplug: unimplemented shaders call7"); return NULL; };
     //DtVoid					DiShader( DtToken name, DtToken handle, ... ){ dzApp->log("yaluxplug: unimplemented"); };
     virtual DtVoid			DiShaderV( DtToken name, DtToken handle, DtInt n, const DtToken tokens[], DtPointer params[] ){ dzApp->log("yaluxplug: unimplemented shaders call8"); };
     //DtVoid					DiSurface( DtToken name, ... ){ dzApp->log("yaluxplug: unimplemented"); };
@@ -116,7 +116,7 @@ public:
                                    DtFloat dx2, DtFloat dy2, DtFloat dz2 ){ dzApp->log("yaluxplug: unimplemented transformation call9"); };
     virtual DtVoid			DiTransform( DtMatrix transform );
     virtual DtPoint*		DiTransformPoints( DtToken fromspace, DtToken tospace,
-                                              DtInt npoints, DtPoint *points ){ dzApp->log("yaluxplug: unimplemented transformation call11"); };
+                                              DtInt npoints, DtPoint *points ){ dzApp->log("yaluxplug: unimplemented transformation call11"); return NULL; };
     virtual DtVoid			DiTranslate( DtFloat dx, DtFloat dy, DtFloat dz ){ dzApp->log("yaluxplug: unimplemented transformation call12"); };
     
     
@@ -228,8 +228,8 @@ public:
     
     // ------------------ Object Instancing
     
-    virtual DtObjectHandle	DiObjectBegin(){ dzApp->log("yaluxplug: unimplemented object call"); };
-    virtual DtObjectHandle	DiObjectBeginV( DtInt n, const DtToken tokens[], DtPointer params[] ){ dzApp->log("yaluxplug: unimplemented object call"); };
+    virtual DtObjectHandle	DiObjectBegin(){ dzApp->log("yaluxplug: unimplemented object call"); return NULL; };
+    virtual DtObjectHandle	DiObjectBeginV( DtInt n, const DtToken tokens[], DtPointer params[] ){ dzApp->log("yaluxplug: unimplemented object call"); return NULL; };
     virtual DtVoid			DiObjectEnd(){ dzApp->log("yaluxplug: unimplemented object call"); };
     virtual DtVoid			DiObjectInstance( DtObjectHandle handle ){ dzApp->log("yaluxplug: unimplemented object call"); };
     
@@ -289,7 +289,7 @@ public:
     virtual DtVoid			DiReadArchiveV( DtString filename, DtArchiveCallback callback,
                                            int n, const DtToken tokens[], DtPointer params[] ){ dzApp->log("yaluxplug: unimplemented archive call2"); };
     //DtArchiveHandle			DiArchiveBegin( DtToken archivename, ... ){ dzApp->log("yaluxplug: unimplemented"); };
-    virtual DtArchiveHandle	DiArchiveBeginV( DtToken archivename, DtInt n, const DtToken tokens[], DtPointer params[] ){ dzApp->log("yaluxplug: unimplemented archive call3"); };
+    virtual DtArchiveHandle	DiArchiveBeginV( DtToken archivename, DtInt n, const DtToken tokens[], DtPointer params[] ){ dzApp->log("yaluxplug: unimplemented archive call3"); return NULL; };
     virtual DtVoid			DiArchiveEnd(){ dzApp->log("yaluxplug: unimplemented archive call4"); };
     
     
@@ -326,26 +326,26 @@ public:
     
     // ------------------ Shader Language Interrogation
     
-    virtual int				DSlo_SetPath(const char *i_path){ dzApp->log("yaluxplug: unimplemented DSlo call"); };
-    virtual int				DSlo_SetShader(const char *i_name){ dzApp->log("yaluxplug: unimplemented DSlo call"); };
+    virtual int				DSlo_SetPath(const char *i_path){ dzApp->log("yaluxplug: unimplemented DSlo call"); return NULL; };
+    virtual int				DSlo_SetShader(const char *i_name){ dzApp->log("yaluxplug: unimplemented DSlo call"); return NULL; };
     virtual const char*		DSlo_GetName(){ dzApp->log("yaluxplug: unimplemented DSlo call"); return "yaluxplug"; };
-    virtual DSLO_TYPE		DSlo_GetType(){ dzApp->log("yaluxplug: unimplemented DSlo call"); };
-    virtual int				DSlo_HasMethod(const char *i_name){ dzApp->log("yaluxplug: unimplemented DSlo call"); };
-    virtual const char* const*	DSlo_GetMethodNames(){ dzApp->log("yaluxplug: unimplemented DSlo call"); };
-    virtual int				DSlo_GetNArgs(){ dzApp->log("yaluxplug: unimplemented DSlo call"); };
+    virtual DSLO_TYPE		DSlo_GetType(){ dzApp->log("yaluxplug: unimplemented DSlo call"); return (DSLO_TYPE) NULL; };
+    virtual int				DSlo_HasMethod(const char *i_name){ dzApp->log("yaluxplug: unimplemented DSlo call"); return NULL; };
+    virtual const char* const*	DSlo_GetMethodNames(){ dzApp->log("yaluxplug: unimplemented DSlo call"); return NULL; };
+    virtual int				DSlo_GetNArgs(){ dzApp->log("yaluxplug: unimplemented DSlo call"); return NULL; };
     
-    virtual DSLO_VISSYMDEF*	DSlo_GetArgById(int i_id){ dzApp->log("yaluxplug: unimplemented DSlo call"); };
-    virtual DSLO_VISSYMDEF*	DSlo_GetArgByName(const char *i_name){ dzApp->log("yaluxplug: unimplemented DSlo call"); };
-    virtual DSLO_VISSYMDEF*	DSlo_GetArrayArgElement(DSLO_VISSYMDEF *i_array, int i_index){ dzApp->log("yaluxplug: unimplemented DSlo call"); };
+    virtual DSLO_VISSYMDEF*	DSlo_GetArgById(int i_id){ dzApp->log("yaluxplug: unimplemented DSlo call"); return NULL; };
+    virtual DSLO_VISSYMDEF*	DSlo_GetArgByName(const char *i_name){ dzApp->log("yaluxplug: unimplemented DSlo call"); return NULL; };
+    virtual DSLO_VISSYMDEF*	DSlo_GetArrayArgElement(DSLO_VISSYMDEF *i_array, int i_index){ dzApp->log("yaluxplug: unimplemented DSlo call"); return NULL; };
     
-    virtual int				DSlo_GetNAnnotations(){ dzApp->log("yaluxplug: unimplemented DSlo call"); };
-    virtual const char*		DSlo_GetAnnotationKeyById(int i_id){ dzApp->log("yaluxplug: unimplemented DSlo call"); };
-    virtual const char*		DSlo_GetAnnotationByKey(const char *i_key){ dzApp->log("yaluxplug: unimplemented DSlo call"); };
+    virtual int				DSlo_GetNAnnotations(){ dzApp->log("yaluxplug: unimplemented DSlo call"); return NULL; };
+    virtual const char*		DSlo_GetAnnotationKeyById(int i_id){ dzApp->log("yaluxplug: unimplemented DSlo call"); return NULL; };
+    virtual const char*		DSlo_GetAnnotationByKey(const char *i_key){ dzApp->log("yaluxplug: unimplemented DSlo call"); return NULL; };
     
     virtual void			DSlo_EndShader(){ dzApp->log("yaluxplug: unimplemented DSlo call"); };
-    virtual const char*		DSlo_TypetoStr(DSLO_TYPE i_type){ dzApp->log("yaluxplug: unimplemented DSlo call"); };
-    virtual const char*		DSlo_StortoStr(DSLO_STORAGE i_storage){ dzApp->log("yaluxplug: unimplemented DSlo call"); };
-    virtual const char*		DSlo_DetailtoStr(DSLO_DETAIL i_detail){ dzApp->log("yaluxplug: unimplemented DSlo call"); };
+    virtual const char*		DSlo_TypetoStr(DSLO_TYPE i_type){ dzApp->log("yaluxplug: unimplemented DSlo call"); return NULL; };
+    virtual const char*		DSlo_StortoStr(DSLO_STORAGE i_storage){ dzApp->log("yaluxplug: unimplemented DSlo call"); return NULL; };
+    virtual const char*		DSlo_DetailtoStr(DSLO_DETAIL i_detail){ dzApp->log("yaluxplug: unimplemented DSlo call"); return NULL; };
     
     
     // ------------------ Rendering
