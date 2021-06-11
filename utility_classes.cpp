@@ -1897,26 +1897,32 @@ QString LuxProcessObject(DzObject *daz_obj, QString &mesg)
     //  dzApp->log( QString("\tobject(node label) = [%1], shape = [%2], %3").arg(nodeLabel).arg(shapeLabel).arg(geoLabel) ) ;
 
     // Shape -> MaterialList
-    DzMaterialPtrList materialList;
+    //DzMaterialPtrList materialList;
     QString matLabel;
-    shape->getAllRenderPrioritizedMaterials(materialList);
-    int i = 0;
+
+    //shape->getAllRenderPrioritizedMaterials(materialList);
+    //int numMaterials = shape->getNumAssemblyMaterials();
+    int numMaterials = shape->getNumMaterials();
     QObjectList texList;
 
-
     // TEXTURES 
-    while (i < materialList.count() )
+//    while (i < materialList.count() )
+    for (int i=0; i < numMaterials; i++)
     {
         attributeblock = "AttributeBegin\n";
-        matLabel = materialList[i]->getLabel();
+        //matLabel = materialList[i]->getLabel();
+        //DzMaterial *material = shape->getAssemblyMaterial(i);
+        DzMaterial* material = shape->getMaterial(i);
+        matLabel = material->getLabel();
         // DEBUG
-        if (YaLuxGlobal.debugLevel > 1)
-            mesg += QString("\t\tmaterial[%1] = getLabel[%2], getName[%3], getMaterialName[%4]").arg(i).arg(matLabel).arg(materialList[i]->getName()).arg(materialList[i]->getMaterialName()) ;
+//        if (YaLuxGlobal.debugLevel > 1)
+//            mesg += QString("\t\tmaterial[%1] = getLabel[%2], getName[%3], getMaterialName[%4]").arg(i).arg(matLabel).arg(materialList[i]->getName()).arg(materialList[i]->getMaterialName()) ;
 //            dzApp->log( QString("\t\tmaterial[%1] = getLabel[%2], getName[%3], getMaterialName[%4]").arg(i).arg(matLabel).arg(materialList[i]->getName()).arg(materialList[i]->getMaterialName()) );
         //////////////////////////////////
         // Read the Daz material properties and generate the luxrender material block
         ///////////////////////////////////
-        attributeblock += LuxProcessGlossyMaterial(materialList[i], mesg, matLabel);
+        //attributeblock += LuxProcessGlossyMaterial(materialList[i], mesg, matLabel);
+        attributeblock += LuxProcessGlossyMaterial(material, mesg, matLabel);
 
         // process related vertex group for this material
         QString objMatName = QString("%1.%2").arg(nodeLabel).arg(matLabel);
@@ -1930,19 +1936,24 @@ QString LuxProcessObject(DzObject *daz_obj, QString &mesg)
         QString strEfficacy = "17";
         QString strPower = "100";
         // Check to see if this is an area light material
-        DzPropertyGroupTree *propertygrouptree = materialList[i]->getPropertyGroups();
+        //DzPropertyGroupTree *propertygrouptree = materialList[i]->getPropertyGroups();
+        DzPropertyGroupTree* propertygrouptree = material->getPropertyGroups();
         if ( matLabel.contains("RealityLight") )
         {
-            strColor = LuxGetStringProperty(materialList[i], "Diffuse Color", mesg);
-            strGain = LuxGetStringProperty(materialList[i], "Diffuse Strength", mesg);
+//            strColor = LuxGetStringProperty(materialList[i], "Diffuse Color", mesg);
+            strColor = LuxGetStringProperty(material, "Diffuse Color", mesg);
+//            strGain = LuxGetStringProperty(materialList[i], "Diffuse Strength", mesg);
+            strGain = LuxGetStringProperty(material, "Diffuse Strength", mesg);
             bIsAreaLight = true;
         }
         else if ( propertygrouptree->findChild("LuxRender") != NULL)
         {
-            if ( LuxGetStringProperty(materialList[i], "LuxRender_material_enablelight", mesg) == "true")
+//            if ( LuxGetStringProperty(materialList[i], "LuxRender_material_enablelight", mesg) == "true")
+            if ( LuxGetStringProperty(material, "LuxRender_material_enablelight", mesg) == "true")
             {
                 bIsAreaLight = true;
-                strColor = LuxGetStringProperty(materialList[i], "LuxRender_matte_Kd", mesg);
+//                strColor = LuxGetStringProperty(materialList[i], "LuxRender_matte_Kd", mesg);
+                strColor = LuxGetStringProperty(material, "LuxRender_matte_Kd", mesg);
             }
             // DEBUG
             if (YaLuxGlobal.debugLevel > 3)
@@ -1950,8 +1961,10 @@ QString LuxProcessObject(DzObject *daz_obj, QString &mesg)
         }
         else if ( propertygrouptree->findChild("Light") != NULL)
         {
-            strColor = LuxGetStringProperty(materialList[i], "Color", mesg);
-            strGain = LuxGetStringProperty(materialList[i], "Intensity", mesg);
+//            strColor = LuxGetStringProperty(materialList[i], "Color", mesg);
+            strColor = LuxGetStringProperty(material, "Color", mesg);
+//            strGain = LuxGetStringProperty(materialList[i], "Intensity", mesg);
+            strGain = LuxGetStringProperty(material, "Intensity", mesg);
             bIsAreaLight = true;
         }
         if (bIsAreaLight)
@@ -1981,7 +1994,8 @@ QString LuxProcessObject(DzObject *daz_obj, QString &mesg)
         QString plyFileName;
         if ( geo->inherits("DzFacetMesh") )
         {
-            DazToPLY dzPLYexport((DzFacetMesh *)geo, objMatName, materialList[i]);
+//            DazToPLY dzPLYexport((DzFacetMesh *)geo, objMatName, materialList[i]);
+            DazToPLY dzPLYexport((DzFacetMesh*)geo, objMatName, material);
             //            plyFileName = dzPLYexport.LuxMakeAsciiPLY();
             plyFileName = dzPLYexport.LuxMakeBinPLY();
             //            plyFileName = LuxMakePLY((DzFacetMesh*)mesh, meshName, materialList[i]);
