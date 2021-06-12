@@ -2013,7 +2013,7 @@ QString LuxProcessObject(DzObject *daz_obj, QString &mesg)
             attributeblock = "";
         }
         outstr += attributeblock;
-        i++;
+        //i++;
     }
     // don't call dzapp->log because mesg is passed back to the calling function
     // DEBUG
