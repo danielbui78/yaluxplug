@@ -100,12 +100,17 @@ const QStringList distantLightPlane = QStringList() <<
 
 
 QString LuxProcessObject(DzObject *daz_obj, QString &mesg);
+QString LuxCoreProcessObject(DzObject* daz_obj, QString& mesg);
 QString LuxProcessGenMaterial(DzMaterial *material, QString &mesg, QString matLabel);
 QString LuxProcessGlossyMaterial(DzMaterial *material, QString &mesg, QString matLabel);
 QString LuxProcessMatteMaterial(DzMaterial *material, QString &mesg, QString matLabel);
 QString LuxProcessProperties(DzElement *el, QString &mesg);
 QString LuxProcessLight(DzLight *currentLight, QString &mesg);
-QString LuxMakeSceneFile(QString filenameLXS, DzRenderer *r, DzCamera *camera, const DzRenderOptions &opt);
+QString LuxCoreProcessLight(DzLight* currentLight, QString& mesg);
+bool LuxMakeLXSFile(QString filenameLXS, DzRenderer *r, DzCamera *camera, const DzRenderOptions &opt);
+bool LuxMakeCFGFile(QString filenameLXS, DzRenderer* r, DzCamera* camera, const DzRenderOptions& opt);
+bool LuxMakeSCNFile(QString filenameLXS, DzRenderer* r, DzCamera* camera, const DzRenderOptions& opt);
+
 
 class WorkerPrepareImage : public QObject
 {

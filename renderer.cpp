@@ -380,7 +380,9 @@ bool YaLuxRender::render(DzRenderHandler *old_handler, DzCamera *camera, const D
         //
         /////////////////////////////
         dzScene->setFrame(YaLuxGlobal.activeFrame);
-        LuxMakeSceneFile(fullPathFileNameLXS, this, camera, opt);
+        //LuxMakeLXSFile(fullPathFileNameLXS, this, camera, opt);
+        LuxMakeCFGFile(fullPathTempFileNameNoExt + ".cfg", this, camera, opt);
+        LuxMakeSCNFile(fullPathTempFileNameNoExt + ".scn", this, camera, opt);
 
         // Set up progress bar for the current frame
         YaLuxGlobal.FrameProgress = new DzProgress("Current Frame Progress", 100);
