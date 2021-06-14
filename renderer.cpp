@@ -182,8 +182,29 @@ void YaLuxRender::setLuxExecPath(const QString &execPath)
 
 bool YaLuxRender::render(DzRenderHandler *old_handler, DzCamera *camera, const DzRenderOptions &opt)
 {
-
+    /////////////////////////////////////
+    // Apply any changes from options frame
+    /////////////////////////////////////
     YaLuxGlobal.optFrame->applyChanges();
+
+    /////////////////////////////////////
+    // Add Tonemapper Options if not exists
+    /////////////////////////////////////
+    DzNode* tonemapper = dzScene->findNode("Tonemapper Options");
+    if (tonemapper)
+    {
+
+    }
+
+    /////////////////////////////////////
+    // ?? Optional ??? Add IBL Environemnet if no lights
+    /////////////////////////////////////
+    DzNode* environment = dzScene->findNode("Environment Options");
+    if (environment)
+    {
+
+    }
+
 
     QSize renderImageSize;
     QString mesg;

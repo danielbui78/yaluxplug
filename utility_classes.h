@@ -112,7 +112,13 @@ bool LuxMakeCFGFile(QString filenameLXS, DzRenderer* r, DzCamera* camera, const 
 bool LuxMakeSCNFile(QString filenameLXS, DzRenderer* r, DzCamera* camera, const DzRenderOptions& opt);
 QString LuxCoreProcessObject(DzObject* daz_obj, QString& mesg);
 QString LuxCoreProcessGlossyMaterial(DzMaterial* material, QString& mesg, QString matLabel);
-QString GenerateCoreTextureBlock(QString textureName, QString textureType, QString mapName, QString textureValue,
+QString LuxCoreProcessDazDefaultMaterial(DzMaterial* material, QString& mesg, QString matLabel);
+QString LuxCoreProcessOmUberSurfaceMaterial(DzMaterial* material, QString& mesg, QString matLabel);
+
+QString GenerateCoreTextureBlock(QString textureName, QString mapName, float textureValue1, float textureValue2, float textureValue3,
+    float uscale, float vscale, float uoffset, float voffset, float gamma,
+    QString wrap, QString filtertype, QString channel);
+QString GenerateCoreTextureBlock(QString textureName, QString mapName, float textureValue,
     float uscale, float vscale, float uoffset, float voffset, float gamma,
     QString wrap, QString filtertype, QString channel);
 QString SanitizeCoreLabel(QString label);
