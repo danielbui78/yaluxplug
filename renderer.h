@@ -408,6 +408,7 @@ public:
     void                    handleShowLXS();
     void                    resetRenderServers();
     void                    logToWindow( QString data, QColor textcolor=QColor(255,255,255), bool bIsBold=false );
+    void                    processCoreRenderLog(QProcess* process, QFile& logFile, bool bUpdateRender);
 
 public:
     

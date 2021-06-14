@@ -24,6 +24,9 @@
 #include <QtGui/QWidget>
 #include <QtGui/QButtonGroup>
 
+#include <qfile.h>
+#include <qmessagebox.h>
+
 #include "dzapp.h"
 #include "dzscene.h"
 #include "dzrenderoptions.h"
@@ -92,6 +95,8 @@ YaLuxRender::YaLuxRender()
     DzFileIO::pathExists(YaLuxGlobal.cachePath,true);
     dzApp->log("yaluxplug: Initialized.");
 
+
+    YaLuxGlobal.optFrame = NULL;
 
     ///////////
     // Create Log window
@@ -177,6 +182,9 @@ void YaLuxRender::setLuxExecPath(const QString &execPath)
 
 bool YaLuxRender::render(DzRenderHandler *old_handler, DzCamera *camera, const DzRenderOptions &opt)
 {
+
+    YaLuxGlobal.optFrame->applyChanges();
+
     QSize renderImageSize;
     QString mesg;
     QString fullPathFileNameLXS;
@@ -189,6 +197,44 @@ bool YaLuxRender::render(DzRenderHandler *old_handler, DzCamera *camera, const D
     if (YaLuxGlobal.debugLevel >=2) // debugging data
     dzApp->log("\nyaluxplug: render() called.");
 
+    /////////////////////////////////////
+    // Double check external renderer exists
+    ////////////////////////////////////
+
+    QString file;
+    if (bIsAnimation)
+    {
+        file = YaLuxGlobal.LuxExecPath;
+
+    }
+    else
+    {
+        if (YaLuxGlobal.bShowLuxRenderWindow)
+        {
+#if defined( Q_OS_WIN )
+            //            file = DzFileIO::getFilePath(YaLuxGlobal.LuxExecPath) + "/luxrender.exe";
+            file = DzFileIO::getFilePath(YaLuxGlobal.LuxExecPath) + "/luxcoreui.exe";
+#elif defined( Q_WS_MAC )
+            file = DzFileIO::getFilePath(YaLuxGlobal.LuxExecPath) + "/luxrender";
+#endif
+        }
+        else
+        {
+            file = YaLuxGlobal.LuxExecPath;
+        }
+    }
+    if (QFile(file).exists() != true)
+    {
+        // abort
+        QMessageBox::critical(0, tr("Error"), tr("ERROR: Can not find Luxrender executable: ") + file, QMessageBox::Ok);
+        return false;
+    }
+
+
+
+    //////////////////////////////////
+    // Render Handler and Progress
+    //////////////////////////////////
     old_handler->dumpObjectInfo();
     old_handler->dumpObjectTree();
     DzViewRenderHandler *handler = new DzViewRenderHandler(old_handler->getSize(), old_handler->getStartingTime(), QString(""), true);
@@ -264,38 +310,41 @@ bool YaLuxRender::render(DzRenderHandler *old_handler, DzCamera *camera, const D
     //////////////////////////
     // Set up external process
     ///////////////////////////
-    QProcess *process = new QProcess(this);
-    YaLuxGlobal.luxRenderProc = process;
+//    QProcess *process = new QProcess(this);
+//    YaLuxGlobal.luxRenderProc = process;
+    YaLuxGlobal.luxRenderProc = new QProcess(this);
+    YaLuxGlobal.luxRenderProc->setWorkingDirectory(YaLuxGlobal.tempPath);
     QString logFileName = QString("%1/yaluxplug.log").arg(YaLuxGlobal.tempPath);
 //    process->setStandardErrorFile(logFile, QIODevice::Append);
-    process->setReadChannel(QProcess::StandardError);
+    YaLuxGlobal.luxRenderProc->setReadChannel(QProcess::StandardError);
 
-    connect(process, SIGNAL( finished(int, QProcess::ExitStatus) ),
+    connect(YaLuxGlobal.luxRenderProc, SIGNAL( finished(int, QProcess::ExitStatus) ),
             this, SLOT( handleRenderProcessComplete(int, QProcess::ExitStatus) ) );
-    connect(process, SIGNAL( stateChanged( QProcess::ProcessState) ),
+    connect(YaLuxGlobal.luxRenderProc, SIGNAL( stateChanged( QProcess::ProcessState) ),
             this, SLOT( handleRenderProcessStateChange( QProcess::ProcessState)) );
 
-    QString file;
-    if (bIsAnimation)
-    {
-        file = YaLuxGlobal.LuxExecPath;
-
-    }
-    else
-    {
-        if (YaLuxGlobal.bShowLuxRenderWindow)
-        {
-#if defined( Q_OS_WIN )
-            file = DzFileIO::getFilePath(YaLuxGlobal.LuxExecPath) + "/luxrender.exe";
-#elif defined( Q_WS_MAC )
-            file = DzFileIO::getFilePath(YaLuxGlobal.LuxExecPath) + "/luxrender";
-#endif
-        }
-        else
-        {
-            file = YaLuxGlobal.LuxExecPath;
-        }
-    }
+//    QString file;
+//    if (bIsAnimation)
+//    {
+//        file = YaLuxGlobal.LuxExecPath;
+//
+//    }
+//    else
+//    {
+//        if (YaLuxGlobal.bShowLuxRenderWindow)
+//        {
+//#if defined( Q_OS_WIN )
+////            file = DzFileIO::getFilePath(YaLuxGlobal.LuxExecPath) + "/luxrender.exe";
+//            file = DzFileIO::getFilePath(YaLuxGlobal.LuxExecPath) + "/luxcoreui.exe";
+//#elif defined( Q_WS_MAC )
+//            file = DzFileIO::getFilePath(YaLuxGlobal.LuxExecPath) + "/luxrender";
+//#endif
+//        }
+//        else
+//        {
+//            file = YaLuxGlobal.LuxExecPath;
+//        }
+//    }
     QStringList userargs = YaLuxGlobal.CmdLineArgs.split(" ", QString::SkipEmptyParts);
     if (YaLuxGlobal.bNetworkRenderOn)
     {
@@ -304,7 +353,8 @@ bool YaLuxRender::render(DzRenderHandler *old_handler, DzCamera *camera, const D
             userargs << QString("-u%1").arg(YaLuxGlobal.slaveNodeList[i]);
         }
     }
-    QStringList args = QStringList() << "-l" << userargs << fullPathFileNameLXS;
+    //QStringList args = QStringList() << "-l" << userargs << fullPathFileNameLXS;
+    QStringList args = QStringList() << userargs << fullPathTempFileNameNoExt + ".cfg";
     //DEBUG
     if (YaLuxGlobal.debugLevel >=2) // debugging data
         dzApp->log( QString("yaluxplug: DEBUG: render process argument list = [%1]").arg(args.join(",")) );
@@ -392,8 +442,22 @@ bool YaLuxRender::render(DzRenderHandler *old_handler, DzCamera *camera, const D
         //  Start the luxrender/luxconsole process
         //
         //////////////////////////////
-        process->start(file, args);
-        process->waitForStarted();
+        YaLuxGlobal.luxRenderProc->start(file, args);
+        bool result = YaLuxGlobal.luxRenderProc->waitForStarted();
+        if (result == false)
+        {
+            // abort
+            QStringList abortMessage;
+            abortMessage << "yaluxplug: could not start process: " << file << " " << args << ". aborting.\n";
+            dzApp->log(abortMessage.join(""));
+            logFile.write(abortMessage.join("").toAscii());
+            handler->finishRender();
+            YaLuxGlobal.inProgress = false;
+            YaLuxGlobal.RenderProgress->finish();
+            YaLuxGlobal.FrameProgress->finish();
+            logFile.close();
+            return false;
+        }
 
         // Update the progress window
         mesg = QString("Rendering frame #%1 (%2/%3)...").arg(YaLuxGlobal.activeFrame).arg(YaLuxGlobal.frame_counter+1).arg(YaLuxGlobal.totalFrames);
@@ -406,13 +470,15 @@ bool YaLuxRender::render(DzRenderHandler *old_handler, DzCamera *camera, const D
 //        tmr.start(1000);
         // Notify the render handler of the newly started frame -- it will respond by
         // opening a render preview window if this is a single frame render job.
-    
-        if (YaLuxGlobal.bShowLuxRenderWindow == false || (YaLuxGlobal.totalFrames > 1))
+
+        if ( YaLuxGlobal.bShowLuxRenderWindow == false || YaLuxGlobal.totalFrames > 1 ||
+            YaLuxGlobal.debugLevel >= 3 )
         {
-            handler->beginFrame(YaLuxGlobal.frame_counter);
+            if (YaLuxGlobal.bShowLuxRenderWindow == false) handler->beginFrame(YaLuxGlobal.frame_counter);
             YaLuxGlobal.logWindow->show();
             YaLuxGlobal.logWindow->activateWindow();
         }
+
 
         connect(dzApp->getInterface(), SIGNAL(aboutToClose()),
                 YaLuxGlobal.logWindow, SLOT(close()) );
@@ -434,7 +500,7 @@ bool YaLuxRender::render(DzRenderHandler *old_handler, DzCamera *camera, const D
             // double check process
             // DEBUG
             int processState = -1;
-            processState = process->state();
+            processState = YaLuxGlobal.luxRenderProc->state();
             if ( (processState == QProcess::NotRunning) || (YaLuxGlobal.RenderProgress->isCancelled() == true) )
 //            if ( (YaLuxGlobal.RenderProgress->isCancelled() == true) )
             {
@@ -455,7 +521,8 @@ bool YaLuxRender::render(DzRenderHandler *old_handler, DzCamera *camera, const D
 //            process->waitForFinished();
 
 //            process->waitForReadyRead(5000);
-            processRenderLog(process, logFile, true);
+            //processRenderLog(process, logFile, true);
+            processCoreRenderLog(YaLuxGlobal.luxRenderProc, logFile, true);
 
             QCoreApplication::processEvents(QEventLoop::AllEvents);
 
@@ -480,12 +547,13 @@ bool YaLuxRender::render(DzRenderHandler *old_handler, DzCamera *camera, const D
 
         // Read the remainder of the stdoutput to the logfile
         // but don't update the image since this was already done when process sent the finish() signal.
-        processRenderLog(process, logFile, false);
+        //processRenderLog(process, logFile, false);
+        processCoreRenderLog(YaLuxGlobal.luxRenderProc, logFile, false);
 
         // If Renderprogress is cancelled of bIsCancelled is true, then stop the animation rendering
         if ( (YaLuxGlobal.RenderProgress->isCancelled() == true) || (YaLuxGlobal.bIsCancelled == true) )
         {
-            YaLuxGlobal.luxRenderProc->deleteLater();
+            //YaLuxGlobal.luxRenderProc->deleteLater();
             YaLuxGlobal.inProgress = false;
             YaLuxGlobal.RenderProgress->finish();
             YaLuxGlobal.FrameProgress->finish();
@@ -511,17 +579,17 @@ bool YaLuxRender::render(DzRenderHandler *old_handler, DzCamera *camera, const D
     //
     //////////////////////////
 
-
-//    disconnect(process, SIGNAL( finished(int, QProcess::ExitStatus) ),
-//            this, SLOT( handleRenderProcessComplete(int, QProcess::ExitStatus) ) );
-    YaLuxGlobal.luxRenderProc->deleteLater();
-
-    YaLuxGlobal.inProgress = false;
+    emit killRender();
     handler->finishRender();
     YaLuxGlobal.RenderProgress->finish();
     YaLuxGlobal.FrameProgress->finish();
+    YaLuxGlobal.inProgress = false;
 
     logFile.close();
+
+//    disconnect(YaLuxGlobal.luxRenderProc, SIGNAL( finished(int, QProcess::ExitStatus) ),
+//                this, SLOT( handleRenderProcessComplete(int, QProcess::ExitStatus) ) );
+//    YaLuxGlobal.luxRenderProc->deleteLater();
 
     return true;
 }
@@ -542,6 +610,75 @@ void YaLuxRender::resetRenderServers()
     YaLuxGlobal.logText->append( QString(qa) );
     //                    YaLuxGlobal.RenderProgress->setInfo( QString(qa) );
 }
+
+void YaLuxRender::processCoreRenderLog(QProcess* process, QFile& logFile, bool bUpdateRender)
+{
+
+    // Read the remainder of the stdoutput to the logfile
+    if (YaLuxGlobal.bShowLuxRenderWindow)
+    {
+        process->setProcessChannelMode(QProcess::MergedChannels);
+        process->setReadChannel(QProcess::StandardOutput);
+    }
+    while ( process->canReadLine() )
+    {
+
+        // NOTE: we don't need to process the "writing tonemapped PNG" because a
+        //   final loading of the file was done when the process called the finish() signal.
+        QByteArray qa = process->readLine();
+
+        if (qa.contains("Outputting film:"))
+        {
+            if (bUpdateRender)
+                updateData();
+        }
+        else if (qa.contains("ERROR"))
+        {
+            logToWindow(QString(qa.data()), QColor(255, 0, 0), true);
+        }
+        else if (qa.contains("Lux version"))
+        {
+            logToWindow(QString(qa.data()), QColor(0, 255, 0), true);
+        }
+        else if (qa.contains("rendering done"))
+        {
+            logToWindow(QString(qa.data()), QColor(0, 255, 0), true);
+        }
+        else if (qa.contains("server"))
+        {
+            logToWindow(QString(qa.data()), QColor(100, 200, 255), true);
+        }
+        else if (qa.contains("Tessellating"))
+        {
+            logToWindow(QString(qa.data()));
+        }
+        else if ( qa.contains("% T)") || qa.contains("% Thld)") || qa.contains("Elapsed time") )
+        {
+            if (YaLuxGlobal.debugLevel >= 1)
+            {
+                logToWindow(QString(qa.data()), QColor(100, 200, 255));
+            }
+            QRegExp regexp("\\(([\\d]*)% T\\)");
+            if (regexp.indexIn(QString(qa)) != -1)
+            {
+                QString percentString = regexp.cap(1);
+                //                YaLuxGlobal.FrameProgress->setInfo( QString("Frame render: %1\% completed").arg(percentString));
+                YaLuxGlobal.FrameProgress->update(percentString.toInt());
+            }
+
+        }
+        //else if (qa.contains("INFO") && YaLuxGlobal.debugLevel >= 2)
+        else if ( YaLuxGlobal.debugLevel >= 2 )
+        {
+            logToWindow(QString(qa.data()), QColor(255, 255, 255));
+        }
+        logFile.write(qa);
+
+    }
+    logFile.flush();
+
+}
+
 
 void YaLuxRender::processRenderLog(QProcess *process, QFile &logFile, bool bUpdateRender)
 {
@@ -645,11 +782,12 @@ void YaLuxRender::processRenderLog(QProcess *process, QFile &logFile, bool bUpda
 
 void YaLuxRender::logToWindow( QString data, QColor textcolor, bool bIsBold )
 {
-    QString formated = data.replace("\n", "");
+//    QString formated = data.replace("\n", "");
+    QString formated = data.replace("\n", "").replace("\r", "");
 //    if (bIsBold) YaLuxGlobal.logText->setBold(true);
     if (bIsBold) YaLuxGlobal.logText->setFontWeight(QFont::Bold);
     YaLuxGlobal.logText->setTextColor( textcolor );
-    YaLuxGlobal.logText->append( formated );
+    if (formated != "") YaLuxGlobal.logText->append( formated );
     YaLuxGlobal.logText->setTextColor( QColor(255,255,255) );
 //    if (bIsBold) YaLuxGlobal.logText->setBold(false);
     if (bIsBold) YaLuxGlobal.logText->setFontWeight(QFont::Normal);
@@ -724,6 +862,9 @@ void YaLuxRender::handleRenderProcessComplete( int exitCode, QProcess::ExitStatu
 
     if (status == QProcess::CrashExit)
     {
+        // ** TODO: detect intentional cancellation ** //
+
+
         QString error = QString("yaluxplug: ERROR: luxrender process stopped unexpectedly: exitCode=%1").arg(exitCode);
         logToWindow( QString(error), QColor(255,0,0), true);
 /*
@@ -768,6 +909,7 @@ void YaLuxRender::handleRenderProcessComplete( int exitCode, QProcess::ExitStatu
         dzApp->log( QString("yaluxplug: RENDER PROCESS exited with %1 ").arg(exitCode) );
     }
 */
+
 }
 
 bool YaLuxRender::customRender(DzRenderHandler *handler, DzCamera *camera, DzLightList &lights, DzNodeList &nodes, const DzRenderOptions &opt)
@@ -780,7 +922,10 @@ bool YaLuxRender::customRender(DzRenderHandler *handler, DzCamera *camera, DzLig
 
 DzOptionsFrame* YaLuxRender::getOptionsFrame() const
 {
-    YaLuxGlobal.optFrame = new YaLuxOptionsFrame();
+    if (YaLuxGlobal.optFrame == NULL)
+    {
+        YaLuxGlobal.optFrame = new YaLuxOptionsFrame();
+    }
     
     if (YaLuxGlobal.debugLevel >=2) // debugging data
         dzApp->log("yaluxplug: creating options frame");
@@ -916,8 +1061,15 @@ void YaLuxRender::killRender()
     // stop rendering now
     if (YaLuxGlobal.debugLevel >=2) // debugging data
         dzApp->log("yaluxplug: killRender was called.");
-    // Kill Render process
-    YaLuxGlobal.luxRenderProc->kill();
+
+    if (YaLuxGlobal.luxRenderProc != NULL)
+    {
+        if (YaLuxGlobal.luxRenderProc->state() == QProcess::Running)
+        {
+            // Kill Render process
+            YaLuxGlobal.luxRenderProc->kill();
+        }
+    }
 
     return;
 };

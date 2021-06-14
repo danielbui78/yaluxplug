@@ -100,7 +100,6 @@ const QStringList distantLightPlane = QStringList() <<
 
 
 QString LuxProcessObject(DzObject *daz_obj, QString &mesg);
-QString LuxCoreProcessObject(DzObject* daz_obj, QString& mesg);
 QString LuxProcessGenMaterial(DzMaterial *material, QString &mesg, QString matLabel);
 QString LuxProcessGlossyMaterial(DzMaterial *material, QString &mesg, QString matLabel);
 QString LuxProcessMatteMaterial(DzMaterial *material, QString &mesg, QString matLabel);
@@ -108,9 +107,16 @@ QString LuxProcessProperties(DzElement *el, QString &mesg);
 QString LuxProcessLight(DzLight *currentLight, QString &mesg);
 QString LuxCoreProcessLight(DzLight* currentLight, QString& mesg);
 bool LuxMakeLXSFile(QString filenameLXS, DzRenderer *r, DzCamera *camera, const DzRenderOptions &opt);
+
 bool LuxMakeCFGFile(QString filenameLXS, DzRenderer* r, DzCamera* camera, const DzRenderOptions& opt);
 bool LuxMakeSCNFile(QString filenameLXS, DzRenderer* r, DzCamera* camera, const DzRenderOptions& opt);
-
+QString LuxCoreProcessObject(DzObject* daz_obj, QString& mesg);
+QString LuxCoreProcessGlossyMaterial(DzMaterial* material, QString& mesg, QString matLabel);
+QString GenerateCoreTextureBlock(QString textureName, QString textureType, QString mapName, QString textureValue,
+    float uscale, float vscale, float uoffset, float voffset, float gamma,
+    QString wrap, QString filtertype, QString channel);
+QString SanitizeCoreLabel(QString label);
+QString LuxGetImageMapProperty(DzElement* el, QString propertyName, QString& mesg);
 
 class WorkerPrepareImage : public QObject
 {

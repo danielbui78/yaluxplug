@@ -26,6 +26,7 @@ class YaLuxOptionsFrame : public DzOptionsFrame {
 public:
 //    YaLuxOptions(const QString &label, QWidget *parent=0, const QString &name=QString::null);
     YaLuxOptionsFrame();
+    ~YaLuxOptionsFrame();
 
 public slots:    
     virtual void	applyChanges();

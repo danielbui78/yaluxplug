@@ -9,6 +9,9 @@
 #include <QtGUI/QTouchEvent>
 #include <QtGUI/QLayout>
 
+#include <qfile.h>
+#include <qmessagebox.h>
+
 #include "dzbasicpropertywgt.h"
 #include "dzfilepropertywgt.h"
 #include "dzproperty.h"
@@ -45,6 +48,14 @@ void YaLuxOptionsFrame::execPathChanged()
         path = DzFileIO::getFilePath(path);
         execPath->setValue(path);
     }
+
+}
+
+YaLuxOptionsFrame::~YaLuxOptionsFrame() 
+{
+    saveSettings();
+    YaLuxGlobal.optFrame = NULL;
+
 }
 
 YaLuxOptionsFrame::YaLuxOptionsFrame() : DzOptionsFrame("yaluxplug Options Frame", 0, "yaluxplug Options Frame")
@@ -112,6 +123,7 @@ YaLuxOptionsFrame::YaLuxOptionsFrame() : DzOptionsFrame("yaluxplug Options Frame
     for (i=0; i<debugLevelList.count(); i++) {
         debugLevel->addItem(debugLevelList[i]);
     }
+    debugLevel->setValue(3);
     listView->addProperty(debugLevel);
 
     // network render on/off
@@ -173,6 +185,9 @@ YaLuxOptionsFrame::YaLuxOptionsFrame() : DzOptionsFrame("yaluxplug Options Frame
     listView->addProperty(tonemapFstop);
     listView->addProperty(tonemapExposureTime);
     listView->addProperty(tonemapISO);
+
+    connect(listView, SIGNAL(currentValueChanged()),
+        this, SLOT(applyChanges()));
 
 //    DzStyledFilePropertyWgt *widget = new DzStyledFilePropertyWgt(listView, "test string");
 //    widget->addProperty(fileProperty);
@@ -273,7 +288,8 @@ void	YaLuxOptionsFrame::applyChanges()
     dzApp->log("yaluxplug: Render Options Panel: applying Changes.");
     // DEBUG FIX: THIS IS ONLY FOR MAC platform
 #if defined( Q_OS_WIN )
-    YaLuxGlobal.LuxExecPath = execPath->getValue() + "/luxconsole.exe";
+    //YaLuxGlobal.LuxExecPath = execPath->getValue() + "/luxconsole.exe";
+    YaLuxGlobal.LuxExecPath = execPath->getValue() + "/luxcoreconsole.exe";
 #elif defined( Q_WS_MAC )
     YaLuxGlobal.LuxExecPath = execPath->getValue() + "/Luxrender.app/Contents/MacOS/luxconsole";
 #endif
@@ -300,8 +316,6 @@ void	YaLuxOptionsFrame::applyChanges()
     else
         YaLuxGlobal.maxTextureSize = maxTextureSize->getStringValue().toInt();
 
-    // DEBUG - find a place for this
-    saveSettings();
 };
 
 void	YaLuxOptionsFrame::resetOptions()
@@ -310,16 +324,42 @@ void	YaLuxOptionsFrame::resetOptions()
     // DEBUG
     if (YaLuxGlobal.debugLevel >=1) // user data
     dzApp->log("yaluxplug: Render Options Panel: resetting options.");
+
 };
 
 bool    YaLuxOptionsFrame::applyValid() const
 {
-    return true; 
+    if (QFile(execPath->getValue()).exists() == false)
+    {
+        return false;
+    }
+
+    return true;
 }
 
 void	YaLuxOptionsFrame::restoreOptions( DzRenderOptions *options )
 {
+    //execPath->setValue("");
+    argumentList->setValue("");
+    showLuxWindow->setBoolValue(false);
+    saveAlphaChannel->setBoolValue(false);
+    haltTime->setValue(600);
+    haltSPP->setValue(1000);
+    haltThreshold->setValue(0.99);
+    debugLevel->setValue(3);
+    tonemapGamma->setValue(2.2);
+    tonemapFstop->setValue(2.8);
+    tonemapExposureTime->setValue(0.001);
+    tonemapISO->setValue(100);
+    toneMapMethod->setValue(1);
+    renderServerList->setValue("");
+    renderMode->setValue(0);
+    customRenderString->setValue("");
+    specularMode->setValue(0);
+    networkRenderOn->setBoolValue(false);
+    maxTextureSize->setValue(512);
 
+    applyChanges();
 };
 
 #include "moc_optionsframe.cpp"
