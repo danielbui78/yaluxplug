@@ -4533,7 +4533,7 @@ QString SanitizeCoreLabel(QString label)
     // SANITIZE LABEL: remove spaces, commas, semicolons, colons double quotes, single quotes, !@#$%^&*()
     QStringList blackListCharacters;
     blackListCharacters << " " << "," << ";" << ":" << "\"" << "'" << "!" << "@" << "#" << "$" << "%";
-    blackListCharacters << "^" << "&" << "*" << "(" << ")" << "=" << "+" << "-";
+    blackListCharacters << "^" << "&" << "*" << "(" << ")" << "=" << "+" << "-" << ".";
     for (int i = 0; i < blackListCharacters.count(); i++)
     {
         retString = label.replace(blackListCharacters[i], "_");
