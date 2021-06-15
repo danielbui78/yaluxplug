@@ -109,8 +109,10 @@ YaLuxRender::YaLuxRender()
     YaLuxGlobal.logText = new QTextEdit(YaLuxGlobal.logWindow);
     layout->addWidget(YaLuxGlobal.logText);
     QHBoxLayout *buttonBar = new QHBoxLayout();
-    QPushButton *showLXS = new QPushButton("&Show Scenefile (.LXS)", YaLuxGlobal.logWindow);
-    buttonBar->addWidget(showLXS);
+    //QPushButton *showLXS = new QPushButton("&Show Scenefile (.LXS)", YaLuxGlobal.logWindow);
+    //buttonBar->addWidget(showLXS);
+    QPushButton* showSCN = new QPushButton("&Show Scenefile (.SCN)", YaLuxGlobal.logWindow);
+    buttonBar->addWidget(showSCN);
     QPushButton *previewCurrentFrame = new QPushButton("Pre&view current frame", YaLuxGlobal.logWindow);
     buttonBar->addWidget(previewCurrentFrame);
     QPushButton *stopRenderButton = new QPushButton("&Stop all rendering", YaLuxGlobal.logWindow);
@@ -126,8 +128,8 @@ YaLuxRender::YaLuxRender()
             this, SLOT(handleNextFrame()) );
     connect(previewCurrentFrame, SIGNAL(clicked()),
             this, SLOT(handlePreviewCurrentFrame()) );
-    connect(showLXS, SIGNAL( clicked()),
-            this, SLOT(handleShowLXS()) );
+    connect(showSCN, SIGNAL( clicked()),
+            this, SLOT(handleShowSCN()) );
 
     return;
 }
@@ -161,9 +163,9 @@ void YaLuxRender::handlePreviewCurrentFrame()
     QDesktopServices::openUrl( QUrl::fromLocalFile(file) );
 }
 
-void YaLuxRender::handleShowLXS()
+void YaLuxRender::handleShowSCN()
 {
-    QString file =YaLuxGlobal.tempPath + "/" + YaLuxGlobal.tempFilenameBase + ".lxs" ;
+    QString file =YaLuxGlobal.tempPath + "/" + YaLuxGlobal.tempFilenameBase + ".scn" ;
     YaLuxGlobal.logText->setTextColor( QColor(255,255,255));
     YaLuxGlobal.logText->append( QString("Opening file: [%1]").arg( QUrl::fromLocalFile(file).toString() ) );
     QDesktopServices::openUrl( QUrl::fromLocalFile(file) );

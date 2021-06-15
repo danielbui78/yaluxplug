@@ -405,7 +405,7 @@ public:
     void                    handleStopRender();
     void                    handleNextFrame();
     void                    handlePreviewCurrentFrame();
-    void                    handleShowLXS();
+    void                    handleShowSCN();
     void                    resetRenderServers();
     void                    logToWindow( QString data, QColor textcolor=QColor(255,255,255), bool bIsBold=false );
     void                    processCoreRenderLog(QProcess* process, QFile& logFile, bool bUpdateRender);
