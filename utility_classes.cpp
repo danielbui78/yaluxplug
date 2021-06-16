@@ -1999,8 +1999,7 @@ QString LuxProcessObject(DzObject *daz_obj, QString &mesg)
     {
         attributeblock = "AttributeBegin\n";
         //matLabel = materialList[i]->getLabel();
-        //DzMaterial *material = shape->getAssemblyMaterial(i);
-        DzMaterial* material = shape->getMaterial(i);
+        DzMaterial *material = shape->getAssemblyMaterial(i);
         matLabel = material->getLabel();
         // DEBUG
 //        if (YaLuxGlobal.debugLevel > 1)
@@ -2407,9 +2406,10 @@ bool LuxMakeLXSFile(QString fileNameLXS, DzRenderer *r, DzCamera *camera, const 
                 outLXS.write( QString("\n# AssetId=[" + nodeAssetId +"],nodeLabel=[" + currentNode->getLabel() + "]\n").toAscii() );
                 QString objectLabel = currentObject->getLabel();
 
-                // FINALIZE Node's geometry cache for rendering
-                //currentNode->finalize(true,true);
-                currentObject->finalize(*currentNode, true, true);
+                // DB (2021-06-15) This is probably not needed and may be introducing bad rener data
+                //// FINALIZE Node's geometry cache for rendering
+                ////currentNode->finalize(true,true);
+                //currentObject->finalize(*currentNode, true, true);
 
                 QString output;
                 output = LuxProcessObject(currentObject, mesg);
@@ -2855,9 +2855,10 @@ bool LuxMakeSCNFile(QString filenameSCN, DzRenderer* r, DzCamera* camera, const 
                 outSCN.write(QString("\n# AssetId=[" + nodeAssetId + "],nodeLabel=[" + currentNode->getLabel() + "]\n").toAscii());
                 QString objectLabel = currentObject->getLabel();
 
-                // FINALIZE Node's geometry cache for rendering
-                //currentNode->finalize(true,true);
-                currentObject->finalize(*currentNode, true, true);
+                //// DB (2021-06-15) This is probably not needed and may be introducing bad rener data
+                //// FINALIZE Node's geometry cache for rendering
+                ////currentNode->finalize(true,true);
+                //currentObject->finalize(*currentNode, true, true);
 
                 QString output;
                 output = LuxCoreProcessObject(currentObject, mesg);
@@ -3171,7 +3172,8 @@ QString LuxCoreProcessObject(DzObject* daz_obj, QString& mesg)
     for (int i = 0; i < numMaterials; i++)
     {
         //attributeblock = "AttributeBegin\n";
-        DzMaterial* material = shape->getMaterial(i);
+        DzMaterial* material = shape->getAssemblyMaterial(i);
+        if (material == NULL) continue;
 
         matLabel = SanitizeCoreLabel(material->getLabel());
         // DEBUG

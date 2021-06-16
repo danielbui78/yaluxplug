@@ -38,6 +38,7 @@ public:
     DzPnt3  *ptrAllVertices;
     DzPnt3  *ptrAllNormals;
     DzMap   *ptrAllUVs;
+    unsigned char *ptrAllFacetFlags;
 
     QList<PLY_VertexElement> ply_vertexElList;
     QList<PLY_FaceElement> ply_faceElList;

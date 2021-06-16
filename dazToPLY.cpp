@@ -27,6 +27,7 @@
 #include "dzvertexmesh.h"
 #include "dzfacetmesh.h"
 #include "dzfacegroup.h"
+#include "dzface.h"
 
 #include "dazToPLY.h"
 #include "renderer.h"
@@ -282,19 +283,32 @@ QString DazToPLY::LuxMakeBinPLY()
     QString ret_str ="";
     QString filenamePLY;
     
-    
     DzFacet *currentFace;
     
-    int i = 0;
-    while (i < numFaceIndices)
+    int facesToWrite = 0;
+
+    for (int i=0; i < numFaceIndices; i++)
     {
+        // CHECK FACETFLAG and skip if hidden
+        unsigned char flags = ptrAllFacetFlags[face_indexToMesh[i]];
+        if (flags & DZ_HIDDEN_FACE_BIT) continue;
+        facesToWrite++;
+
         currentFace = &ptrAllFaces[face_indexToMesh[i]];
         // add entries for quad
         //walkFaceEdges(currentFace);
         processFace(currentFace);
-        i++;
     }
     
+    if (facesToWrite == 0)
+    {
+        if (YaLuxGlobal.debugLevel >= 3) // verbose debugging data
+        {
+            dzApp->log("yaluxplug: DEBUG2: materialgroup has no meshes: " + objMatName);
+        }
+        return "";
+    }
+
     numVerts = ply_vertexElList.count();
     numFaces = ply_faceElList.count();
     
@@ -343,13 +357,12 @@ QString DazToPLY::LuxMakeBinPLY()
     plyOut->write("property list uchar uint vertex_indices\n");
     plyOut->write("end_header\n");
     
-    i = 0;
-    int len = ply_vertexElList[i].sizeofByteArray();
     int ibyteswritten;
     char *bytearray;
-    while (i < numVerts)
+    for (int i=0; i < numVerts; i++)
     {
         // write out the vertices
+        int len = ply_vertexElList[i].sizeofByteArray();
         bytearray = ply_vertexElList[i].getByteArray();
         ibyteswritten = plyOut->write(bytearray, len );
         if (ibyteswritten != len)
@@ -357,14 +370,12 @@ QString DazToPLY::LuxMakeBinPLY()
             // DEBUG
             dzApp->log("yaluxplug: ERROR writing vertices in ply bin. byteswritten= " + QString("%1").arg(len) );
         }
-        i++;
     }
     
-    i = 0;
-    while (i < numFaces)
+    for (int i=0; i < numFaces; i++)
     {
         // write out the faces
-        len = ply_faceElList[i].sizeofByteArray();
+        int len = ply_faceElList[i].sizeofByteArray();
         bytearray = ply_faceElList[i].getByteArray();
         ibyteswritten = plyOut->write(bytearray, len);
         if (ibyteswritten != len)
@@ -372,7 +383,6 @@ QString DazToPLY::LuxMakeBinPLY()
             // DEBUG
             dzApp->log("yaluxplug: ERROR writing faces in ply bin. byteswritten= " + QString("%1").arg(len));
         }
-        i++;
     }
     
     plyOut->close();
@@ -395,16 +405,30 @@ QString DazToPLY::LuxMakeAsciiPLY()
     
     DzFacet *currentFace;
     
-    int i = 0;
-    while (i < numFaceIndices)
+    int facesToWrite = 0;
+
+    for (int i=0; i < numFaceIndices; i++)
     {
+        // CHECK FACETFLAG and skip if hidden
+        unsigned char flags = ptrAllFacetFlags[face_indexToMesh[i]];
+        if (flags & DZ_HIDDEN_FACE_BIT) continue;
+        facesToWrite++;
+
         currentFace = &ptrAllFaces[face_indexToMesh[i]];
         // add entries for quad
         //walkFaceEdges(currentFace);
         processFace(currentFace);
-        i++;
     }
-    
+
+    if (facesToWrite == 0)
+    {
+        if (YaLuxGlobal.debugLevel >= 3) // verbose debugging data
+        {
+            dzApp->log("yaluxplug: DEBUG2: materialgroup has no meshes: " + objMatName);
+        }
+        return "";
+    }
+
     numVerts = ply_vertexElList.count();
     numFaces = ply_faceElList.count();
     
@@ -441,20 +465,16 @@ QString DazToPLY::LuxMakeAsciiPLY()
     plyOut->write("property list uchar uint vertex_indices\n");
     plyOut->write("end_header\n");
     
-    i = 0;
-    while (i < numVerts)
+    for (int i=0; i < numVerts; i++)
     {
         // write out the vertices
         plyOut->write(ply_vertexElList[i].getString().toAscii() );
-        i++;
     }
     
-    i = 0;
-    while (i < numFaces)
+    for (int i=0; i < numFaces; i++)
     {
         // write out the faces
         plyOut->write(ply_faceElList[i].getString().toAscii() );
-        i++;
     }
     
     plyOut->close();
@@ -489,7 +509,10 @@ DazToPLY::DazToPLY(DzFacetMesh *arg_mesh, QString arg_objMatName, DzMaterial *ar
     ptrAllUVs = mesh->getUVs();
     ptrAllNormals = mesh->getNormalsPtr();
     ptrAllVertices = mesh->getVerticesPtr();
-    
+
+    // DB (2021-06-15): get facetflags and check if hidden before processing face
+    ptrAllFacetFlags = mesh->getFacetFlagsPtr();
+
 }
 
 
