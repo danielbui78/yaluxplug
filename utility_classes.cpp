@@ -2900,14 +2900,15 @@ bool LuxMakeSCNFile(QString filenameSCN, DzRenderer* r, DzCamera* camera, const 
     if (YaLuxGlobal.bDefaultLightsOn == true)
     {
         outstr = "scene.lights.DEFAULT_SUN.type = \"sun\"\n";
-        outstr += "scene.lights.DEFAULT_SUN.dir = 0 -0.8 0.2\n";
+        outstr += "scene.lights.DEFAULT_SUN.dir = 0.8 -0.2 0.5\n";
         outstr += "scene.lights.DEFAULT_SUN.turbidity = 4\n";
 
         outstr += "scene.lights.DEFAULT_SKY.type = \"sky2\"\n";
         outstr += "scene.lights.DEFAULT_SKY.turbidity = 4\n";
-        outstr += "scene.lights.DEFAULT_SKY.dir = 0 -0.8 0.2\n";
-        outstr += "scene.lights.DEFAULT_SKY.ground.enable = 1\n";
-        outstr += "scene.lights.DEFAULT_SKY.ground.color = 0.5 0.5 0.5\n";
+        outstr += "scene.lights.DEFAULT_SKY.dir = 0.8 -0.2 0.5\n";
+        outstr += "scene.lights.sun_sky_sky.gain = 0.5 0.5 0.5\n";
+//        outstr += "scene.lights.DEFAULT_SKY.ground.enable = 1\n";
+//        outstr += "scene.lights.DEFAULT_SKY.ground.color = 0.5 0.5 0.5\n";
 
         outSCN.write(outstr.toAscii());
     }
