@@ -2837,40 +2837,55 @@ bool LuxMakeSCNFile(QString filenameSCN, DzRenderer* r, DzCamera* camera, const 
 
         // Node -> Object
         DzObject* currentObject = currentNode->getObject();
-        if ((currentObject != NULL) && (currentNode->isVisible()))
+
+        if (currentObject == NULL || currentNode->isHidden())
         {
-            if (currentNode->getLabel().contains("EnvironmentSphere"))
-            {
-                // DEBUG
-                if (YaLuxGlobal.debugLevel >= 1) // debugging data
-                    dzApp->log("yaluxplug: DEBUG: Skip EnvironmentSphere");
-            }
-            else if (currentNode->getLabel().contains("Genitalia"))
-            {
-                if (YaLuxGlobal.debugLevel >= 2) // debugging data
-                    dzApp->log("yaluxplug: DEBUG: Skipping geografted genitalia");
-            }
-            else
-            {
-                outSCN.write(QString("\n# AssetId=[" + nodeAssetId + "],nodeLabel=[" + currentNode->getLabel() + "]\n").toAscii());
-                QString objectLabel = currentObject->getLabel();
-
-                //// DB (2021-06-15) This is probably not needed and may be introducing bad rener data
-                //// FINALIZE Node's geometry cache for rendering
-                ////currentNode->finalize(true,true);
-                //currentObject->finalize(*currentNode, true, true);
-
-                QString output;
-                output = LuxCoreProcessObject(currentObject, mesg);
-                outSCN.write(output.toAscii());
-            }
-        }
-        else {
-            if (currentNode->isHidden())
-                dzApp->log("\tnode is hidden.");
-            else if (currentNode == NULL)
+            if (currentObject == NULL)
                 dzApp->log("\tno object found.");
+            else if (currentNode->isHidden())
+                dzApp->log("\tnode is hidden.");
+            continue;
         }
+
+        if (currentNode->getLabel().contains("EnvironmentSphere"))
+        {
+            // DEBUG
+            if (YaLuxGlobal.debugLevel >= 1) // debugging data
+                dzApp->log("yaluxplug: DEBUG: Skip EnvironmentSphere");
+            continue;
+        }
+        //else if (currentNode->getLabel().contains("Genitalia"))
+        //{
+        //    if (YaLuxGlobal.debugLevel >= 2) // debugging data
+        //        dzApp->log("yaluxplug: DEBUG: Skipping geografted genitalia");
+        //}
+        if ( currentNode->inherits("DzFigure") )
+        {
+            DzFigure* figure = dynamic_cast<DzFigure*>(currentNode);
+            if (figure->isGraftFollowing())
+            {
+                DzSkeleton* target = figure->getFollowTarget();
+                if (target && dynamic_cast<DzNode*>(target)->isVisible() && target->isVisibileInRender())
+                {
+//                    dzApp->log("yaluxplug: DEBUG: skipping geograft node: " + currentNode->getName());
+//                    continue;
+                }
+
+            }
+        }
+
+        outSCN.write(QString("\n# AssetId=[" + nodeAssetId + "],nodeLabel=[" + currentNode->getLabel() + "]\n").toAscii());
+        QString objectLabel = currentObject->getLabel();
+
+        //// DB (2021-06-15) This is probably not needed and may be introducing bad rener data
+        //// FINALIZE Node's geometry cache for rendering
+        ////currentNode->finalize(true,true);
+        //currentObject->finalize(*currentNode, true, true);
+
+        QString output;
+        output = LuxCoreProcessObject(currentObject, mesg);
+        outSCN.write(output.toAscii());
+
 
         // DEBUG
         if (YaLuxGlobal.debugLevel >= 2) // debug data
