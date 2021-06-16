@@ -3212,44 +3212,70 @@ QString LuxCoreProcessObject(DzObject* daz_obj, QString& mesg)
         // Convert meshlight object to luxrender area light as appropriate
         ////////////////////////////////////////
         bool bIsAreaLight = false;
+        QString lightTexture = "";
         QString strColor = "";
-        QString strGain = "1";
-        QString strEfficacy = "17";
-        QString strPower = "100";
+        float gain = 1;
+        float efficacy = 17;
+        float power = 100;
+        float importance = 1;
         // Check to see if this is an area light material
         DzPropertyGroupTree* propertygrouptree = material->getPropertyGroups();
-        //if (matLabel.contains("RealityLight"))
-        //{
-        //    strColor = LuxGetStringProperty(material, "Diffuse Color", mesg);
-        //    strGain = LuxGetStringProperty(material, "Diffuse Strength", mesg);
-        //    bIsAreaLight = true;
-        //}
-        //else if (propertygrouptree->findChild("LuxRender") != NULL)
-        //{
-        //    if (LuxGetStringProperty(material, "LuxRender_material_enablelight", mesg) == "true")
-        //    {
-        //        bIsAreaLight = true;
-        //        strColor = LuxGetStringProperty(material, "LuxRender_matte_Kd", mesg);
-        //    }
-        //    // DEBUG
-        //    if (YaLuxGlobal.debugLevel > 3)
-        //        dzApp->log("yaluxplug: is Luxus area light? =[" + mesg + "]\n");
-        //}
-        //else if (propertygrouptree->findChild("Light") != NULL)
-        //{
-        //    strColor = LuxGetStringProperty(material, "Color", mesg);
-        //    strGain = LuxGetStringProperty(material, "Intensity", mesg);
-        //    bIsAreaLight = true;
-        //}
-        //if (bIsAreaLight)
-        //{
-        //    YaLuxGlobal.bDefaultLightsOn = false;
-        //    attributeblock += "AreaLightSource \"area\"\n";
-        //    attributeblock += QString("\t\"color L\"\t[%1]\n").arg(strColor);
-        //    attributeblock += QString("\t\"float gain\"\t[%1]\n").arg(strGain);
-        //    attributeblock += QString("\t\"float power\"\t[%1]\n").arg(strPower);
-        //    attributeblock += QString("\t\"float efficacy\"\t[%1]\n").arg(strEfficacy);
-        //}
+        if (matLabel.contains("RealityLight"))
+        {
+            strColor = LuxGetStringProperty(material, "Diffuse Color", mesg);
+            LuxGetFloatProperty(material, "Diffuse Strength", gain, mesg);
+            bIsAreaLight = true;
+        }
+        else if (propertygrouptree->findChild("LuxRender") != NULL)
+        {
+            //// LuxRender_matte_Kd (color)
+            //// LuxRender_matte_sigma (float)
+            // LuxRender_material_extrasettings (string)
+            // LuxRender_material_opacity (float)
+            // LuxRender_material_enablelight (bool)
+            // LuxRender_light_L (color)
+            // LuxRender_light_nsamples (int)
+            // LuxRender_light_power (float)
+            // LuxRender_light_efficacy (float)
+            // LuxRender_light_importance (float)
+            if (LuxGetStringProperty(material, "LuxRender_material_enablelight", mesg) == "true")
+            {
+                bIsAreaLight = true;
+                strColor = LuxGetStringProperty(material, "LuxRender_light_L", mesg);
+                LuxGetFloatProperty(material, "LuxRender_light_power", power, mesg);
+                LuxGetFloatProperty(material, "LuxRender_light_efficacy", efficacy, mesg);
+                LuxGetFloatProperty(material, "LuxRender_light_efficacy", importance, mesg);
+            }
+
+            // DEBUG
+            if (YaLuxGlobal.debugLevel > 3)
+                dzApp->log("yaluxplug: is Luxus area light? =[" + mesg + "]\n");
+        }
+        else if (propertygrouptree->findChild("Light") != NULL)
+        {
+            strColor = LuxGetStringProperty(material, "Color", mesg);
+            LuxGetFloatProperty(material, "Intensity", gain, mesg);
+            bIsAreaLight = true;
+        }
+        if (bIsAreaLight)
+        {
+            YaLuxGlobal.bDefaultLightsOn = false;
+            //attributeblock += "AreaLightSource \"area\"\n";
+            //attributeblock += QString("\t\"color L\"\t[%1]\n").arg(strColor);
+            //attributeblock += QString("\t\"float gain\"\t[%1]\n").arg(strGain);
+            //attributeblock += QString("\t\"float power\"\t[%1]\n").arg(strPower);
+            //attributeblock += QString("\t\"float efficacy\"\t[%1]\n").arg(strEfficacy);
+
+            if (lightTexture != "")
+                attributeblock += QString("scene.materials.%1.emission = \"%2\"\n").arg(nodeLabel + matLabel).arg(lightTexture);
+            else
+                attributeblock += QString("scene.materials.%1.emission = %2\n").arg(nodeLabel + matLabel).arg(strColor);
+            attributeblock += QString("scene.materials.%1.emission.gain = %2 %2 %2\n").arg(nodeLabel + matLabel).arg(gain);
+            attributeblock += QString("scene.materials.%1.emission.power = %2\n").arg(nodeLabel + matLabel).arg(power);
+            attributeblock += QString("scene.materials.%1.emission.efficency = %2\n").arg(nodeLabel + matLabel).arg(efficacy);
+            attributeblock += QString("scene.materials.%1.emission.importance = %2\n").arg(nodeLabel + matLabel).arg(importance);
+
+        }
 
         QString plyFileName;
         if (geo->inherits("DzFacetMesh"))
