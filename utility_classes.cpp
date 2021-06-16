@@ -4258,8 +4258,7 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
     {
         diffuse_value = ((DzColorProperty*)currentProperty)->getColorValue();
         diffuse_mapfile = propertyNumericImagetoString((DzNumericProperty*)currentProperty);
-        if ((diffuse_value != QColor(128, 128, 128)) || (diffuse_mapfile != ""))
-            diffuse_exists = true;
+        diffuse_exists = true;
     }
     currentProperty = material->findProperty("Horizontal Tiles");
     if (currentProperty != NULL)
@@ -4497,7 +4496,7 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
 
 
         ret_str += QString("scene.materials.%1.type = \"glossy2\"\n").arg(matLabel);
-        if (diffuse_exists) ret_str += QString("scene.materials.%1.kd = \"%2\"\n").arg(matLabel).arg(matLabel + "_d");
+        ret_str += QString("scene.materials.%1.kd = \"%2\"\n").arg(matLabel).arg(matLabel + "_d");
         if (spec_exists) 
             ret_str += QString("scene.materials.%1.ks = \"%2\"\n").arg(matLabel).arg(matLabel + "_s");
         else
