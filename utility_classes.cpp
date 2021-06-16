@@ -42,6 +42,7 @@
 
 #include "dzscene.h"
 #include "dzimagemgr.h"
+#include "dzfigure.h"
 
 #include "utility_classes.h"
 #include "dazToPLY.h"
@@ -2872,6 +2873,7 @@ bool LuxMakeSCNFile(QString filenameSCN, DzRenderer* r, DzCamera* camera, const 
                 }
 
             }
+
         }
 
         outSCN.write(QString("\n# AssetId=[" + nodeAssetId + "],nodeLabel=[" + currentNode->getLabel() + "]\n").toAscii());
@@ -4241,14 +4243,6 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
     float glossy_anisotropy = 0;
 
 
-    //if (material->getMaterialName().toLower().contains("daz studio default"))
-    //{
-    //    // go here
-    //}
-
-    // 1. search for specific properties and populate data
-    // 2. generate full material block
-
     enum { metal_roughness, specular_glossy } material_type = specular_glossy;
 
     QString propertyLabel;
@@ -4501,15 +4495,6 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
     // decide what type of material...
     if (!opacity_exists && refraction_weight == 0)
     {
-        //ret_str += QString("MakeNamedMaterial \"%1\"\n").arg(matLabel);
-        //ret_str += QString("\t\"string type\" [\"%1\"]\n").arg("glossy");
-        //if (bump_exists) ret_str += QString("\t\"texture bumpmap\" [\"%1\"]\n").arg(matLabel + ".bump_texture");
-        //if (diffuse_exists) ret_str += QString("\t\"texture Kd\" [\"%1\"]\n").arg(matLabel + ".diffuse_color");
-        //if (spec_exists) ret_str += QString("\t\"texture Ks\" [\"%1\"]\n").arg(matLabel + ".specular_mix");
-        //ret_str += QString("\t\"float uroughness\" [%1]\n").arg(uroughness);
-        //ret_str += QString("\t\"float vroughness\" [%1]\n").arg(vroughness);
-        ////        ret_str += QString("\t\"float index\" [%1]\n").arg(index_refraction);
-
 
         ret_str += QString("scene.materials.%1.type = \"glossy2\"\n").arg(matLabel);
         ret_str += QString("scene.materials.%1.kd = \"%2\"\n").arg(matLabel).arg(matLabel + "_d");
@@ -4525,21 +4510,6 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
     }
     else
     {
-        //ret_str += QString("MakeNamedMaterial \"%1\"\n").arg(matLabel + ".base");
-        //ret_str += QString("\t\"string type\" [\"%1\"]\n").arg("glossy");
-        //if (bump_exists) ret_str += QString("\t\"texture bumpmap\" [\"%1\"]\n").arg(matLabel + ".bump_texture");
-        //if (diffuse_exists) ret_str += QString("\t\"texture Kd\" [\"%1\"]\n").arg(matLabel + ".diffuse_color");
-        //if (spec_exists) ret_str += QString("\t\"texture Ks\" [\"%1\"]\n").arg(matLabel + ".specular_mix");
-        //ret_str += QString("\t\"float uroughness\" [%1]\n").arg(uroughness);
-        //ret_str += QString("\t\"float vroughness\" [%1]\n").arg(vroughness);
-        ////        ret_str += QString("\t\"float index\" [%1]\n").arg(index_refraction);
-        //ret_str += QString("MakeNamedMaterial \"%1\"\n").arg(matLabel + ".NULL");
-        //ret_str += QString("\t\"string type\" [\"null\"]\n");
-        //ret_str += QString("MakeNamedMaterial \"%1\"\n").arg(matLabel);
-        //ret_str += QString("\t\"string type\" [\"%1\"]\n").arg("mix");
-        //ret_str += QString("\t\"texture amount\" [\"%1\"]\n").arg(matLabel + ".opacity_texture");
-        //ret_str += QString("\t\"string namedmaterial1\" [\"%1\"]\n").arg(matLabel + ".NULL");
-        //ret_str += QString("\t\"string namedmaterial2\" [\"%1\"]\n").arg(matLabel + ".base");
 
         // setup mix material
         QString realmatLabel = matLabel + "_0";
