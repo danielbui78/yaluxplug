@@ -4548,6 +4548,11 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
         ret_str += GenerateCoreTextureBlock1(matLabel + "_o", opacity_mapfile, opacity_value);
 
 
+    // Opacity Block
+    if (metallic_weight > 0 && metallic_mapfile != "")
+        ret_str += GenerateCoreTextureBlock1(matLabel + "_metallicity", metallic_mapfile, metallic_weight);
+
+
     ///////////////////////////////////////////
     //
     // Material definition
@@ -4689,7 +4694,10 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
         ret_str += QString("scene.materials.%1.type = \"mix\"\n").arg(glossy_metal_MixLabel);
         ret_str += QString("scene.materials.%1.material1 = \"%2\"\n").arg(glossy_metal_MixLabel).arg(glossy2Label);
         ret_str += QString("scene.materials.%1.material2 = \"%2\"\n").arg(glossy_metal_MixLabel).arg(metal2Label);
-        ret_str += QString("scene.materials.%1.amount = %2 %2 %2\n").arg(glossy_metal_MixLabel).arg(metallic_weight);
+        if (metallic_mapfile != "")
+            ret_str += QString("scene.materials.%1.amount = \"%2\"\n").arg(glossy_metal_MixLabel).arg(matLabel + "_metallicity");
+        else
+            ret_str += QString("scene.materials.%1.amount = %2 %2 %2\n").arg(glossy_metal_MixLabel).arg(metallic_weight);
 
 
         ////////////////////
