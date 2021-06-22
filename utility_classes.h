@@ -116,12 +116,12 @@ QString LuxCoreProcessDazDefaultMaterial(DzMaterial* material, QString& mesg, QS
 QString LuxCoreProcessOmUberSurfaceMaterial(DzMaterial* material, QString& mesg, QString matLabel);
 QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QString matLabel);
 
-QString GenerateCoreTextureBlock(QString textureName, QString mapName, float textureValue1, float textureValue2, float textureValue3,
-    float uscale, float vscale, float uoffset, float voffset, float gamma,
-    QString wrap, QString filtertype, QString channel);
-QString GenerateCoreTextureBlock(QString textureName, QString mapName, float textureValue,
-    float uscale, float vscale, float uoffset, float voffset, float gamma,
-    QString wrap, QString filtertype, QString channel);
+QString GenerateCoreTextureBlock3(QString textureName, QString mapName, float textureValue1, float textureValue2, float textureValue3,
+    float uscale = 1, float vscale = -1, float uoffset = 0, float voffset = 0, float gamma = 2.2,
+    QString wrap = "", QString channel = "");
+QString GenerateCoreTextureBlock1(QString textureName, QString mapName, float textureValue,
+    float uscale = 1, float vscale = -1, float uoffset = 0, float voffset = 0, float gamma = 2.2,
+    QString wrap = "", QString channel = "");
 QString SanitizeCoreLabel(QString label);
 QString LuxGetImageMapProperty(DzElement* el, QString propertyName, QString& mesg);
 
