@@ -3773,17 +3773,19 @@ QString LuxCoreProcessDazDefaultMaterial(DzMaterial* material, QString& mesg, QS
             {
                 specularScaleLabel = matLabel + "_s" + "_opacity0";
             }
-            ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(specularScaleLabel);
-            ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specularScaleLabel).arg(realSpecularLabel);
-            ret_str += QString("scene.textures.%1.texture2 = %2\n").arg(specularScaleLabel).arg(spec_strength);
+            ret_str += QString("scene.textures.%1.type = \"mix\"\n").arg(specularScaleLabel);
+            ret_str += QString("scene.textures.%1.texture1 = 0 0 0\n").arg(specularScaleLabel);
+            ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specularScaleLabel).arg(realSpecularLabel);
+            ret_str += QString("scene.textures.%1.amount = %2\n").arg(specularScaleLabel).arg(spec_strength);
             if (bMultiplySpecularThroughOpacity)
             {
-                ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(matLabel + "_s");
-                ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(matLabel + "_s").arg(specularScaleLabel);
+                ret_str += QString("scene.textures.%1.type = \"mix\"\n").arg(matLabel + "_s");
+                ret_str += QString("scene.textures.%1.texture1 = 0 0 0\n").arg(matLabel + "_s").arg(specularScaleLabel);
+                ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(matLabel + "_s").arg(specularScaleLabel);
                 if (opacity_exists && opacity_mapfile != "")
-                    ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(matLabel + "_s").arg(matLabel + "_o");
+                    ret_str += QString("scene.textures.%1.amount = \"%2\"\n").arg(matLabel + "_s").arg(matLabel + "_o");
                 else
-                    ret_str += QString("scene.textures.%1.texture2 = %2\n").arg(matLabel + "_s").arg(opacity_value);
+                    ret_str += QString("scene.textures.%1.amount = %2\n").arg(matLabel + "_s").arg(opacity_value);
             }
 
         }
@@ -4070,9 +4072,10 @@ QString LuxCoreProcessOmUberSurfaceMaterial(DzMaterial* material, QString& mesg,
             spec_uscale, spec_vscale, spec_uoffset, spec_voffset, spec_gamma,
             spec_wrap, spec_channel);
 
-        ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(matLabel + "_s");
+        ret_str += QString("scene.textures.%1.type = \"mix\"\n").arg(matLabel + "_s");
+        ret_str += QString("scene.textures.%1.texture1 = 0 0 0\n").arg(matLabel + "_s");
         ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(matLabel + "_s").arg(realSpecularLabel);
-        ret_str += QString("scene.textures.%1.texture2 = %2\n").arg(matLabel + "_s").arg(spec_strength);
+        ret_str += QString("scene.textures.%1.amount = %2\n").arg(matLabel + "_s").arg(spec_strength);
 
     }
 
@@ -4497,15 +4500,16 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
             ret_str += QString("scene.textures.%1.texture1 = %2\n").arg(rawDualLobe).arg(spec_ratio);
 
         ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(mainSpec);
-        ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(mainSpec).arg(rawDualLobe);
+        ret_str += QString("scene.textures.%1.texture1 = 0 0 0\n").arg(mainSpec);
+        ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(mainSpec).arg(rawDualLobe);
         if (specweight_mapfile != "")
         {
             ret_str += GenerateCoreTextureBlock1(mainSpec + "_weight", specweight_mapfile, spec_weight);
-            ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(mainSpec).arg(mainSpec + "_weight");
+            ret_str += QString("scene.textures.%1.amount = \"%2\"\n").arg(mainSpec).arg(mainSpec + "_weight");
         }
         else
         {
-            ret_str += QString("scene.textures.%1.texture2 = %2\n").arg(mainSpec).arg(spec_weight);
+            ret_str += QString("scene.textures.%1.amount = %2\n").arg(mainSpec).arg(spec_weight);
         }
 
     }
@@ -4755,8 +4759,9 @@ QString GenerateCoreTextureBlock3(QString textureName, QString mapName, float te
         if (bMixTextures)
         {
             ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(textureName);
-            ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(textureName).arg(realtextureName);
-            ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(textureName).arg(scaletextureName);
+            ret_str += QString("scene.textures.%1.texture1 = 0 0 0\n").arg(textureName);
+            ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(textureName).arg(realtextureName);
+            ret_str += QString("scene.textures.%1.amount = \"%2\"\n").arg(textureName).arg(scaletextureName);
         }
     }
     else {
@@ -4801,8 +4806,9 @@ QString GenerateCoreTextureBlock1(QString textureName, QString mapName, float te
         if (bMixTextures)
         {
             ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(textureName);
-            ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(textureName).arg(realtextureName);
-            ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(textureName).arg(textureValue);
+            ret_str += QString("scene.textures.%1.texture1 = 0 0 0\n").arg(textureName);
+            ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(textureName).arg(realtextureName);
+            ret_str += QString("scene.textures.%1.amount = \"%2\"\n").arg(textureName).arg(textureValue);
         }
     }
     else {
