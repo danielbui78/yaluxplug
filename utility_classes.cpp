@@ -3628,7 +3628,7 @@ QString LuxCoreProcessDazDefaultMaterial(DzMaterial* material, QString& mesg, QS
     currentProperty = material->findProperty("Multiply Specular Through Opacity");
     if (currentProperty != NULL)
     {
-        bMultiplySpecularThroughOpacity = ((DzBoolProperty*)currentProperty)->getValue(dzScene->getTime());
+//        bMultiplySpecularThroughOpacity = ((DzBoolProperty*)currentProperty)->getValue(dzScene->getTime());
     }
 
     // material types
