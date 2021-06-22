@@ -2839,7 +2839,7 @@ bool LuxMakeSCNFile(QString filenameSCN, DzRenderer* r, DzCamera* camera, const 
         // Node -> Object
         DzObject* currentObject = currentNode->getObject();
 
-        if (currentObject == NULL || currentNode->isHidden())
+        if (currentObject == NULL || currentNode->isHidden() || !currentNode->isVisible())
         {
             if (currentObject == NULL)
                 dzApp->log("\tno object found.");
@@ -4074,7 +4074,7 @@ QString LuxCoreProcessOmUberSurfaceMaterial(DzMaterial* material, QString& mesg,
 
         ret_str += QString("scene.textures.%1.type = \"mix\"\n").arg(matLabel + "_s");
         ret_str += QString("scene.textures.%1.texture1 = 0 0 0\n").arg(matLabel + "_s");
-        ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(matLabel + "_s").arg(realSpecularLabel);
+        ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(matLabel + "_s").arg(realSpecularLabel);
         ret_str += QString("scene.textures.%1.amount = %2\n").arg(matLabel + "_s").arg(spec_strength);
 
     }
@@ -4491,13 +4491,13 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
         else
             ret_str += QString("scene.textures.%1.texture1 = %2\n").arg(rawDualLobe).arg(spec1_float);
         if (spec2_mapfile != "")
-            ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(rawDualLobe).arg(spec2_label);
+            ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(rawDualLobe).arg(spec2_label);
         else
-            ret_str += QString("scene.textures.%1.texture1 = %2\n").arg(rawDualLobe).arg(spec2_float);
+            ret_str += QString("scene.textures.%1.texture2 = %2\n").arg(rawDualLobe).arg(spec2_float);
         if (specratio_mapfile != "")
-            ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(rawDualLobe).arg(specratio_label);
+            ret_str += QString("scene.textures.%1.amount = \"%2\"\n").arg(rawDualLobe).arg(specratio_label);
         else
-            ret_str += QString("scene.textures.%1.texture1 = %2\n").arg(rawDualLobe).arg(spec_ratio);
+            ret_str += QString("scene.textures.%1.amount = %2\n").arg(rawDualLobe).arg(spec_ratio);
 
         ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(mainSpec);
         ret_str += QString("scene.textures.%1.texture1 = 0 0 0\n").arg(mainSpec);
