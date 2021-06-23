@@ -121,6 +121,10 @@ QString GenerateCoreTextureBlock3(QString textureName, QString mapName, float te
 QString GenerateCoreTextureBlock1(QString textureName, QString mapName, float textureValue,
     float uscale = 1, float vscale = -1, float uoffset = 0, float voffset = 0, float gamma = 2.2,
     QString wrap = "", QString channel = "");
+QString GenerateCoreTextureBlock1_Grey(QString textureName, QString mapName, float textureValue,
+    float uscale = 1, float vscale = -1, float uoffset = 0, float voffset = 0, float gamma = 2.2,
+    QString wrap = "", QString channel = "");
+
 QString SanitizeCoreLabel(QString label);
 QString LuxGetImageMapProperty(DzElement* el, QString propertyName, QString& mesg);
 QString MakeTempImgFilename(QString origFilename);

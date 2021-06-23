@@ -3554,7 +3554,7 @@ QString LuxCoreProcessDazDefaultMaterial(DzMaterial* material, QString& mesg, QS
 
     // Bumpmap Block
     if (bump_exists)
-        ret_str += GenerateCoreTextureBlock1(matLabel + "_b", bump_mapfile, bump_value,
+        ret_str += GenerateCoreTextureBlock1_Grey(matLabel + "_b", bump_mapfile, bump_value,
             bump_uscale, bump_vscale, bump_uoffset, bump_voffset, bump_gamma,
             bump_wrap, bump_channel);
 
@@ -3596,7 +3596,7 @@ QString LuxCoreProcessDazDefaultMaterial(DzMaterial* material, QString& mesg, QS
         if (opacity_mapfile != "")
             ret_str += QString("scene.materials.%1.amount = \"%2\"\n").arg(matLabel).arg(matLabel + "_o");
         else
-            ret_str += QString("scene.materials.%1.amount = %2 %2 %2\n").arg(matLabel).arg(opacity_value);
+            ret_str += QString("scene.materials.%1.amount = %2\n").arg(matLabel).arg(opacity_value);
 
     }
 
@@ -3804,7 +3804,7 @@ QString LuxCoreProcessOmUberSurfaceMaterial(DzMaterial* material, QString& mesg,
 
     // Bumpmap Block
     if (bump_exists)
-        ret_str += GenerateCoreTextureBlock1(matLabel + "_b", bump_mapfile, bump_value,
+        ret_str += GenerateCoreTextureBlock1_Grey(matLabel + "_b", bump_mapfile, bump_value,
             bump_uscale, bump_vscale, bump_uoffset, bump_voffset, bump_gamma,
             bump_wrap, bump_channel);
 
@@ -3855,7 +3855,7 @@ QString LuxCoreProcessOmUberSurfaceMaterial(DzMaterial* material, QString& mesg,
         if (opacity_mapfile != "")
             ret_str += QString("scene.materials.%1.amount = \"%2\"\n").arg(matLabel).arg(matLabel + "_o");
         else
-            ret_str += QString("scene.materials.%1.amount = %2 %2 %2\n").arg(matLabel).arg(opacity_value);
+            ret_str += QString("scene.materials.%1.amount = %2\n").arg(matLabel).arg(opacity_value);
 
     }
 
@@ -4214,7 +4214,7 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
     // Bumpmap Block
     QString bumpMapName = matLabel + "_b";
     if (bump_exists)
-        ret_str += GenerateCoreTextureBlock1(bumpMapName, bump_mapfile, bump_value,
+        ret_str += GenerateCoreTextureBlock1_Grey(bumpMapName, bump_mapfile, bump_value,
             bump_uscale, bump_vscale, bump_uoffset, bump_voffset, bump_gamma,
             bump_wrap, bump_channel);
 
@@ -4466,7 +4466,7 @@ QString GenerateCoreTextureBlock3(QString textureName, QString mapName, float te
             ret_str += QString("scene.textures.%1.type = \"mix\"\n").arg(textureName);
             ret_str += QString("scene.textures.%1.texture1 = 0 0 0\n").arg(textureName);
             ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(textureName).arg(realtextureName);
-            ret_str += QString("scene.textures.%1.amount = \"%2\"\n").arg(textureName).arg(scaletextureName);
+            ret_str += QString("scene.textures.%1.amount = %2\n").arg(textureName).arg(scaletextureName);
         }
     }
     else {
@@ -4513,7 +4513,7 @@ QString GenerateCoreTextureBlock1(QString textureName, QString mapName, float te
             ret_str += QString("scene.textures.%1.type = \"mix\"\n").arg(textureName);
             ret_str += QString("scene.textures.%1.texture1 = 0\n").arg(textureName);
             ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(textureName).arg(realtextureName);
-            ret_str += QString("scene.textures.%1.amount = \"%2\"\n").arg(textureName).arg(textureValue);
+            ret_str += QString("scene.textures.%1.amount = %2\n").arg(textureName).arg(textureValue);
         }
     }
     else {
@@ -4526,6 +4526,57 @@ QString GenerateCoreTextureBlock1(QString textureName, QString mapName, float te
     return ret_str;
 
 }
+
+QString GenerateCoreTextureBlock1_Grey(QString textureName, QString mapName, float textureValue,
+    float uscale, float vscale, float uoffset, float voffset, float gamma,
+    QString wrap, QString channel)
+{
+    QString ret_str;
+
+    if (mapName != "")
+    {
+        QString realtextureName = textureName;
+        bool bMixTextures = false;
+        if (textureValue != 1.0)
+        {
+            // set up mix texture
+            bMixTextures = true;
+            realtextureName = textureName + "_0";
+        }
+        ret_str += QString("scene.textures.%1.type = \"imagemap\"\n").arg(realtextureName);
+        ret_str += QString("scene.textures.%1.file = \"%2\"\n").arg(realtextureName).arg(mapName);
+        ret_str += QString("scene.textures.%1.mapping.type = \"uvmapping2d\"\n").arg(realtextureName);
+        if (uscale != 1 || vscale != 1)
+            ret_str += QString("scene.textures.%1.mapping.uvscale = %2 %3\n").arg(realtextureName).arg(uscale).arg(vscale);
+        if (uoffset != 0 || voffset != 0)
+            ret_str += QString("scene.textures.%1.mapping.uvdelta = %2 %3\n").arg(realtextureName).arg(uoffset).arg(voffset);
+        if (gamma != 2.2)
+            ret_str += QString("scene.textures.%1.gamma = %2\n").arg(realtextureName).arg(gamma);
+        if (wrap != "")
+            ret_str += QString("scene.textures.%1.wrap = \"%2\"\n").arg(realtextureName).arg(wrap);
+        if (channel != "")
+            ret_str += QString("scene.textures.%1.channel = \"%2\"\n").arg(realtextureName).arg(channel);
+
+        if (bMixTextures)
+        {
+            ret_str += QString("scene.textures.%1.type = \"mix\"\n").arg(textureName);
+            ret_str += QString("scene.textures.%1.texture1 = 0.5\n").arg(textureName);
+            ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(textureName).arg(realtextureName);
+            ret_str += QString("scene.textures.%1.amount = %2\n").arg(textureName).arg(textureValue);
+        }
+    }
+    else {
+        //ret_str += QString("Texture \"%1\" \"%2\" \"%3\"\n").arg(textureName).arg(textureType).arg("constant");
+        //ret_str += QString("\t\"%1 value\" [%2]\n").arg(textureType).arg(textureValue);
+        ret_str += QString("scene.textures.%1.type = \"constfloat1\"\n").arg(textureName);
+        ret_str += QString("scene.textures.%1.value = %2\n").arg(textureName).arg(textureValue);
+    }
+
+    return ret_str;
+
+}
+
+
 
 QString SanitizeCoreLabel(QString label)
 {
