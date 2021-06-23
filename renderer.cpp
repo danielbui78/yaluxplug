@@ -150,9 +150,9 @@ void YaLuxRender::handleStopRender()
     if (YaLuxGlobal.luxRenderProc->state() == QProcess::Running)
     {
         killRender();
-        YaLuxGlobal.RenderProgress->cancel(); // this does not work
-        YaLuxGlobal.bIsCancelled = true;
     }
+    YaLuxGlobal.RenderProgress->cancel(); // this does not work
+    YaLuxGlobal.bIsCancelled = true;
 }
 
 void YaLuxRender::handlePreviewCurrentFrame()
@@ -268,9 +268,10 @@ bool YaLuxRender::render(DzRenderHandler *old_handler, DzCamera *camera, const D
 
     YaLuxGlobal.optFrame->applyChanges();
 
-    YaLuxGlobal.RenderProgress = new DzProgress("yaluxplug Render Started", steps, true, true);
+    YaLuxGlobal.RenderProgress = new DzProgress("yaluxplug Render Started", steps, false, false);
     YaLuxGlobal.RenderProgress->setUseCloseCheckbox(true);
     YaLuxGlobal.RenderProgress->setCloseOnFinish(true);
+
 
     fullPathTempFileNameNoExt = dzApp->getTempFilename();
     YaLuxGlobal.workingRenderFilename = fullPathTempFileNameNoExt + ".png";
@@ -685,7 +686,7 @@ void YaLuxRender::processCoreRenderLog(QProcess* process, QFile& logFile, bool b
             if (regexp.indexIn(QString(qa)) != -1)
             {
                 QString percentString = regexp.cap(1);
-                //                YaLuxGlobal.FrameProgress->setInfo( QString("Frame render: %1\% completed").arg(percentString));
+//                YaLuxGlobal.FrameProgress->setInfo( QString("Frame render: %1\% completed").arg(percentString));
                 YaLuxGlobal.FrameProgress->update(percentString.toInt());
             }
 
@@ -717,70 +718,33 @@ void YaLuxRender::processRenderLog(QProcess *process, QFile &logFile, bool bUpda
         {
             if (bUpdateRender)
                 updateData();
-        } else if (qa.contains("ERROR"))
+        } 
+        else if (qa.contains("ERROR"))
         {
             logToWindow( QString(qa.data()), QColor(255,0,0), true);
-/*
-            QString newInfo = QString( qa.data() );
-            newInfo = newInfo.replace("\n", "");
-            YaLuxGlobal.logText->setBold(true);
-            YaLuxGlobal.logText->setTextColor( QColor(255,0,0) );
-            YaLuxGlobal.logText->append( newInfo );
-            YaLuxGlobal.logText->setBold(false);
-*/
-        } else if (qa.contains("Lux version"))
+
+        } 
+        else if (qa.contains("Lux version"))
         {
             logToWindow( QString(qa.data()), QColor(0,255,0), true);
-/*
-            QString newInfo = QString( qa.data() );
-            newInfo = newInfo.replace("\n", "");
-            YaLuxGlobal.logText->setBold(true);
-            YaLuxGlobal.logText->setTextColor( QColor(0,255,0) );
-            YaLuxGlobal.logText->append( newInfo );
-            YaLuxGlobal.logText->setBold(false);
-*/
-        } else if (qa.contains("100% rendering done"))
+        } 
+        else if (qa.contains("100% rendering done"))
         {
             logToWindow( QString(qa.data()), QColor(0,255,0), true);
-/*
-            QString newInfo = QString( qa.data() );
-            newInfo = newInfo.replace("\n", "");
-            YaLuxGlobal.logText->setBold(true);
-            YaLuxGlobal.logText->setTextColor( QColor(0,255,0) );
-            YaLuxGlobal.logText->append( newInfo );
-            YaLuxGlobal.logText->setBold(false);
-*/
-        } else if ( qa.contains("server"))
+        } 
+        else if ( qa.contains("server"))
         {
             logToWindow( QString(qa.data()), QColor(100,200,255), true);
-/*
-            QString newInfo = QString( qa.data() );
-            newInfo = newInfo.replace("\n", "");
-            YaLuxGlobal.logText->setBold(true);
-            YaLuxGlobal.logText->setTextColor( QColor(100,200,255) );
-            YaLuxGlobal.logText->append( newInfo );
-            YaLuxGlobal.logText->setBold(false);
-*/
-        } else if ( qa.contains("Tessellating"))
+        } 
+        else if ( qa.contains("Tessellating"))
         {
             logToWindow( QString(qa.data()) );
-/*
-            QString newInfo = QString( qa.data() );
-            newInfo = newInfo.replace("\n", "");
-            YaLuxGlobal.logText->setTextColor( QColor(255,255,255) );
-            YaLuxGlobal.logText->append( newInfo );
-*/
-        } else if ( (qa.contains("% T)") || qa.contains("% Thld)") ) )
+        } 
+        else if ( (qa.contains("% T)") || qa.contains("% Thld)") ) )
         {
             if (YaLuxGlobal.debugLevel >= 1)
             {
                 logToWindow( QString(qa.data()), QColor(100,200,255) );
-/*
-                QString newInfo = QString( qa.data() );
-                newInfo = newInfo.replace("\n", "");
-                YaLuxGlobal.logText->setTextColor( QColor(100,200,255) );
-                YaLuxGlobal.logText->append( newInfo );
-*/
             }
             QRegExp regexp("\\(([\\d]*)% T\\)");
             if ( regexp.indexIn( QString(qa) ) != -1 )
@@ -805,14 +769,11 @@ void YaLuxRender::processRenderLog(QProcess *process, QFile &logFile, bool bUpda
 
 void YaLuxRender::logToWindow( QString data, QColor textcolor, bool bIsBold )
 {
-//    QString formated = data.replace("\n", "");
     QString formated = data.replace("\n", "").replace("\r", "");
-//    if (bIsBold) YaLuxGlobal.logText->setBold(true);
     if (bIsBold) YaLuxGlobal.logText->setFontWeight(QFont::Bold);
     YaLuxGlobal.logText->setTextColor( textcolor );
     if (formated != "") YaLuxGlobal.logText->append( formated );
     YaLuxGlobal.logText->setTextColor( QColor(255,255,255) );
-//    if (bIsBold) YaLuxGlobal.logText->setBold(false);
     if (bIsBold) YaLuxGlobal.logText->setFontWeight(QFont::Normal);
 
 }
@@ -886,21 +847,34 @@ void YaLuxRender::handleRenderProcessComplete( int exitCode, QProcess::ExitStatu
     if (status == QProcess::CrashExit)
     {
         // ** TODO: detect intentional cancellation ** //
-
-
-        QString error = QString("yaluxplug: ERROR: luxrender process stopped unexpectedly: exitCode=%1").arg(exitCode);
-        logToWindow( QString(error), QColor(255,0,0), true);
-/*
-        YaLuxGlobal.logText->setTextColor( QColor(255, 0, 0) );
-        YaLuxGlobal.logText->setBold(true);
-        YaLuxGlobal.logText->append( error );
-        YaLuxGlobal.logText->setBold(false);
-*/
-        dzApp->log(error);
+        // If Renderprogress is cancelled of bIsCancelled is true, then stop the animation rendering
+        if ((YaLuxGlobal.RenderProgress->isCancelled() == true) || (YaLuxGlobal.bIsCancelled == true))
+        {
+            // Cancel message here
+            QString error = QString("yaluxplug: INFO: luxrender process stopped: exitCode=%1").arg(exitCode);
+            logToWindow(QString(error), QColor(0, 255, 0), true);
+            dzApp->log(QString("yaluxplug: RENDER PROCESS exited with %1 ").arg(exitCode));
+        }
+        else
+        {
+            QString error = QString("yaluxplug: ERROR: luxrender process stopped unexpectedly: exitCode=%1").arg(exitCode);
+            logToWindow(QString(error), QColor(255, 0, 0), true);
+            /*
+                    YaLuxGlobal.logText->setTextColor( QColor(255, 0, 0) );
+                    YaLuxGlobal.logText->setBold(true);
+                    YaLuxGlobal.logText->append( error );
+                    YaLuxGlobal.logText->setBold(false);
+            */
+            dzApp->log(error);
+        }
     }
 
     if (YaLuxGlobal.inProgress == false)
+    {
+        emit frameFinished();
+        YaLuxGlobal.bFrameisFinished = true;
         return;
+    }
 
     if (qimg->load(YaLuxGlobal.workingRenderFilename) == true)
     {
@@ -1007,7 +981,7 @@ void YaLuxRender::prepareImage(const DzTexture *img, const QString &filename)
     // Update the BackgroundProgress
     if (YaLuxGlobal.backgroundProgress == NULL)
     {
-        YaLuxGlobal.backgroundProgress = new DzBackgroundProgress("Optimizing images...", 100, false);
+        YaLuxGlobal.backgroundProgress = new DzBackgroundProgress("yaluxplug: Generating Image Cache...", 100, false);
     }
     // recalculate the progress bar
     YaLuxGlobal.currentBackgroundProgress = (YaLuxGlobal.currentBackgroundProgress * YaLuxGlobal.numBackgroundThreads) / (YaLuxGlobal.numBackgroundThreads+1);
@@ -1090,6 +1064,8 @@ void YaLuxRender::killRender()
         if (YaLuxGlobal.luxRenderProc->state() == QProcess::Running)
         {
             // Kill Render process
+            YaLuxGlobal.RenderProgress->cancel();
+            YaLuxGlobal.bIsCancelled = true;
             YaLuxGlobal.luxRenderProc->kill();
         }
     }
