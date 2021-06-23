@@ -781,7 +781,7 @@ void YaLuxRender::logToWindow( QString data, QColor textcolor, bool bIsBold )
 
 void YaLuxRender::updateData()
 {
-    int timeout = 1000;
+    int timeout = 5;
 #ifdef Q_OS_WIN
     Sleep(uint(timeout));
 #else
@@ -793,26 +793,26 @@ void YaLuxRender::updateData()
     DzRenderData *data;
     QFile imgFile(YaLuxGlobal.workingRenderFilename);
 
-    while (imgFile.open(QIODevice::ReadOnly) == false)
-    {
-#ifdef Q_OS_WIN
-        Sleep(uint(timeout));
-#else
-        nanosleep(&ts, NULL);
-#endif
-    }
-
     QByteArray qa;
-    qa = imgFile.readAll();
 
-    for (int i=0; ( qimg->loadFromData(qa) == false) && i <= 2; i++)
-//    if ( qimg->loadFromData(qa) == false)
+    for (int attempts=0; attempts <= 2; attempts++)
     {
-        if ( i==2 )
+        if (imgFile.open(QIODevice::ReadOnly) == true)
+        {
+            qa = imgFile.readAll();
+            imgFile.close();
+
+            if (qimg->loadFromData(qa) == true)
+            {
+                break;
+            }
+        }
+
+        if (attempts == 2)
         {
             QString mesg = "yaluxplug: ERROR: Unable to update Daz with rendered image from luxrender.";
             dzApp->log(mesg);
-            YaLuxGlobal.logText->setTextColor( QColor(255,0,0));
+            YaLuxGlobal.logText->setTextColor(QColor(255, 0, 0));
             YaLuxGlobal.logText->append(mesg);
             return;
         }
@@ -822,10 +822,9 @@ void YaLuxRender::updateData()
 #else
         nanosleep(&ts, NULL);
 #endif
-        imgFile.close();
-        if (imgFile.open(QIODevice::ReadOnly) == true)
-            qa = imgFile.readAll();
+
     }
+
     data = new DzRenderData(YaLuxGlobal.cropWindow.top(), YaLuxGlobal.cropWindow.left(), qimg->convertToFormat(QImage::Format_ARGB32));
     YaLuxGlobal.handler->passData( (*data) );
 
