@@ -111,7 +111,6 @@ bool LuxMakeLXSFile(QString filenameLXS, DzRenderer *r, DzCamera *camera, const 
 bool LuxMakeCFGFile(QString filenameLXS, DzRenderer* r, DzCamera* camera, const DzRenderOptions& opt);
 bool LuxMakeSCNFile(QString filenameLXS, DzRenderer* r, DzCamera* camera, const DzRenderOptions& opt);
 QString LuxCoreProcessObject(DzObject* daz_obj, QString& mesg);
-QString LuxCoreProcessGlossyMaterial(DzMaterial* material, QString& mesg, QString matLabel);
 QString LuxCoreProcessDazDefaultMaterial(DzMaterial* material, QString& mesg, QString matLabel);
 QString LuxCoreProcessOmUberSurfaceMaterial(DzMaterial* material, QString& mesg, QString matLabel);
 QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QString matLabel);
