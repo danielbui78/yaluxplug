@@ -88,6 +88,9 @@ struct G
     QStringList tokenList;
     DzTokenBuffer tokenBuffer;
 
+    bool bDoBumpMaps;
+    bool bDoMetallic;
+
 };
 
 extern struct G YaLuxGlobal;
