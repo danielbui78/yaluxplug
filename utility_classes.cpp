@@ -4196,7 +4196,7 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
         else
             ret_str += QString("scene.textures.%1.amount = %2\n").arg(rawDualLobe).arg(spec_ratio);
 
-        ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(mainSpec);
+        ret_str += QString("scene.textures.%1.type = \"mix\"\n").arg(mainSpec);
         ret_str += QString("scene.textures.%1.texture1 = 0 0 0\n").arg(mainSpec);
         ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(mainSpec).arg(rawDualLobe);
         if (specweight_mapfile != "")
@@ -4463,7 +4463,7 @@ QString GenerateCoreTextureBlock3(QString textureName, QString mapName, float te
 
         if (bMixTextures)
         {
-            ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(textureName);
+            ret_str += QString("scene.textures.%1.type = \"mix\"\n").arg(textureName);
             ret_str += QString("scene.textures.%1.texture1 = 0 0 0\n").arg(textureName);
             ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(textureName).arg(realtextureName);
             ret_str += QString("scene.textures.%1.amount = \"%2\"\n").arg(textureName).arg(scaletextureName);
@@ -4510,8 +4510,8 @@ QString GenerateCoreTextureBlock1(QString textureName, QString mapName, float te
 
         if (bMixTextures)
         {
-            ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(textureName);
-            ret_str += QString("scene.textures.%1.texture1 = 0 0 0\n").arg(textureName);
+            ret_str += QString("scene.textures.%1.type = \"mix\"\n").arg(textureName);
+            ret_str += QString("scene.textures.%1.texture1 = 0\n").arg(textureName);
             ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(textureName).arg(realtextureName);
             ret_str += QString("scene.textures.%1.amount = \"%2\"\n").arg(textureName).arg(textureValue);
         }
