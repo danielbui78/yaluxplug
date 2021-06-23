@@ -104,6 +104,14 @@ YaLuxOptionsFrame::YaLuxOptionsFrame() : DzOptionsFrame("yaluxplug Options Frame
     }
     listView->addProperty(renderMode);
 
+    doBumpMaps = new DzBoolProperty("yalux_do_bumpamps", true, false, true);
+    doBumpMaps->setLabel("Render Bump Maps");
+    listView->addProperty(doBumpMaps);
+
+    doMetallic = new DzBoolProperty("yalux_do_metallic", true, false, true);
+    doMetallic->setLabel("Render Metallic Materials");
+    listView->addProperty(doMetallic);
+
     // Custom Render String
     customRenderString = new DzStringProperty("yalux_render_custom", false);
     customRenderString->setLabel("Custom Render String (use Custom Render Engine)");
@@ -129,12 +137,12 @@ YaLuxOptionsFrame::YaLuxOptionsFrame() : DzOptionsFrame("yaluxplug Options Frame
     // network render on/off
     networkRenderOn = new DzBoolProperty("yalux_network_render", false, false, false);
     networkRenderOn->setLabel("Enable Network Rendering");
-    listView->addProperty(networkRenderOn);
+//    listView->addProperty(networkRenderOn);
 
     // render server list
     renderServerList = new DzStringProperty("yalux_network_serverlist", false);
     renderServerList->setLabel("Network Render Servers (IP/hostnames)");
-    listView->addProperty(renderServerList);
+//    listView->addProperty(renderServerList);
 
     // Specular Mode
     specularMode = new DzEnumProperty("yalux_specular_mode", false, false);
@@ -142,7 +150,7 @@ YaLuxOptionsFrame::YaLuxOptionsFrame() : DzOptionsFrame("yaluxplug Options Frame
     for (i=0; i<specularModeList.count(); i++) {
         specularMode->addItem(specularModeList[i]);
     }
-    listView->addProperty(specularMode);
+//    listView->addProperty(specularMode);
 
     // Show Luxrender window
     showLuxWindow = new DzBoolProperty("yalux_showwindow", true, false, false);
@@ -220,6 +228,8 @@ void YaLuxOptionsFrame::createDefaultSettings()
     specularMode->setDefaultValue(0);
     maxTextureSize->setDefaultValue(4);
     networkRenderOn->setDefaultBoolValue(false);
+    doBumpMaps->setDefaultBoolValue(false);
+    doMetallic->setDefaultBoolValue(false);
 
 }
 
@@ -249,6 +259,8 @@ void	YaLuxOptionsFrame::loadSettings()
         specularMode->setValue( settings->getIntValue( specularMode->getName()) );
         networkRenderOn->setBoolValue( settings->getBoolValue( networkRenderOn->getName()) );
         maxTextureSize->setValue( settings->getIntValue( maxTextureSize->getName()) );
+        doBumpMaps->setBoolValue( settings->getBoolValue( doBumpMaps->getName()) );
+        doMetallic->setBoolValue(settings->getBoolValue(doMetallic->getName()));
     }
 }
 
@@ -276,6 +288,8 @@ void	YaLuxOptionsFrame::saveSettings()
     settings->setIntValue(specularMode->getName(), specularMode->getValue());
     settings->setIntValue(maxTextureSize->getName(), maxTextureSize->getValue());
     settings->setBoolValue(networkRenderOn->getName(), networkRenderOn->getBoolValue());
+    settings->setBoolValue(doBumpMaps->getName(), doBumpMaps->getBoolValue());
+    settings->setBoolValue(doMetallic->getName(), doMetallic->getBoolValue());
     
     settings->setBoolValue("yalux_savedsettings_exist", true);
 
@@ -315,6 +329,8 @@ void	YaLuxOptionsFrame::applyChanges()
         YaLuxGlobal.maxTextureSize = -1;
     else
         YaLuxGlobal.maxTextureSize = maxTextureSize->getStringValue().toInt();
+    YaLuxGlobal.bDoBumpMaps = doBumpMaps->getBoolValue();
+    YaLuxGlobal.bDoMetallic = doMetallic->getBoolValue();
 
 };
 
@@ -358,6 +374,8 @@ void	YaLuxOptionsFrame::restoreOptions( DzRenderOptions *options )
     specularMode->setValue(0);
     networkRenderOn->setBoolValue(false);
     maxTextureSize->setValue(512);
+    doBumpMaps->setBoolValue(false);
+    doMetallic->setBoolValue(false);
 
     applyChanges();
 };

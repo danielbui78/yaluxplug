@@ -79,6 +79,9 @@ private:
     DzEnumProperty      *renderMode;
     DzStringProperty    *customRenderString;
 
+    DzBoolProperty      *doBumpMaps;
+    DzBoolProperty      *doMetallic;
+
 };
 
 
