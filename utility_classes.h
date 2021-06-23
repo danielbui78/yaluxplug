@@ -124,6 +124,7 @@ QString GenerateCoreTextureBlock1(QString textureName, QString mapName, float te
     QString wrap = "", QString channel = "");
 QString SanitizeCoreLabel(QString label);
 QString LuxGetImageMapProperty(DzElement* el, QString propertyName, QString& mesg);
+QString MakeTempImgFilename(QString origFilename);
 
 class WorkerPrepareImage : public QObject
 {

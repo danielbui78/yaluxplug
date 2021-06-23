@@ -104,9 +104,9 @@ void WorkerPrepareImage::doPrepareImage()
     }
 
     // make cached name
-    QString newName = DzFileIO::getBaseFileName(filename);
-    newName += ".png";
-    
+    QString newName = MakeTempImgFilename(filename) + ".png";
+
+    DzFileIO::pathExists(YaLuxGlobal.cachePath, true);
     if ( qImgScaled.save( YaLuxGlobal.cachePath+newName, "PNG") )
     {
         dzApp->log("yaluxplug: Worker prepareImage( " + filename + " ) changed to PNG" );
@@ -243,7 +243,9 @@ QString makeScaledTempImage(DzTexture *texture)
     {
         scaledImg = originalImg.scaledToWidth(YaLuxGlobal.maxTextureSize);
         origFilename = texture->getFilename();
-        newFilename = YaLuxGlobal.cachePath + DzFileIO::getBaseFileName(origFilename) + ".png";
+        newFilename = YaLuxGlobal.cachePath + MakeTempImgFilename(origFilename) + ".png";
+
+        DzFileIO::pathExists(YaLuxGlobal.cachePath, true);
         scaledImg.save(newFilename);
         texture->setTempFilename(newFilename);
     } else {
@@ -4845,5 +4847,28 @@ QString SanitizeCoreLabel(QString label)
 
     return retString;
 }
+
+QString MakeTempImgFilename(QString origFilename)
+{
+    QString newFilename;
+
+    QString path = DzFileIO::getFilePath(origFilename).replace(" ","_").replace("\\", "_").replace("/", "_");
+    QString filename = DzFileIO::getBaseFileName(origFilename);
+    
+    int offset = path.indexOf("_textures_",0, Qt::CaseInsensitive);
+    if (offset == -1)
+    {
+        offset = (path.length() <= 25) ? 0 : 25;
+    }
+    else
+    {
+        offset = (path.length() > 10) ? offset + 10 : offset;
+    }
+    path = path.right(path.length() - offset);
+    newFilename = path + "_" + filename;
+
+    return newFilename;
+}
+
 
 #include "moc_utility_classes.cpp"
