@@ -2795,6 +2795,32 @@ bool LuxMakeSCNFile(QString filenameSCN, DzRenderer* r, DzCamera* camera, const 
             outstr += QString("%13 %14 %15 %16\n").arg(mat4[3][0]).arg(mat4[3][1]).arg(mat4[3][2]).arg(mat4[3][3]);
         }
         outSCN.write(outstr.toAscii());
+
+        ///////
+        // Iray Ground
+        ///////
+
+        // Ground Texture Scale (float)
+        // Ground Position Mode (enum: auto, manual)
+        // Ground Origin X (float)
+        // Draw Ground (bool)
+        // Ground Reflectivity (color)
+        // Ground Glossiness (float)
+        // Ground Shadow Intensity (float)
+        // Ground Visible from Below (bool)
+
+        // 1. If DrawGround,
+        // 2. get ground origin x, y, z
+        // set material color to ?
+        // 3. set material reflectivity
+        // 4. set roughness to 1-glossiness
+        // shadow intensity??
+        // 5. Draw ground
+
+        ///////
+        // Matte Fog
+        //////
+        // Matte Fog (bool)
     }
 
 
