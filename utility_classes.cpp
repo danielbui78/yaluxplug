@@ -4289,8 +4289,11 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
 
 
     // Metallicity
-    if (metallic_weight > 0 && metallic_mapfile != "")
+    if (metallic_mapfile != "")
+    {
+        if (metallic_weight == 0) metallic_weight = 0.01;
         ret_str += GenerateCoreTextureBlock1(matLabel + "_metallicity", metallic_mapfile, metallic_weight);
+    }
 
 
     ///////////////////////////////////////////
