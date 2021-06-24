@@ -2580,7 +2580,7 @@ bool LuxMakeCFGFile(QString filenameCFG, DzRenderer* r, DzCamera* camera, const 
     }
 
     // sampler settings
-    outCFG.write("\nsampler.type = \"METROPOLIS\"");
+    outCFG.write("\nsampler.type = \"SOBOL\"");
     //outLXS.write(LXSsampler.join("").toAscii());
 
     //// surface integrator settings
