@@ -4661,10 +4661,9 @@ QString GenerateCoreTextureBlock1_Grey(QString textureName, QString mapName, flo
 
         if (bMixTextures)
         {
-            ret_str += QString("scene.textures.%1.type = \"mix\"\n").arg(textureName);
-            ret_str += QString("scene.textures.%1.texture1 = 0.5\n").arg(textureName);
+            ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(textureName);
+            ret_str += QString("scene.textures.%1.texture1 = %2\n").arg(textureName).arg(textureValue);
             ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(textureName).arg(realtextureName);
-            ret_str += QString("scene.textures.%1.amount = %2\n").arg(textureName).arg(textureValue);
         }
     }
     else {
