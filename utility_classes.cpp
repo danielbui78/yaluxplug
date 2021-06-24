@@ -2757,6 +2757,19 @@ bool LuxMakeSCNFile(QString filenameSCN, DzRenderer* r, DzCamera* camera, const 
     DzNode* environment = dzScene->findNode("Environment Options");
     if (environment)
     {
+        // Dome Mode (enum: 6)
+        // Draw Dome (bool)
+        // Environment Intensity (float)
+        // Environment Map (float/image)
+        // Environment Tint (color)
+        // Environment Lighting Resolution (int)
+        // Environment Lighting Blur (bool)
+        // Dome Scale Multiplier (float)
+        // Dome Radius (float)
+        // Dome Origin X (float)
+        // Dome Orientation X (float)
+        // Dome Rotation (float)
+
         YaLuxGlobal.bDefaultLightsOn = false;
         float floatval = 0;
         QString stringval = "";
@@ -2772,7 +2785,9 @@ bool LuxMakeSCNFile(QString filenameSCN, DzRenderer* r, DzCamera* camera, const 
         if (LuxGetFloatProperty(environment, "Dome Rotation", floatval, mesg))
         {
             DzMatrix4 mat4(true);
-            mat4.rotateZ( (floatval + 165) * 0.0174533); // convert degree to radian
+            //mat4.rotateZ( (floatval + 165) * 0.0174533); // convert degree to radian
+            mat4[0][0] *= -1;
+            mat4.rotateZ((-floatval) * 0.0174533); // convert degree to radian
             outstr += QString("scene.lights.environment_options.transformation = ");
             outstr += QString("%1 %2 %3 %4 ").arg(mat4[0][0]).arg(mat4[0][1]).arg(mat4[0][2]).arg(mat4[0][3]);
             outstr += QString("%5 %6 %7 %8 ").arg(mat4[1][0]).arg(mat4[1][1]).arg(mat4[1][2]).arg(mat4[1][3]);
