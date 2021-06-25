@@ -4383,53 +4383,47 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
         QString nullmatLabel = matLabel + "_null";
         ret_str += QString("scene.materials.%1.type = \"null\"\n").arg(nullmatLabel);
 
-//        // setup mix material
-//        QString realmatLabel = matLabel + "_0";
-//
-//        if (refraction_weight != 0)
-//        {
-//            ret_str += QString("scene.materials.%1.type = \"glass\"\n").arg(realmatLabel);
-//            ret_str += QString("scene.materials.%1.interiorior = %2\n").arg(realmatLabel).arg(index_refraction);
-//        }
-////        else if (translucency_weight != 0)
-//        else if (false)
-//        {
-//            ret_str += QString("scene.materials.%1.type = \"glossytranslucent\"\n").arg(realmatLabel);
-////            ret_str += QString("scene.materials.%1.kt = \"%2\"\n").arg(realmatLabel).arg(matLabel + "_kt");
-//        }
-//        else
-//        {
-//            ret_str += QString("scene.materials.%1.type = \"glossy2\"\n").arg(realmatLabel);
-//        }
-//
-//        if (diffuse_exists) ret_str += QString("scene.materials.%1.kd = \"%2\"\n").arg(realmatLabel).arg(matLabel + "_d");
-//        if (spec_exists)
-//            ret_str += QString("scene.materials.%1.ks = \"%2\"\n").arg(realmatLabel).arg(matLabel + "_s");
-//        else
-//            ret_str += QString("scene.materials.%1.ks = 0 0 0\n").arg(realmatLabel);
-//
-//        if (bump_exists) ret_str += QString("scene.materials.%1.bumptex = \"%2\"\n").arg(realmatLabel).arg(matLabel + "_b");
-////        if (normal_mapfile != "") ret_str += QString("scene.materials.%1.normaltex = \"%2\"\n").arg(realmatLabel).arg(matLabel + "_n");
-//        ret_str += QString("scene.materials.%1.uroughness = %2\n").arg(realmatLabel).arg(uroughness);
-//        ret_str += QString("scene.materials.%1.vroughness = %2\n").arg(realmatLabel).arg(vroughness);
-//        if (metallic_weight != 0 || metallic_mapfile != "") ret_str += QString("scene.materials.%1.index = %2 %2 %2\n").arg(realmatLabel).arg(metallic_weight);
-
-        ////////////////////
-        // Step 1a. Make glossy2
-        ////////////////////
-        QString glossy2Label = matLabel;
-        if (YaLuxGlobal.bDoMetallic)
+        ////////////////////////////
+        // Pre-Mix Specular Channels into one
+        //    Add metallic_weight / metallic_mapfile / specular reflectivity into specular 
+        ///////////////////////////////
+        if (metallic_weight != 0 || metallic_mapfile != "")
         {
-            glossy2Label = matLabel + "_glossy2";
+
         }
+        if (spec_reflectivity != 0 || specref_mapfile != "")
+        {
+
+        }
+
+
+        ////////////////////////////////
+        // Pre-Mix translucency and absorption
+        //   Create Volume if needed
+        ////////////////////////////////
+        if (translucency_exists)
+        {
+
+
+        }
+
+
+
+        QString glossy2Label = matLabel;
+
         ret_str += QString("scene.materials.%1.type = \"glossy2\"\n").arg(glossy2Label);
         ret_str += QString("scene.materials.%1.kd = \"%2\"\n").arg(glossy2Label).arg(matLabel + "_d");
+
+
 
         //ret_str += QString("scene.materials.%1.ks = 0 0 0\n").arg(glossy2Label);
         if (spec_exists)
             ret_str += QString("scene.materials.%1.ks = \"%2\"\n").arg(glossy2Label).arg(matLabel + "_s");
         else
             ret_str += QString("scene.materials.%1.ks = 0 0 0\n").arg(glossy2Label);
+
+
+
 
         if (bump_exists)
         {
@@ -4453,108 +4447,32 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
             ret_str += QString("scene.materials.%1.bumptex = \"%2\"\n").arg(glossy2Label).arg(matLabel + "_b");
         }
         if (normal_mapfile != "") ret_str += QString("scene.materials.%1.normaltex = \"%2\"\n").arg(glossy2Label).arg(matLabel + "_n");
+
+
+        if (glossy_roughness_mapfile != "")
+        {
+            QString glossyRoughnessTexLabel = glossy2Label + "_glossyRoughnessTex";
+            ret_str += QString("scene.textures.%1.type = \"imagemap\"\n").arg(glossyRoughnessTexLabel);
+            ret_str += QString("scene.textures.%1.file = \"%2\"\n").arg(glossyRoughnessTexLabel).arg(glossy_roughness_mapfile);
+
+            ret_str += QString("scene.materials.%1.uroughness = %2\n").arg(glossy2Label).arg(glossyRoughnessTexLabel);
+            ret_str += QString("scene.materials.%1.vroughness = %2\n").arg(glossy2Label).arg(glossyRoughnessTexLabel);
+        }
+        else
+        {
+            ret_str += QString("scene.materials.%1.uroughness = %2\n").arg(glossy2Label).arg(uroughness);
+            ret_str += QString("scene.materials.%1.vroughness = %2\n").arg(glossy2Label).arg(vroughness);
+        }
+
         ret_str += QString("scene.materials.%1.uroughness = %2\n").arg(glossy2Label).arg(uroughness);
         ret_str += QString("scene.materials.%1.vroughness = %2\n").arg(glossy2Label).arg(vroughness);
-        // ****** use specular reflectivity and skip this *************
-//        ret_str += QString("scene.materials.%1.index = %2 %2 %2\n").arg(glossy2Label).arg("*****TODO: REFLECTIVE*******");
-        if (metallic_mapfile != "")
-            ret_str += QString("scene.materials.%1.index = \"%2\"\n").arg(glossy2Label).arg(matLabel + "_metallicity");
-        else if (metallic_weight > 0)
-            ret_str += QString("scene.materials.%1.index = %2 %2 %2\n").arg(glossy2Label).arg(metallic_weight);
+
+
         if (opacity_mapfile != "")
             ret_str += QString("scene.materials.%1.transparency = \"%2\"\n").arg(glossy2Label).arg(matLabel + "_o");
         else
             ret_str += QString("scene.materials.%1.transparency = %2\n").arg(glossy2Label).arg(opacity_value);
 
-
-        ////////////////////
-        // Step 1b. Make metal2
-        ////////////////////
-        QString metal2Label = matLabel + "_metal2";
-        if (YaLuxGlobal.bDoMetallic)
-        {
-            // set up fresnel color to use instead of diffuse
-            QString fresnel_texture = metal2Label + "_fresnel";
-            ret_str += QString("scene.textures.%1.type = \"fresnelcolor\"\n").arg(fresnel_texture);
-            ret_str += QString("scene.textures.%1.kr = %2 %3 %4\n").arg(fresnel_texture).arg(diffuse_value.redF()).arg(diffuse_value.greenF()).arg(diffuse_value.blueF());
-
-            ret_str += QString("scene.materials.%1.type = \"metal2\"\n").arg(metal2Label);
-            ret_str += QString("scene.materials.%1.fresnel = \"%2\"\n").arg(metal2Label).arg(fresnel_texture);
-            //if (bump_exists) ret_str += QString("scene.materials.%1.bumptex = \"%2\"\n").arg(metal2Label).arg(matLabel + "_b");
-            //if (normal_mapfile != "") ret_str += QString("scene.materials.%1.normaltex = \"%2\"\n").arg(metal2Label).arg(matLabel + "_n");
-            /////////////// use glossy_roughness map if available
-            if (glossy_roughness_mapfile != "")
-            {
-                QString glossyRoughnessTexLabel = metal2Label + "_glossyRoughnessTex";
-                ret_str += QString("scene.textures.%1.type = \"imagemap\"\n").arg(glossyRoughnessTexLabel);
-                ret_str += QString("scene.textures.%1.file = \"%2\"\n").arg(glossyRoughnessTexLabel).arg(glossy_roughness_mapfile);
-
-                ret_str += QString("scene.materials.%1.uroughness = %2\n").arg(metal2Label).arg(glossyRoughnessTexLabel);
-                ret_str += QString("scene.materials.%1.vroughness = %2\n").arg(metal2Label).arg(glossyRoughnessTexLabel);
-            }
-            else
-            {
-                ret_str += QString("scene.materials.%1.uroughness = %2\n").arg(metal2Label).arg(uroughness);
-                ret_str += QString("scene.materials.%1.vroughness = %2\n").arg(metal2Label).arg(vroughness);
-            }
-            // **** glossy reflectivity *******
-    //        ret_str += QString("scene.materials.%1.index = %2 %2 %2\n").arg(metal2Label).arg("*****TODO: REFLECTIVE*******");
-            //// *********** scale metal2 by metallicity *************
-        }
-
-        ////////////////////
-        // Step 1c. Make glossy/reflective component
-        ////////////////////
-
-        ////////////////////
-        // Step 1d. Make translucent/volume component
-        ////////////////////
-
-        ////////////////////
-        // Step 2. Mix glossy2 + metal2
-        ////////////////////
-        if (YaLuxGlobal.bDoMetallic)
-        {
-            //QString glossy_metal_MixLabel = matLabel + "glossy_metal_mix";
-            QString glossy_metal_MixLabel = matLabel;
-            ret_str += QString("scene.materials.%1.type = \"mix\"\n").arg(glossy_metal_MixLabel);
-            ret_str += QString("scene.materials.%1.material1 = \"%2\"\n").arg(glossy_metal_MixLabel).arg(glossy2Label);
-            //ret_str += QString("scene.materials.%1.material2 = \"%2\"\n").arg(glossy_metal_MixLabel).arg(nullmatLabel);
-            ret_str += QString("scene.materials.%1.material2 = \"%2\"\n").arg(glossy_metal_MixLabel).arg(metal2Label);
-            if (metallic_mapfile != "")
-                ret_str += QString("scene.materials.%1.amount = \"%2\"\n").arg(glossy_metal_MixLabel).arg(matLabel + "_metallicity");
-            else
-                ret_str += QString("scene.materials.%1.amount = %2 %2 %2\n").arg(glossy_metal_MixLabel).arg(metallic_weight);
-            //ret_str += QString("scene.materials.%1.amount = 0\n").arg(matLabel);
-        }
-
-
-        ////////////////////
-        // Step 3. Mix Dual Spec
-        ////////////////////
-
-        ////////////////////
-        // Step 4. Mix Top Coat
-        ////////////////////
-
-        ////////////////////
-        // Step 5. Mix Opacity
-        ////////////////////
-        //ret_str += QString("scene.materials.%1.type = \"mix\"\n").arg(matLabel);
-        //ret_str += QString("scene.materials.%1.material1 = \"%2\"\n").arg(matLabel).arg(nullmatLabel);
-        //ret_str += QString("scene.materials.%1.material2 = \"%2\"\n").arg(matLabel).arg(glossy_metal_MixLabel);
-        //if (opacity_mapfile != "")
-        //    ret_str += QString("scene.materials.%1.amount = \"%2\"\n").arg(matLabel).arg(matLabel + "_o");
-        //else
-        //    ret_str += QString("scene.materials.%1.amount = %2 %2 %2\n").arg(matLabel).arg(opacity_value);
-
-        if (YaLuxGlobal.bDoMetallic)
-        {
-            if (opacity_mapfile != "")
-                ret_str += QString("scene.materials.%1.transparency = \"%2\"\n").arg(matLabel).arg(matLabel + "_o");
-            else
-                ret_str += QString("scene.materials.%1.transparency = %2\n").arg(matLabel).arg(opacity_value);
-        }
 
     }
 
