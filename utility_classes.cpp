@@ -4606,7 +4606,7 @@ QString GenerateCoreTextureBlock3(QString textureName, QString mapName, float te
             ret_str += QString("scene.textures.%1.type = \"mix\"\n").arg(textureName);
             ret_str += QString("scene.textures.%1.texture1 = 0 0 0\n").arg(textureName);
             ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(textureName).arg(realtextureName);
-            ret_str += QString("scene.textures.%1.amount = %2\n").arg(textureName).arg(scaletextureName);
+            ret_str += QString("scene.textures.%1.amount = \"%2\"\n").arg(textureName).arg(scaletextureName);
         }
     }
     else {
