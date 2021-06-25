@@ -4256,6 +4256,8 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
         LuxGetFloatProperty(material, "Dual Lobe Specular Reflectivity", spec_reflectivity, mesg);
 
         // generate texture 1, 2, ratio
+        if (specweight_mapfile != "")
+            ret_str += GenerateCoreTextureBlock1(mainSpec + "_weight", specweight_mapfile, spec_weight);
         if (spec1_mapfile != "")
             ret_str += GenerateCoreTextureBlock1(spec1_label, spec1_mapfile, spec1_float);
         if (spec2_mapfile != "")
@@ -4281,14 +4283,9 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
         ret_str += QString("scene.textures.%1.texture1 = 0 0 0\n").arg(mainSpec);
         ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(mainSpec).arg(rawDualLobe);
         if (specweight_mapfile != "")
-        {
-            ret_str += GenerateCoreTextureBlock1(mainSpec + "_weight", specweight_mapfile, spec_weight);
             ret_str += QString("scene.textures.%1.amount = \"%2\"\n").arg(mainSpec).arg(mainSpec + "_weight");
-        }
         else
-        {
             ret_str += QString("scene.textures.%1.amount = %2\n").arg(mainSpec).arg(spec_weight);
-        }
 
     }
 
