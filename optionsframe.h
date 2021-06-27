@@ -80,7 +80,13 @@ private:
     DzStringProperty    *customRenderString;
 
     DzBoolProperty      *doBumpMaps;
+    DzBoolProperty      *doNormalMaps;
     DzBoolProperty      *doMetallic;
+    DzBoolProperty      *doSSS_Kt;
+    DzBoolProperty      *doSSS_Ka;
+    DzBoolProperty      *doSSS_Volume;
+    DzBoolProperty      *doDebugSSS;
+
 
 };
 

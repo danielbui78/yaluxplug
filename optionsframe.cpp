@@ -104,18 +104,38 @@ YaLuxOptionsFrame::YaLuxOptionsFrame() : DzOptionsFrame("yaluxplug Options Frame
     }
     listView->addProperty(renderMode);
 
-    doBumpMaps = new DzBoolProperty("yalux_do_bumpamps", true, false, true);
-    doBumpMaps->setLabel("Render Bump Maps");
-    listView->addProperty(doBumpMaps);
-
-    doMetallic = new DzBoolProperty("yalux_do_metallic", true, false, true);
-    doMetallic->setLabel("Render Metallic Materials");
-    listView->addProperty(doMetallic);
-
     // Custom Render String
     customRenderString = new DzStringProperty("yalux_render_custom", false);
     customRenderString->setLabel("Custom Render String (use Custom Render Engine)");
     listView->addProperty(customRenderString);
+
+    doBumpMaps = new DzBoolProperty("yalux_do_bumpmaps", true, false, true);
+    doBumpMaps->setLabel("Render Bump Maps");
+    listView->addProperty(doBumpMaps);
+
+    doNormalMaps = new DzBoolProperty("yalux_do_normalmaps", true, false, true);
+    doNormalMaps->setLabel("Render Normal Maps");
+    listView->addProperty(doNormalMaps);
+
+    doMetallic = new DzBoolProperty("yalux_do_metallic", true, false, true);
+    doMetallic->setLabel("Render Specular");
+    listView->addProperty(doMetallic);
+
+    doSSS_Kt = new DzBoolProperty("yalux_do_sss_kt", true, false, true);
+    doSSS_Kt->setLabel("Render SSS Transmission Color");
+    listView->addProperty(doSSS_Kt);
+
+    doSSS_Ka = new DzBoolProperty("yalux_do_sss_ka", true, false, true);
+    doSSS_Ka->setLabel("Render SSS TopCoat");
+    listView->addProperty(doSSS_Ka);
+
+    doSSS_Volume = new DzBoolProperty("yalux_do_sss_volume", true, false, true);
+    doSSS_Volume->setLabel("Render SSS Volume");
+    listView->addProperty(doSSS_Volume);
+
+    doDebugSSS = new DzBoolProperty("yalux_do_debug_sss", true, false, true);
+    doDebugSSS->setLabel("Debug SSS");
+    listView->addProperty(doDebugSSS);
 
     // Max Texture Size
     maxTextureSize = new DzEnumProperty("yalux_max_texturesize", false, false);
@@ -260,7 +280,13 @@ void	YaLuxOptionsFrame::loadSettings()
         networkRenderOn->setBoolValue( settings->getBoolValue( networkRenderOn->getName()) );
         maxTextureSize->setValue( settings->getIntValue( maxTextureSize->getName()) );
         doBumpMaps->setBoolValue( settings->getBoolValue( doBumpMaps->getName()) );
+        doNormalMaps->setBoolValue(settings->getBoolValue(doNormalMaps->getName()));
         doMetallic->setBoolValue(settings->getBoolValue(doMetallic->getName()));
+        doSSS_Kt->setBoolValue(settings->getBoolValue(doSSS_Kt->getName()));
+        doSSS_Ka->setBoolValue(settings->getBoolValue(doSSS_Ka->getName()));
+        doSSS_Volume->setBoolValue(settings->getBoolValue(doSSS_Volume->getName()));
+        doDebugSSS->setBoolValue(settings->getBoolValue(doDebugSSS->getName()));
+
     }
 }
 
@@ -289,8 +315,13 @@ void	YaLuxOptionsFrame::saveSettings()
     settings->setIntValue(maxTextureSize->getName(), maxTextureSize->getValue());
     settings->setBoolValue(networkRenderOn->getName(), networkRenderOn->getBoolValue());
     settings->setBoolValue(doBumpMaps->getName(), doBumpMaps->getBoolValue());
+    settings->setBoolValue(doNormalMaps->getName(), doNormalMaps->getBoolValue());
     settings->setBoolValue(doMetallic->getName(), doMetallic->getBoolValue());
-    
+    settings->setBoolValue(doSSS_Kt->getName(), doSSS_Kt->getBoolValue());
+    settings->setBoolValue(doSSS_Ka->getName(), doSSS_Ka->getBoolValue());
+    settings->setBoolValue(doSSS_Volume->getName(), doSSS_Volume->getBoolValue());
+    settings->setBoolValue(doDebugSSS->getName(), doDebugSSS->getBoolValue());
+
     settings->setBoolValue("yalux_savedsettings_exist", true);
 
 }
@@ -330,7 +361,12 @@ void	YaLuxOptionsFrame::applyChanges()
     else
         YaLuxGlobal.maxTextureSize = maxTextureSize->getStringValue().toInt();
     YaLuxGlobal.bDoBumpMaps = doBumpMaps->getBoolValue();
+    YaLuxGlobal.bDoNormalMaps = doNormalMaps->getBoolValue();
     YaLuxGlobal.bDoMetallic = doMetallic->getBoolValue();
+    YaLuxGlobal.bDoSSSKt = doSSS_Kt->getBoolValue();
+    YaLuxGlobal.bDoSSSKa = doSSS_Ka->getBoolValue();
+    YaLuxGlobal.bDoSSSVolume = doSSS_Volume->getBoolValue();
+    YaLuxGlobal.bDoDebugSSS = doDebugSSS->getBoolValue();
 
 };
 

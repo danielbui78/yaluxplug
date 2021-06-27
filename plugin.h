@@ -89,7 +89,12 @@ struct G
     DzTokenBuffer tokenBuffer;
 
     bool bDoBumpMaps;
+    bool bDoNormalMaps;
     bool bDoMetallic;
+    bool bDoSSSKt;
+    bool bDoSSSKa;
+    bool bDoSSSVolume;
+    bool bDoDebugSSS;
 
 };
 
