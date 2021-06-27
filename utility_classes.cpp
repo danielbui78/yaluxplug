@@ -4494,6 +4494,12 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
         // rename mainspec for future references
         mainSpec = metallic_override;
         spec_exists = true;
+    // Glossy Layer
+    QString glossyRoughnessTexLabel = matLabel + "_glossyRoughnessTex";
+    if (glossy_roughness_mapfile != "" && glossy_layered_weight > 0)
+    {
+        // note: roughness is already multiplied by glossy_layered_weight when imported above
+        ret_str += GenerateCoreTextureBlock1(glossyRoughnessTexLabel, glossy_roughness_mapfile, glossy_roughness);
     }
 
 
@@ -4611,10 +4617,9 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
         }
         else if (glossy_roughness_mapfile != "")
         {
-            QString glossyRoughnessTexLabel = glossy2Label + "_glossyRoughnessTex";
-            ret_str += QString("scene.textures.%1.type = \"imagemap\"\n").arg(glossyRoughnessTexLabel);
-            ret_str += QString("scene.textures.%1.file = \"%2\"\n").arg(glossyRoughnessTexLabel).arg(glossy_roughness_mapfile);
-
+            //QString glossyRoughnessTexLabel = glossy2Label + "_glossyRoughnessTex";
+            //ret_str += QString("scene.textures.%1.type = \"imagemap\"\n").arg(glossyRoughnessTexLabel);
+            //ret_str += QString("scene.textures.%1.file = \"%2\"\n").arg(glossyRoughnessTexLabel).arg(glossy_roughness_mapfile);
             ret_str += QString("scene.materials.%1.uroughness = %2\n").arg(glossy2Label).arg(glossyRoughnessTexLabel);
             ret_str += QString("scene.materials.%1.vroughness = %2\n").arg(glossy2Label).arg(glossyRoughnessTexLabel);
         }
