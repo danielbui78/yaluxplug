@@ -4245,12 +4245,16 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
         }
     }
 
+    // TODO: check for metallicity = 0 vs 1.... see metallicity below
     // Diffuse Texture Block
+    QString mainDiffTex = matLabel + "_d";
     if (diffuse_exists)
-        ret_str += GenerateCoreTextureBlock3(matLabel + "_d", diffuse_mapfile,
+        ret_str += GenerateCoreTextureBlock3(mainDiffTex, diffuse_mapfile,
             diffuse_value.redF(), diffuse_value.greenF(), diffuse_value.blueF(),
             diffuse_uscale, diffuse_vscale, diffuse_uoffset, diffuse_voffset,
             diffuse_gamma, diffuse_wrap, diffuse_channel);
+
+
 
     // Specular Block (DUAL LOBE)
     float spec1_float = 0;
@@ -4455,32 +4459,66 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
         ret_str += GenerateCoreTextureBlock1(matLabel + "_o", opacity_mapfile, opacity_value);
 
     // Metallicity
+    QString metallicityTex = matLabel + "_metallicity";
     if (metallic_mapfile != "")
     {
         if (metallic_weight == 0) metallic_weight = 0.01;
-        ret_str += GenerateCoreTextureBlock1(matLabel + "_metallicity", metallic_mapfile, metallic_weight,
-            bump_uscale, bump_vscale, bump_uoffset, bump_voffset, 1.0,
-            bump_wrap, bump_channel);
+        float metallicity_scale = metallic_weight;
+        if (glossy_layered_weight > 0) metallicity_scale *= glossy_layered_weight;
+        ret_str += GenerateCoreTextureBlock1(metallicityTex, metallic_mapfile, metallicity_scale,
+            diffuse_uscale, diffuse_vscale, diffuse_uoffset, diffuse_voffset,
+            diffuse_gamma, diffuse_wrap, diffuse_channel);
 
         /////////////
         // Mix into specular
         ////////////////
-        QString metallic_override = mainSpec + "_metallic_override";
-        ret_str += QString("scene.textures.%1.type = \"mix\"\n").arg(metallic_override);
-        ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(metallic_override).arg(matLabel + "_metallicity");
-        if (spec_weight != 0)
+        QString specA_metallic_override = mainSpec + "_metallic_override_A";
+        QString specB_metallic_override = mainSpec + "_metallic_override_B";
+
+        //QString diffFilter = specB_metallic_override + "_filtered";
+        //ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(diffFilter);
+        //ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffFilter).arg(metallicityTex);
+        //ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffFilter).arg(mainDiffTex);
+
+        ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(specB_metallic_override);
+        ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specB_metallic_override).arg(metallicityTex);
+        ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specB_metallic_override).arg(mainDiffTex);
+
+        if (spec_weight > 0)
         {
-            ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(metallic_override).arg(mainSpec);
-            ret_str += QString("scene.textures.%1.amount = %2\n").arg(metallic_override).arg(0.5);
+            ret_str += QString("scene.textures.%1.type = \"add\"\n").arg(specA_metallic_override);
+            ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specA_metallic_override).arg(specB_metallic_override);
+            ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specA_metallic_override).arg(mainSpec);
+            //QString clamped = specA_metallic_override + "_clamped";
+            //ret_str += QString("scene.textures.%1.type = \"clamp\"\n").arg(clamped);
+            //ret_str += QString("scene.textures.%1.texture = \"%2\"\n").arg(clamped).arg(specA_metallic_override);
+            // rename mainspec for future references
+            mainSpec = specA_metallic_override;
         }
         else
         {
-            ret_str += QString("scene.textures.%1.texture2 = 0.5\n").arg(metallic_override);
-            ret_str += QString("scene.textures.%1.amount = %2\n").arg(metallic_override).arg(0);
+            mainSpec = specB_metallic_override;
         }
-        // rename mainspec for future references
-        mainSpec = metallic_override;
         spec_exists = true;
+
+        /////////////
+        // Subtract from Diffuse
+        /////////////
+        QString diffuseMetalOverrideTex = mainDiffTex + "_metallic_override";
+        ret_str += QString("scene.textures.%1.type = \"subtract\"\n").arg(diffuseMetalOverrideTex);
+        ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffuseMetalOverrideTex).arg(mainDiffTex);
+        ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffuseMetalOverrideTex).arg(metallicityTex);
+        //QString diffClamped = diffuseMetalOverrideTex + "_clamped";
+        //ret_str += QString("scene.textures.%1.type = \"clamp\"\n").arg(diffClamped);
+        //ret_str += QString("scene.textures.%1.texture = \"%2\"\n").arg(diffClamped).arg(diffuseMetalOverrideTex);
+        //ret_str += QString("scene.textures.%1.min = 0\n").arg(diffClamped);
+        //ret_str += QString("scene.textures.%1.max = \"%2\"\n").arg(diffClamped).arg(mainDiffTex);
+        //diffuseMetalOverrideTex = diffClamped;
+        //// rename maindiff
+        mainDiffTex = diffuseMetalOverrideTex;
+
+    }
+
     // Glossy Layer
     QString glossyRoughnessTexLabel = matLabel + "_glossyRoughnessTex";
     if (glossy_roughness_mapfile != "" && glossy_layered_weight > 0)
@@ -4488,6 +4526,8 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
         // note: roughness is already multiplied by glossy_layered_weight when imported above
         ret_str += GenerateCoreTextureBlock1(glossyRoughnessTexLabel, glossy_roughness_mapfile, glossy_roughness);
     }
+
+
 
 
     ///////////////////////////////////////////
@@ -4567,7 +4607,7 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
         {
             ret_str += QString("scene.materials.%1.type = \"glossy2\"\n").arg(glossy2Label);
         }
-        ret_str += QString("scene.materials.%1.kd = \"%2\"\n").arg(glossy2Label).arg(matLabel + "_d");
+        ret_str += QString("scene.materials.%1.kd = \"%2\"\n").arg(glossy2Label).arg(mainDiffTex);
 
         if (spec_exists && YaLuxGlobal.bDoMetallic)
         {
