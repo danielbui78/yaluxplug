@@ -4245,19 +4245,6 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
         }
     }
 
-
-    ///////////////////////////////////////////////
-    // Special Handling for Wet / Moisture
-    ///////////////////////////////////////////////
-    bool isWet = false;
-    QString checkString = material->getName().toLower();
-    if (checkString.contains("cornea") || checkString.contains("eyemoisture") || checkString.contains("eyereflection"))
-    {
-//        isWet = true;
-//        opacity_exists = true;
-//        opacity_value = 0.0;
-    }
-
     // Diffuse Texture Block
     if (diffuse_exists)
         ret_str += GenerateCoreTextureBlock3(matLabel + "_d", diffuse_mapfile,
