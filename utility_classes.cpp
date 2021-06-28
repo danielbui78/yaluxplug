@@ -4498,13 +4498,12 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
         {
             mainSpec = "0 0 0";
             specA_metallic_override = "0 0 0";
-        }
-        
+        }        
         // replace with 0.5 specular grey
         ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(specB_metallic_override);
         ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specB_metallic_override).arg("0.5 0.5 0.5");
         ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specB_metallic_override).arg(filterMetallicityTex);
-
+        // merge with metal-filtered, subtracted specular from above
         ret_str += QString("scene.textures.%1.type = \"add\"\n").arg(specC_metallic_override);
         ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specC_metallic_override).arg(specA_metallic_override);
         ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specC_metallic_override).arg(specB_metallic_override);
@@ -4526,18 +4525,16 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
         /////////////
         // Subtract from Diffuse
         /////////////
-        QString diffuseMetalOverrideTex = mainDiffTex + "_metallic_override";
-        ret_str += QString("scene.textures.%1.type = \"subtract\"\n").arg(diffuseMetalOverrideTex);
-        ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffuseMetalOverrideTex).arg(mainDiffTex);
-        ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffuseMetalOverrideTex).arg(metallicityTex);
-        //QString diffClamped = diffuseMetalOverrideTex + "_clamped";
-        //ret_str += QString("scene.textures.%1.type = \"clamp\"\n").arg(diffClamped);
-        //ret_str += QString("scene.textures.%1.texture = \"%2\"\n").arg(diffClamped).arg(diffuseMetalOverrideTex);
-        //ret_str += QString("scene.textures.%1.min = 0\n").arg(diffClamped);
-        //ret_str += QString("scene.textures.%1.max = \"%2\"\n").arg(diffClamped).arg(mainDiffTex);
-        //diffuseMetalOverrideTex = diffClamped;
+        QString diffuseA_metallic_override = metallicityTex + "_override_diff_A";
+        QString diffuseB_metallic_override = metallicityTex + "_override_diff_B"; // not needed?
+
+        // black out or scale down metal-filtered diffuse
+        ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(diffuseA_metallic_override);
+        ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffuseA_metallic_override).arg(mainDiffTex);
+        ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffuseA_metallic_override).arg(inverseFitlerMetallicityTex);
+
         //// rename maindiff
-        mainDiffTex = diffuseMetalOverrideTex;
+        mainDiffTex = diffuseA_metallic_override;
 
     }
 
