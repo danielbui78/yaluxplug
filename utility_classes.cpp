@@ -4469,36 +4469,58 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
             diffuse_uscale, diffuse_vscale, diffuse_uoffset, diffuse_voffset,
             diffuse_gamma, diffuse_wrap, diffuse_channel);
 
+        // create metal-filter and inverse-metal-fitler
+        QString filterMetallicityTex = metallicityTex + "_filter";
+        QString inverseFitlerMetallicityTex = metallicityTex + "_inverse";
+        ret_str += GenerateCoreTextureBlock1(filterMetallicityTex, metallic_mapfile, 1.0,
+            diffuse_uscale, diffuse_vscale, diffuse_uoffset, diffuse_voffset,
+            diffuse_gamma, diffuse_wrap, diffuse_channel);
+        ret_str += QString("scene.textures.%1.type = \"subtract\"\n").arg(inverseFitlerMetallicityTex);
+        ret_str += QString("scene.textures.%1.texture1 = 1\n").arg(inverseFitlerMetallicityTex);
+        ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(inverseFitlerMetallicityTex).arg(filterMetallicityTex);
+
         /////////////
         // Mix into specular
         ////////////////
-        QString specA_metallic_override = mainSpec + "_metallic_override_A";
-        QString specB_metallic_override = mainSpec + "_metallic_override_B";
+        QString specA_metallic_override = metallicityTex + "_override_spec_A";
+        QString specB_metallic_override = metallicityTex + "_override_spec_B";
+        QString specC_metallic_override = metallicityTex + "_override_spec_C";
+        QString specD_metallic_override = metallicityTex + "_override_spec_D";
 
-        //QString diffFilter = specB_metallic_override + "_filtered";
-        //ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(diffFilter);
-        //ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffFilter).arg(metallicityTex);
-        //ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffFilter).arg(mainDiffTex);
-
-        ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(specB_metallic_override);
-        ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specB_metallic_override).arg(metallicityTex);
-        ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specB_metallic_override).arg(mainDiffTex);
-
+        // black out or scale down metal-filtered specular
         if (spec_weight > 0)
         {
-            ret_str += QString("scene.textures.%1.type = \"add\"\n").arg(specA_metallic_override);
-            ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specA_metallic_override).arg(specB_metallic_override);
-            ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specA_metallic_override).arg(mainSpec);
-            //QString clamped = specA_metallic_override + "_clamped";
-            //ret_str += QString("scene.textures.%1.type = \"clamp\"\n").arg(clamped);
-            //ret_str += QString("scene.textures.%1.texture = \"%2\"\n").arg(clamped).arg(specA_metallic_override);
-            // rename mainspec for future references
-            mainSpec = specA_metallic_override;
+            ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(specA_metallic_override);
+            ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specA_metallic_override).arg(mainSpec);
+            ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specA_metallic_override).arg(inverseFitlerMetallicityTex);
         }
         else
         {
-            mainSpec = specB_metallic_override;
+            mainSpec = "0 0 0";
+            specA_metallic_override = "0 0 0";
         }
+        
+        // replace with 0.5 specular grey
+        ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(specB_metallic_override);
+        ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specB_metallic_override).arg("0.5 0.5 0.5");
+        ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specB_metallic_override).arg(filterMetallicityTex);
+
+        ret_str += QString("scene.textures.%1.type = \"add\"\n").arg(specC_metallic_override);
+        ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specC_metallic_override).arg(specA_metallic_override);
+        ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specC_metallic_override).arg(specB_metallic_override);
+
+        // add metallized+colored specular
+        // 1. create metallic-filtered diffuse texture
+        QString diffFilter = metallicityTex+ "_diffuse_filtered";
+        ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(diffFilter);
+        ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffFilter).arg(mainDiffTex);
+        ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffFilter).arg(filterMetallicityTex);
+        // 2. add to subtracted specular
+        ret_str += QString("scene.textures.%1.type = \"add\"\n").arg(specD_metallic_override);
+        ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specD_metallic_override).arg(specC_metallic_override);
+        ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specD_metallic_override).arg(diffFilter);
+
+        mainSpec = specD_metallic_override;
         spec_exists = true;
 
         /////////////
