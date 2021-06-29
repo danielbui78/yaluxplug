@@ -810,9 +810,9 @@ void YaLuxRender::updateData()
 
         if (attempts == 2)
         {
-            QString mesg = "yaluxplug: ERROR: Unable to update Daz with rendered image from luxrender.";
+            QString mesg = "yaluxplug: timeout waiting for preview image from luxrender.";
             dzApp->log(mesg);
-            YaLuxGlobal.logText->setTextColor(QColor(255, 0, 0));
+            YaLuxGlobal.logText->setTextColor(QColor(255, 255, 0));
             YaLuxGlobal.logText->append(mesg);
             return;
         }

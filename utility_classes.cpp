@@ -4010,6 +4010,7 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
     QString translucency_mapfile = ""; // "Translucency Color"
     QColor sss_tint; // "SSS Reflectance Tint"
     bool translucency_exists = false;
+    bool volume_exists = false;
     /////////////////// Volume
     float transmission_distance = 0; // "Transmitted Measurement Distance"
     QColor transmission_color; // "Transmitted Color"
@@ -4220,6 +4221,10 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
             if (currentProperty != NULL)
             {
                 transmission_color= ((DzColorProperty*)currentProperty)->getColorValue();
+                if (transmission_color != QColor(0, 0, 0))
+                {
+                    volume_exists = true;
+                }
             }
             currentProperty = material->findProperty("SSS Color");
             if (currentProperty != NULL)
@@ -4288,16 +4293,16 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
         specref_mapfile = LuxGetImageMapProperty(material, "Dual Lobe Specular Reflectivity", mesg);
 
         // generate texture 1, 2, ratio, reflectivity
-//        if (specweight_mapfile != "")
-        ret_str += GenerateCoreTextureBlock1(mainSpec + "_weight", specweight_mapfile, spec_weight);
-//        if (spec1_mapfile != "")
-        ret_str += GenerateCoreTextureBlock1(spec1_label, spec1_mapfile, spec1_float);
-//        if (spec2_mapfile != "")
-        ret_str += GenerateCoreTextureBlock1(spec2_label, spec1_mapfile, spec2_float);
-//        if (specratio_mapfile != "")
-        ret_str += GenerateCoreTextureBlock1(specratio_label, specratio_mapfile, spec_ratio);
-//        if (specref_mapfile != "")
-        ret_str += GenerateCoreTextureBlock1(specref_label, specref_mapfile, spec_reflectivity);
+        if (specweight_mapfile != "")
+            ret_str += GenerateCoreTextureBlock1(mainSpec + "_weight", specweight_mapfile, spec_weight);
+        if (spec1_mapfile != "")
+            ret_str += GenerateCoreTextureBlock1(spec1_label, spec1_mapfile, spec1_float);
+        if (spec2_mapfile != "")
+            ret_str += GenerateCoreTextureBlock1(spec2_label, spec1_mapfile, spec2_float);
+        if (specratio_mapfile != "")
+            ret_str += GenerateCoreTextureBlock1(specratio_label, specratio_mapfile, spec_ratio);
+        if (specref_mapfile != "")
+            ret_str += GenerateCoreTextureBlock1(specref_label, specref_mapfile, spec_reflectivity);
 
         // mix spec1 + spec2
         ret_str += QString("scene.textures.%1.type = \"mix\"\n").arg(rawDualRoughness);
@@ -4314,17 +4319,22 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
         else
             ret_str += QString("scene.textures.%1.amount = %2\n").arg(rawDualRoughness).arg(spec_ratio);
 
+        // scale roughness from grey (0.5)
         ret_str += QString("scene.textures.%1.type = \"mix\"\n").arg(scaledDualRoughness);
-        ret_str += QString("scene.textures.%1.texture1 = 0 0 0\n").arg(scaledDualRoughness);
+        ret_str += QString("scene.textures.%1.texture1 = 0.5 0.5 0.5\n").arg(scaledDualRoughness);
         ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(scaledDualRoughness).arg(rawDualRoughness);
         if (specweight_mapfile != "")
             ret_str += QString("scene.textures.%1.amount = \"%2\"\n").arg(scaledDualRoughness).arg(mainSpec + "_weight");
         else
             ret_str += QString("scene.textures.%1.amount = %2\n").arg(scaledDualRoughness).arg(spec_weight);
 
+        // scale roughness from grey (0.5)
         ret_str += QString("scene.textures.%1.type = \"mix\"\n").arg(scaledSpec1Roughness);
-        ret_str += QString("scene.textures.%1.texture1 = 0 0 0\n").arg(scaledSpec1Roughness);
-        ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(scaledSpec1Roughness).arg(spec1_label);
+        ret_str += QString("scene.textures.%1.texture1 = 0.5 0.5 0.5\n").arg(scaledSpec1Roughness);
+        if (spec1_mapfile != "")
+            ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(scaledSpec1Roughness).arg(spec1_label);
+        else
+            ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(scaledSpec1Roughness).arg(spec1_float);
         if (specweight_mapfile != "")
             ret_str += QString("scene.textures.%1.amount = \"%2\"\n").arg(scaledSpec1Roughness).arg(mainSpec + "_weight");
         else
@@ -4401,7 +4411,9 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
             translucency_color.redF(), translucency_color.greenF(), translucency_color.blueF(),
             diffuse_uscale, diffuse_vscale, diffuse_uoffset, diffuse_voffset,
             diffuse_gamma, diffuse_wrap, diffuse_channel);
-
+    }
+    if (volume_exists)
+    {
         ret_str += GenerateCoreTextureBlock3(transmissionTexture, "",
             transmission_color.redF(), transmission_color.greenF(), transmission_color.blueF() );
 
@@ -4420,7 +4432,6 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
         transmission_density = (transmission_density > 1000) ? 1000 : transmission_density;
         scattering_density = (scattering_density > 500) ? 500 : scattering_density;
 
-
         // now scale everything up(down) for volumetric rendering data
         ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(scaled_transmissionTexture);
         ret_str += QString("scene.textures.%1.texture1 = %2\n").arg(scaled_transmissionTexture).arg(transmission_density); // convert distance to volumetric density ( d --> 1 / d*d*d
@@ -4434,13 +4445,11 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
         ret_str += QString("scene.textures.%1.texture1 = %2\n").arg(scaled_scatteringTexture).arg(scattering_density); // convert distance to volumetric density ( d --> 1 / d*d*d
         ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(scaled_scatteringTexture).arg(scatteringTexture);
 
-
         ret_str += QString("scene.volumes.%1.type = \"homogeneous\"\n").arg(volumeLabel);
         ret_str += QString("scene.volumes.%1.absorption = \"%2\"\n").arg(volumeLabel).arg(scaled_absorptionTexture);
         ret_str += QString("scene.volumes.%1.scattering = \"%2\"\n").arg(volumeLabel).arg(scaled_scatteringTexture);
         ret_str += QString("scene.volumes.%1.assymetry = \"%2\"\n").arg(volumeLabel).arg(scattering_direction);
         ret_str += QString("scene.volumes.%1.multiscattering = %2\n").arg(volumeLabel).arg(1);
-
     }
 
 
@@ -4449,35 +4458,51 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
     float override_opacity;
     override_opacity = 1 - (refraction_weight * 0.99);
     opacity_value = (opacity_value < override_opacity) ? opacity_value : override_opacity;
-    if (YaLuxGlobal.bDoSSSVolume)
+    if (YaLuxGlobal.bDoSSSVolume && volume_exists)
     {
         // modify for translucency/SSS
         override_opacity = 1 - (translucency_weight * 0.5);
         opacity_value = (opacity_value < override_opacity) ? opacity_value : override_opacity;
-    }    
+    }
     if (opacity_exists && opacity_mapfile != "")
-        ret_str += GenerateCoreTextureBlock1(matLabel + "_o", opacity_mapfile, opacity_value);
+        ret_str += GenerateCoreTextureBlock1(matLabel + "_o", opacity_mapfile, opacity_value,
+            bump_uscale, bump_vscale, bump_uoffset, bump_voffset, bump_gamma,
+            bump_wrap, bump_channel);
+
 
     // Metallicity
     QString metallicityTex = matLabel + "_metallicity";
-    if (metallic_mapfile != "")
+    if (metallic_weight > 0)
     {
-        if (metallic_weight == 0) metallic_weight = 0.01;
+        //if (metallic_weight == 0) metallic_weight = 0.01;
         float metallicity_scale = metallic_weight;
-        if (glossy_layered_weight > 0) metallicity_scale *= glossy_layered_weight;
-        ret_str += GenerateCoreTextureBlock1(metallicityTex, metallic_mapfile, metallicity_scale,
-            diffuse_uscale, diffuse_vscale, diffuse_uoffset, diffuse_voffset,
-            diffuse_gamma, diffuse_wrap, diffuse_channel);
+        //if (glossy_layered_weight > 0) metallicity_scale *= glossy_layered_weight;
 
-        // create metal-filter and inverse-metal-fitler
-        QString filterMetallicityTex = metallicityTex + "_filter";
-        QString inverseFitlerMetallicityTex = metallicityTex + "_inverse";
-        ret_str += GenerateCoreTextureBlock1(filterMetallicityTex, metallic_mapfile, 1.0,
-            diffuse_uscale, diffuse_vscale, diffuse_uoffset, diffuse_voffset,
-            diffuse_gamma, diffuse_wrap, diffuse_channel);
-        ret_str += QString("scene.textures.%1.type = \"subtract\"\n").arg(inverseFitlerMetallicityTex);
-        ret_str += QString("scene.textures.%1.texture1 = 1\n").arg(inverseFitlerMetallicityTex);
-        ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(inverseFitlerMetallicityTex).arg(filterMetallicityTex);
+        QString filterMetallicityTex = metallicityTex + "_raw_filter";
+        QString inverseFitlerMetallicityTex = metallicityTex + "_raw_filter_inverse";
+        if (metallic_mapfile != "")
+        {
+            ret_str += GenerateCoreTextureBlock1(metallicityTex, metallic_mapfile, metallicity_scale,
+                diffuse_uscale, diffuse_vscale, diffuse_uoffset, diffuse_voffset,
+                diffuse_gamma, diffuse_wrap, diffuse_channel);
+
+            // create metal-filter and inverse-metal-fitler
+            ret_str += GenerateCoreTextureBlock1(filterMetallicityTex, metallic_mapfile, 1.0,
+                diffuse_uscale, diffuse_vscale, diffuse_uoffset, diffuse_voffset,
+                diffuse_gamma, diffuse_wrap, diffuse_channel);
+            ret_str += QString("scene.textures.%1.type = \"subtract\"\n").arg(inverseFitlerMetallicityTex);
+            ret_str += QString("scene.textures.%1.texture1 = 1\n").arg(inverseFitlerMetallicityTex);
+            ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(inverseFitlerMetallicityTex).arg(filterMetallicityTex);
+        }
+        else
+        {
+            ret_str += QString("scene.textures.%1.type = \"constfloat3\"\n").arg(metallicityTex);
+            ret_str += QString("scene.textures.%1.texture1 = %2 %2 %2\n").arg(metallicityTex).arg(metallicity_scale);
+            ret_str += QString("scene.textures.%1.type = \"constfloat3\"\n").arg(filterMetallicityTex);
+            ret_str += QString("scene.textures.%1.texture1 = %2 %2 %2\n").arg(filterMetallicityTex).arg(metallic_weight);
+            ret_str += QString("scene.textures.%1.type = \"constfloat3\"\n").arg(inverseFitlerMetallicityTex);
+            ret_str += QString("scene.textures.%1.texture1 = %2 %2 %2\n").arg(inverseFitlerMetallicityTex).arg(1 - metallic_weight);
+        }
 
         /////////////
         // Mix into specular
@@ -4487,39 +4512,65 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
         QString specC_metallic_override = metallicityTex + "_override_spec_C";
         QString specD_metallic_override = metallicityTex + "_override_spec_D";
 
-        // black out or scale down metal-filtered specular
+        // create filtered-metal specular grey: 0.5? 0.1?
+        ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(specA_metallic_override);
+        ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specA_metallic_override).arg("0.01 0.01 0.01");
+        ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specA_metallic_override).arg(filterMetallicityTex);
+        // merge with metal-filtered, subtracted specular from above
         if (spec_weight > 0)
         {
-            ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(specA_metallic_override);
-            ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specA_metallic_override).arg(mainSpec);
-            ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specA_metallic_override).arg(inverseFitlerMetallicityTex);
+            // create black out or scale down metal-filtered specular
+            ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(specB_metallic_override);
+            ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specB_metallic_override).arg(mainSpec);
+            ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specB_metallic_override).arg(inverseFitlerMetallicityTex);
+
+            // add A + B
+            ret_str += QString("scene.textures.%1.type = \"add\"\n").arg(specC_metallic_override);
+            ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specC_metallic_override).arg(specA_metallic_override);
+            ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specC_metallic_override).arg(specB_metallic_override);
+
+            // add metallized+colored specular
+            // 1. create metallic-filtered diffuse texture
+            // use the true scaled metallicity instead of the raw filtered metallicity
+            QString diffFilter = metallicityTex + "_diffuse_filtered";
+            ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(diffFilter);
+            ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffFilter).arg(mainDiffTex);
+            ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffFilter).arg(metallicityTex);
+            // 2. add to subtracted specular
+            ret_str += QString("scene.textures.%1.type = \"add\"\n").arg(specD_metallic_override);
+            ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specD_metallic_override).arg(specC_metallic_override);
+            ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specD_metallic_override).arg(diffFilter);
+            // clamp
+            QString clamped_metallic_override = specD_metallic_override + "_clamped";
+            ret_str += QString("scene.textures.%1.type = \"clamp\"\n").arg(clamped_metallic_override);
+            ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(clamped_metallic_override).arg(specD_metallic_override);
+            ret_str += QString("scene.textures.%1.min = 0\n").arg(clamped_metallic_override);
+            ret_str += QString("scene.textures.%1.max = 1\n").arg(clamped_metallic_override);
+
+            mainSpec = clamped_metallic_override;
         }
         else
         {
-            mainSpec = "0 0 0";
-            specA_metallic_override = "0 0 0";
-        }        
-        // replace with 0.5 specular grey
-        ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(specB_metallic_override);
-        ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specB_metallic_override).arg("0.5 0.5 0.5");
-        ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specB_metallic_override).arg(filterMetallicityTex);
-        // merge with metal-filtered, subtracted specular from above
-        ret_str += QString("scene.textures.%1.type = \"add\"\n").arg(specC_metallic_override);
-        ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specC_metallic_override).arg(specA_metallic_override);
-        ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specC_metallic_override).arg(specB_metallic_override);
+            QString diffFilter = metallicityTex + "_diffuse_filtered";
+            ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(diffFilter);
+            ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffFilter).arg(mainDiffTex);
+            ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffFilter).arg(metallicityTex);
 
-        // add metallized+colored specular
-        // 1. create metallic-filtered diffuse texture
-        QString diffFilter = metallicityTex+ "_diffuse_filtered";
-        ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(diffFilter);
-        ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffFilter).arg(mainDiffTex);
-        ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffFilter).arg(filterMetallicityTex);
-        // 2. add to subtracted specular
-        ret_str += QString("scene.textures.%1.type = \"add\"\n").arg(specD_metallic_override);
-        ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specD_metallic_override).arg(specC_metallic_override);
-        ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specD_metallic_override).arg(diffFilter);
+            //// add A + B
+            //ret_str += QString("scene.textures.%1.type = \"add\"\n").arg(specC_metallic_override);
+            //ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specC_metallic_override).arg(specA_metallic_override);
+            //ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specC_metallic_override).arg(diffFilter);
 
-        mainSpec = specD_metallic_override;
+            //// clamp
+            //QString clamped_metallic_override = specC_metallic_override + "_clamped";
+            //ret_str += QString("scene.textures.%1.type = \"clamp\"\n").arg(clamped_metallic_override);
+            //ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(clamped_metallic_override).arg(specC_metallic_override);
+            //ret_str += QString("scene.textures.%1.min = 0\n").arg(clamped_metallic_override);
+            //ret_str += QString("scene.textures.%1.max = 1\n").arg(clamped_metallic_override);
+
+            mainSpec = diffFilter;
+        }
+
         spec_exists = true;
 
         /////////////
@@ -4527,11 +4578,17 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
         /////////////
         QString diffuseA_metallic_override = metallicityTex + "_override_diff_A";
         QString diffuseB_metallic_override = metallicityTex + "_override_diff_B"; // not needed?
+        QString inverseMetallicityTex = metallicityTex + "_inverse";
+
+        // create proper inverse of scaled metallicity
+        ret_str += QString("scene.textures.%1.type = \"subtract\"\n").arg(inverseMetallicityTex);
+        ret_str += QString("scene.textures.%1.texture1 = 1\n").arg(inverseMetallicityTex);
+        ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(inverseMetallicityTex).arg(metallicityTex);
 
         // black out or scale down metal-filtered diffuse
         ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(diffuseA_metallic_override);
         ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffuseA_metallic_override).arg(mainDiffTex);
-        ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffuseA_metallic_override).arg(inverseFitlerMetallicityTex);
+        ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffuseA_metallic_override).arg(inverseMetallicityTex);
 
         //// rename maindiff
         mainDiffTex = diffuseA_metallic_override;
@@ -4602,11 +4659,11 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
 
         if (translucency_exists)
         {
-            if (YaLuxGlobal.bDoDebugSSS)
+            if (YaLuxGlobal.bDoDebugSSS && volume_exists)
                 ret_str += QString("scene.materials.%1.type = \"null\"\n").arg(glossy2Label);
             else
                 ret_str += QString("scene.materials.%1.type = \"glossytranslucent\"\n").arg(glossy2Label);
-            if (YaLuxGlobal.bDoSSSVolume)
+            if (YaLuxGlobal.bDoSSSVolume && volume_exists)
                 ret_str += QString("scene.materials.%1.volume.interior = \"%2\"\n").arg(glossy2Label).arg(volumeLabel);
             if (YaLuxGlobal.bDoSSSKt)
             {
@@ -4675,7 +4732,7 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
             ret_str += QString("scene.materials.%1.vroughness = %2\n").arg(glossy2Label).arg(vroughness);
         }
 
-        if (YaLuxGlobal.bDoDebugSSS && translucency_exists)
+        if (YaLuxGlobal.bDoDebugSSS && volume_exists)
             ret_str += QString("scene.materials.%1.transparency = 1\n").arg(glossy2Label);
         else if (opacity_mapfile != "")
             ret_str += QString("scene.materials.%1.transparency = \"%2\"\n").arg(glossy2Label).arg(matLabel + "_o");
