@@ -109,34 +109,6 @@ YaLuxOptionsFrame::YaLuxOptionsFrame() : DzOptionsFrame("yaluxplug Options Frame
     customRenderString->setLabel("Custom Render String (use Custom Render Engine)");
     listView->addProperty(customRenderString);
 
-    doBumpMaps = new DzBoolProperty("yalux_do_bumpmaps", true, false, true);
-    doBumpMaps->setLabel("Render Bump Maps");
-    listView->addProperty(doBumpMaps);
-
-    doNormalMaps = new DzBoolProperty("yalux_do_normalmaps", true, false, true);
-    doNormalMaps->setLabel("Render Normal Maps");
-    listView->addProperty(doNormalMaps);
-
-    doMetallic = new DzBoolProperty("yalux_do_metallic", true, false, true);
-    doMetallic->setLabel("Render Specular");
-    listView->addProperty(doMetallic);
-
-    doSSS_Kt = new DzBoolProperty("yalux_do_sss_kt", true, false, true);
-    doSSS_Kt->setLabel("Render SSS Transmission Color");
-    listView->addProperty(doSSS_Kt);
-
-    doSSS_Ka = new DzBoolProperty("yalux_do_sss_ka", true, false, true);
-    doSSS_Ka->setLabel("Render SSS TopCoat");
-    listView->addProperty(doSSS_Ka);
-
-    doSSS_Volume = new DzBoolProperty("yalux_do_sss_volume", true, false, true);
-    doSSS_Volume->setLabel("Render SSS Volume");
-    listView->addProperty(doSSS_Volume);
-
-    doDebugSSS = new DzBoolProperty("yalux_do_debug_sss", true, false, true);
-    doDebugSSS->setLabel("Debug SSS");
-    listView->addProperty(doDebugSSS);
-
     // Max Texture Size
     maxTextureSize = new DzEnumProperty("yalux_max_texturesize", false, false);
     maxTextureSize->setLabel("Maximum Texture Size");
@@ -214,6 +186,44 @@ YaLuxOptionsFrame::YaLuxOptionsFrame() : DzOptionsFrame("yaluxplug Options Frame
     listView->addProperty(tonemapExposureTime);
     listView->addProperty(tonemapISO);
 
+
+    /////// DEBUGGING OPTIONS ///////
+    doBumpMaps = new DzBoolProperty("yalux_do_bumpmaps", true, false, true);
+    doBumpMaps->setLabel("Render Bump Maps");
+    listView->addProperty(doBumpMaps);
+
+    doNormalMaps = new DzBoolProperty("yalux_do_normalmaps", true, false, true);
+    doNormalMaps->setLabel("Render Normal Maps");
+    listView->addProperty(doNormalMaps);
+
+    doSpecular = new DzBoolProperty("yalux_do_specular", true, false, true);
+    doSpecular->setLabel("Render Specular");
+    listView->addProperty(doSpecular);
+
+    doMetallic = new DzBoolProperty("yalux_do_metallic", true, false, true);
+    doMetallic->setLabel("Render Metallic");
+    listView->addProperty(doMetallic);
+
+    doTranslucency = new DzBoolProperty("yalux_do_translucency", true, false, true);
+    doTranslucency->setLabel("Render Translucency");
+    listView->addProperty(doTranslucency);
+
+    doSSS_Volume = new DzBoolProperty("yalux_do_sss_volume", true, false, true);
+    doSSS_Volume->setLabel("Render SSS Volume");
+    listView->addProperty(doSSS_Volume);
+
+    doSSS_Absorption = new DzBoolProperty("yalux_do_sss_absorption", true, false, true);
+    doSSS_Absorption->setLabel("Render SSS Absorption");
+    listView->addProperty(doSSS_Absorption);
+
+    doSSS_Scattering = new DzBoolProperty("yalux_do_sss_scattering", true, false, true);
+    doSSS_Scattering->setLabel("Render SSS Scattering");
+    listView->addProperty(doSSS_Scattering);
+
+    doDebugSSS = new DzBoolProperty("yalux_do_debug_sss", true, false, true);
+    doDebugSSS->setLabel("Debug SSS");
+    listView->addProperty(doDebugSSS);
+
     connect(listView, SIGNAL(currentValueChanged()),
         this, SLOT(applyChanges()));
 
@@ -282,8 +292,6 @@ void	YaLuxOptionsFrame::loadSettings()
         doBumpMaps->setBoolValue( settings->getBoolValue( doBumpMaps->getName()) );
         doNormalMaps->setBoolValue(settings->getBoolValue(doNormalMaps->getName()));
         doMetallic->setBoolValue(settings->getBoolValue(doMetallic->getName()));
-        doSSS_Kt->setBoolValue(settings->getBoolValue(doSSS_Kt->getName()));
-        doSSS_Ka->setBoolValue(settings->getBoolValue(doSSS_Ka->getName()));
         doSSS_Volume->setBoolValue(settings->getBoolValue(doSSS_Volume->getName()));
         doDebugSSS->setBoolValue(settings->getBoolValue(doDebugSSS->getName()));
 
@@ -317,8 +325,6 @@ void	YaLuxOptionsFrame::saveSettings()
     settings->setBoolValue(doBumpMaps->getName(), doBumpMaps->getBoolValue());
     settings->setBoolValue(doNormalMaps->getName(), doNormalMaps->getBoolValue());
     settings->setBoolValue(doMetallic->getName(), doMetallic->getBoolValue());
-    settings->setBoolValue(doSSS_Kt->getName(), doSSS_Kt->getBoolValue());
-    settings->setBoolValue(doSSS_Ka->getName(), doSSS_Ka->getBoolValue());
     settings->setBoolValue(doSSS_Volume->getName(), doSSS_Volume->getBoolValue());
     settings->setBoolValue(doDebugSSS->getName(), doDebugSSS->getBoolValue());
 
@@ -363,9 +369,11 @@ void	YaLuxOptionsFrame::applyChanges()
     YaLuxGlobal.bDoBumpMaps = doBumpMaps->getBoolValue();
     YaLuxGlobal.bDoNormalMaps = doNormalMaps->getBoolValue();
     YaLuxGlobal.bDoMetallic = doMetallic->getBoolValue();
-    YaLuxGlobal.bDoSSSKt = doSSS_Kt->getBoolValue();
-    YaLuxGlobal.bDoSSSKa = doSSS_Ka->getBoolValue();
+    YaLuxGlobal.bDoSpecular = doSpecular->getBoolValue();
+    YaLuxGlobal.bDoTranslucency = doTranslucency->getBoolValue();
     YaLuxGlobal.bDoSSSVolume = doSSS_Volume->getBoolValue();
+    YaLuxGlobal.bDoSSSAbsorption = doSSS_Absorption->getBoolValue();
+    YaLuxGlobal.bDoSSSScattering = doSSS_Scattering->getBoolValue();
     YaLuxGlobal.bDoDebugSSS = doDebugSSS->getBoolValue();
 
 };

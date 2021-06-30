@@ -91,9 +91,11 @@ struct G
     bool bDoBumpMaps;
     bool bDoNormalMaps;
     bool bDoMetallic;
-    bool bDoSSSKt;
-    bool bDoSSSKa;
+    bool bDoSpecular;
+    bool bDoTranslucency;
     bool bDoSSSVolume;
+    bool bDoSSSAbsorption;
+    bool bDoSSSScattering;
     bool bDoDebugSSS;
 
 };

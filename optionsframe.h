@@ -82,11 +82,12 @@ private:
     DzBoolProperty      *doBumpMaps;
     DzBoolProperty      *doNormalMaps;
     DzBoolProperty      *doMetallic;
-    DzBoolProperty      *doSSS_Kt;
-    DzBoolProperty      *doSSS_Ka;
+    DzBoolProperty      *doSpecular;
+    DzBoolProperty      *doTranslucency;
     DzBoolProperty      *doSSS_Volume;
+    DzBoolProperty      *doSSS_Absorption;
+    DzBoolProperty      *doSSS_Scattering;
     DzBoolProperty      *doDebugSSS;
-
 
 };
 
