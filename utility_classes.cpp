@@ -4523,11 +4523,11 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
         {
             ret_str += QString("scene.textures.%1.type = \"colordepth\"\n").arg(scaled_scatteringTexture);
             ret_str += QString("scene.textures.%1.kt = \"%2\"\n").arg(scaled_scatteringTexture).arg(scatteringTexture);
-            ret_str += QString("scene.textures.%1.depth = \"%2\"\n").arg(scaled_scatteringTexture).arg(scattering_distance);
+            ret_str += QString("scene.textures.%1.depth = \"%2\"\n").arg(scaled_scatteringTexture).arg(scattering_distance/6);
         }
         else
         {
-            scaled_scatteringTexture = QString("%1").arg(1/scattering_distance);
+            scaled_scatteringTexture = QString("%1").arg(6/scattering_distance);
         }
 
         ret_str += QString("scene.volumes.%1.type = \"homogeneous\"\n").arg(volumeLabel);
