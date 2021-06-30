@@ -100,9 +100,9 @@ const QStringList distantLightPlane = QStringList() <<
 
 
 QString LuxProcessObject(DzObject *daz_obj, QString &mesg);
-QString LuxProcessGenMaterial(DzMaterial *material, QString &mesg, QString matLabel);
-QString LuxProcessGlossyMaterial(DzMaterial *material, QString &mesg, QString matLabel);
-QString LuxProcessMatteMaterial(DzMaterial *material, QString &mesg, QString matLabel);
+//QString LuxProcessGenMaterial(DzMaterial *material, QString &mesg, QString matLabel);
+//QString LuxProcessGlossyMaterial(DzMaterial *material, QString &mesg, QString matLabel);
+//QString LuxProcessMatteMaterial(DzMaterial *material, QString &mesg, QString matLabel);
 QString LuxProcessProperties(DzElement *el, QString &mesg);
 QString LuxProcessLight(DzLight *currentLight, QString &mesg);
 QString LuxCoreProcessLight(DzLight* currentLight, QString& mesg);
