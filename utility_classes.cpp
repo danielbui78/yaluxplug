@@ -54,8 +54,10 @@ bool operator==(const VolumeData& a, const VolumeData& b)
 {
     return (
         (a.type == b.type) &&
-        (a.absorption_val == b.absorption_val) &&
-        (a.scattering_val == b.scattering_val) &&
+        (a.transmission_color == b.transmission_color) &&
+        (a.transmission_distance == b.transmission_distance) &&
+        (a.scattering_color == b.scattering_color) &&
+        (a.scattering_distance == b.scattering_distance) &&
         (a.multiscattering == b.multiscattering)
         );
 }
@@ -4549,8 +4551,10 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
         VolumeData *v = new VolumeData();
         v->name = volumeLabel;
         v->type = "homogeneous";
-        v->absorption_val = transmission_color.value();
-        v->scattering_val = scattering_color.value();
+        v->transmission_color = transmission_color.value();
+        v->transmission_distance = transmission_distance;
+        v->scattering_color = scattering_color.value();
+        v->scattering_distance = scattering_distance;
         v->asymmetry_val = scattering_direction;
         v->multiscattering = true;
         

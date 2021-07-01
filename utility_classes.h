@@ -158,8 +158,10 @@ struct VolumeData
 {
     QString name;
     QString type;
-    int absorption_val;
-    int scattering_val;
+    int transmission_color;
+    float transmission_distance;
+    int scattering_color;
+    float scattering_distance;
     float asymmetry_val;
     bool    multiscattering;
 
