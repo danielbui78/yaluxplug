@@ -4476,79 +4476,8 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
     }
     if (volume_exists && YaLuxGlobal.bDoSSSVolume)
     {
-        QString transmission_mapfile = "";
-        QString scattering_mapfile = "";
-
-        if (transmission_mapfile != "")
-            ret_str += GenerateCoreTextureBlock3(transmissionTexture, transmission_mapfile,
-                transmission_color.redF(), transmission_color.greenF(), transmission_color.blueF() );
-        else
-            transmissionTexture = QString("%1 %2 %3").arg(transmission_color.redF()).arg(transmission_color.greenF()).arg(transmission_color.blueF());
-
-        scatteringTexture = QString("%1 %2 %3").arg(1-scattering_color.redF()).arg(1-scattering_color.greenF()).arg(1-scattering_color.blueF());
-//        scatteringTexture = QString("%1 %2 %3").arg(scattering_color.redF()).arg(scattering_color.greenF()).arg(scattering_color.blueF());
-        //scatteringTexture = "0 0 0";
-
-        // Assume absorption = 1 - transmission
-        ret_str += QString("scene.textures.%1.type = \"subtract\"\n").arg(absorptionTexture);
-        ret_str += QString("scene.textures.%1.texture1 = 1 1 1\n").arg(absorptionTexture);
-        ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(absorptionTexture).arg(transmissionTexture);
-
-        // scale conversion
-        //QColor scaled_absorption_color = QColor(0,0,0);
-        //float scale = 1;
-        //float v; 
-        //float scaled_component;
-        //v = transmission_color.redF();
-        //scaled_component = (-log(max(v, pow(1, -30))) / transmission_distance) * scale * (v == 1.0 && -1 || 1);
-        //scaled_absorption_color.setRedF(scaled_component);
-        //v = transmission_color.greenF();
-        //scaled_component = (-log(max(v, pow(1, -30))) / transmission_distance) * scale * (v == 1.0 && -1 || 1);
-        //scaled_absorption_color.setGreenF(scaled_component);
-        //v = transmission_color.blueF();
-        //scaled_component = (-log(max(v, pow(1, -30))) / transmission_distance) * scale * (v == 1.0 && -1 || 1);
-        //scaled_absorption_color.setBlueF(scaled_component);
-
-        // clamp values
-        //float transmission_density = (transmission_density > 1000) ? 1000 : transmission_density;
-        //float scattering_density = (scattering_density > 500) ? 500 : scattering_density;
-
-        // Multiply translucency into transmission and scattering
-        //QString transmissionTexture_2 = transmissionTexture + "_2";
-        //ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(transmissionTexture_2);
-        //ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(transmissionTexture_2).arg(transmissionTexture);
-        //ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(transmissionTexture_2).arg(translucencyTexture);
-        //QString scatteringTexture_2 = scatteringTexture + "_2";
-        //ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(scatteringTexture_2);
-        //ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(scatteringTexture_2).arg(scatteringTexture);
-        //ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(scatteringTexture_2).arg(translucencyTexture);
-
-
-        // now scale everything up(down) for volumetric rendering data
-        if (YaLuxGlobal.bDoSSSAbsorption)
-        {
-            ret_str += QString("scene.textures.%1.type = \"colordepth\"\n").arg(scaled_transmissionTexture);
-            ret_str += QString("scene.textures.%1.kt = \"%2\"\n").arg(scaled_transmissionTexture).arg(transmissionTexture);
-            ret_str += QString("scene.textures.%1.depth = \"%2\"\n").arg(scaled_transmissionTexture).arg(transmission_distance);
-        }
-        else
-        {
-            scaled_transmissionTexture = QString("%1 %1 %1").arg(1/transmission_distance);
-        }
-
-        if (YaLuxGlobal.bDoSSSScattering)
-        {
-            ret_str += QString("scene.textures.%1.type = \"colordepth\"\n").arg(scaled_scatteringTexture);
-            ret_str += QString("scene.textures.%1.kt = \"%2\"\n").arg(scaled_scatteringTexture).arg(scatteringTexture);
-            ret_str += QString("scene.textures.%1.depth = \"%2\"\n").arg(scaled_scatteringTexture).arg(scattering_distance/6);
-        }
-        else
-        {
-            scaled_scatteringTexture = QString("%1").arg(6/scattering_distance);
-        }
-
         // create volumedata and check against volumelist
-        VolumeData *v = new VolumeData();
+        VolumeData* v = new VolumeData();
         v->name = volumeLabel;
         v->type = "homogeneous";
         v->transmission_color = transmission_color.value();
@@ -4557,12 +4486,12 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
         v->scattering_distance = scattering_distance;
         v->asymmetry_val = scattering_direction;
         v->multiscattering = true;
-        
+
         // search volumelist
         bool match_found = false;
         for (QList<VolumeData*>::iterator el_iter = YaLuxGlobal.VolumeList.begin(); el_iter != YaLuxGlobal.VolumeList.end(); el_iter++)
         {
-            VolumeData *el = *el_iter;
+            VolumeData* el = *el_iter;
             if (*v == *el)
             {
                 match_found = true;
@@ -4572,10 +4501,82 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
                 break;
             }
         }
+
         if (match_found == false)
         {
             // add to volumelist
             YaLuxGlobal.VolumeList.append(v);
+
+            // create new volume block.....
+            QString transmission_mapfile = "";
+            QString scattering_mapfile = "";
+
+            if (transmission_mapfile != "")
+                ret_str += GenerateCoreTextureBlock3(transmissionTexture, transmission_mapfile,
+                    transmission_color.redF(), transmission_color.greenF(), transmission_color.blueF() );
+            else
+                transmissionTexture = QString("%1 %2 %3").arg(transmission_color.redF()).arg(transmission_color.greenF()).arg(transmission_color.blueF());
+
+            scatteringTexture = QString("%1 %2 %3").arg(1-scattering_color.redF()).arg(1-scattering_color.greenF()).arg(1-scattering_color.blueF());
+    //        scatteringTexture = QString("%1 %2 %3").arg(scattering_color.redF()).arg(scattering_color.greenF()).arg(scattering_color.blueF());
+            //scatteringTexture = "0 0 0";
+
+            // Assume absorption = 1 - transmission
+            ret_str += QString("scene.textures.%1.type = \"subtract\"\n").arg(absorptionTexture);
+            ret_str += QString("scene.textures.%1.texture1 = 1 1 1\n").arg(absorptionTexture);
+            ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(absorptionTexture).arg(transmissionTexture);
+
+            // scale conversion
+            //QColor scaled_absorption_color = QColor(0,0,0);
+            //float scale = 1;
+            //float v; 
+            //float scaled_component;
+            //v = transmission_color.redF();
+            //scaled_component = (-log(max(v, pow(1, -30))) / transmission_distance) * scale * (v == 1.0 && -1 || 1);
+            //scaled_absorption_color.setRedF(scaled_component);
+            //v = transmission_color.greenF();
+            //scaled_component = (-log(max(v, pow(1, -30))) / transmission_distance) * scale * (v == 1.0 && -1 || 1);
+            //scaled_absorption_color.setGreenF(scaled_component);
+            //v = transmission_color.blueF();
+            //scaled_component = (-log(max(v, pow(1, -30))) / transmission_distance) * scale * (v == 1.0 && -1 || 1);
+            //scaled_absorption_color.setBlueF(scaled_component);
+
+            // clamp values
+            //float transmission_density = (transmission_density > 1000) ? 1000 : transmission_density;
+            //float scattering_density = (scattering_density > 500) ? 500 : scattering_density;
+
+            // Multiply translucency into transmission and scattering
+            //QString transmissionTexture_2 = transmissionTexture + "_2";
+            //ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(transmissionTexture_2);
+            //ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(transmissionTexture_2).arg(transmissionTexture);
+            //ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(transmissionTexture_2).arg(translucencyTexture);
+            //QString scatteringTexture_2 = scatteringTexture + "_2";
+            //ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(scatteringTexture_2);
+            //ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(scatteringTexture_2).arg(scatteringTexture);
+            //ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(scatteringTexture_2).arg(translucencyTexture);
+
+            // now scale everything up(down) for volumetric rendering data
+            if (YaLuxGlobal.bDoSSSAbsorption)
+            {
+                ret_str += QString("scene.textures.%1.type = \"colordepth\"\n").arg(scaled_transmissionTexture);
+                ret_str += QString("scene.textures.%1.kt = \"%2\"\n").arg(scaled_transmissionTexture).arg(transmissionTexture);
+                ret_str += QString("scene.textures.%1.depth = \"%2\"\n").arg(scaled_transmissionTexture).arg(transmission_distance);
+            }
+            else
+            {
+                scaled_transmissionTexture = QString("%1 %1 %1").arg(1/transmission_distance);
+            }
+
+            if (YaLuxGlobal.bDoSSSScattering)
+            {
+                ret_str += QString("scene.textures.%1.type = \"colordepth\"\n").arg(scaled_scatteringTexture);
+                ret_str += QString("scene.textures.%1.kt = \"%2\"\n").arg(scaled_scatteringTexture).arg(scatteringTexture);
+                ret_str += QString("scene.textures.%1.depth = \"%2\"\n").arg(scaled_scatteringTexture).arg(scattering_distance/4.5);
+            }
+            else
+            {
+                scaled_scatteringTexture = QString("%1").arg(4.5/scattering_distance);
+            }
 
             // create volume block
             ret_str += QString("scene.volumes.%1.type = \"homogeneous\"\n").arg(volumeLabel);
