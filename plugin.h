@@ -98,6 +98,8 @@ struct G
     bool bDoSSSScattering;
     bool bDoDebugSSS;
 
+    QList<VolumeData*> VolumeList;
+    QStringList matLookupTable;
 };
 
 extern struct G YaLuxGlobal;

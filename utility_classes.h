@@ -154,7 +154,18 @@ private:
     
 };
 
+struct VolumeData
+{
+    QString name;
+    QString type;
+    int absorption_val;
+    int scattering_val;
+    float asymmetry_val;
+    bool    multiscattering;
 
+    friend bool operator==(const VolumeData& a, const VolumeData& b);
+
+};
 
 
 #endif /* defined(__yaluxplug__utility_classes__) */

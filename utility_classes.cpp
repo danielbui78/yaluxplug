@@ -50,7 +50,15 @@
 
 struct G YaLuxGlobal;
 
-QStringList matLookupTable;
+bool operator==(const VolumeData& a, const VolumeData& b)
+{
+    return (
+        (a.type == b.type) &&
+        (a.absorption_val == b.absorption_val) &&
+        (a.scattering_val == b.scattering_val) &&
+        (a.multiscattering == b.multiscattering)
+        );
+}
 
 void WorkerPrepareImage::doPrepareImage()
 {
@@ -2670,7 +2678,14 @@ bool LuxMakeCFGFile(QString filenameCFG, DzRenderer* r, DzCamera* camera, const 
 bool LuxMakeSCNFile(QString filenameSCN, DzRenderer* r, DzCamera* camera, const DzRenderOptions& opt)
 {
     // Initialize material Lookup Table
-    matLookupTable.clear();
+    YaLuxGlobal.matLookupTable.clear();
+    // Initialize volume list
+    while (YaLuxGlobal.VolumeList.isEmpty() == false)
+    {
+        VolumeData* item = YaLuxGlobal.VolumeList.last();
+        YaLuxGlobal.VolumeList.removeLast();
+        delete(item);
+    }
 
     YaLuxGlobal.bDefaultLightsOn = true;
     QSize renderImageSize;
@@ -3256,13 +3271,13 @@ QString LuxCoreProcessObject(DzObject* daz_obj, QString& mesg)
         // 3. do lookup table, skip if present
         // 4. else add to lookup table
         QString token = nodeLabel + matLabel;
-        if (matLookupTable.contains(token))
+        if (YaLuxGlobal.matLookupTable.contains(token))
         {
             continue;
         }
         else
         {
-            matLookupTable.append(token);
+            YaLuxGlobal.matLookupTable.append(token);
         }
 
         if (material->getMaterialName().toLower().contains("daz studio default"))
@@ -4530,11 +4545,42 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
             scaled_scatteringTexture = QString("%1").arg(6/scattering_distance);
         }
 
-        ret_str += QString("scene.volumes.%1.type = \"homogeneous\"\n").arg(volumeLabel);
-        ret_str += QString("scene.volumes.%1.absorption = \"%2\"\n").arg(volumeLabel).arg(scaled_transmissionTexture);
-        ret_str += QString("scene.volumes.%1.scattering = \"%2\"\n").arg(volumeLabel).arg(scaled_scatteringTexture);
-        ret_str += QString("scene.volumes.%1.assymetry = \"%2\"\n").arg(volumeLabel).arg(scattering_direction);
-        ret_str += QString("scene.volumes.%1.multiscattering = %2\n").arg(volumeLabel).arg(1);
+        // create volumedata and check against volumelist
+        VolumeData *v = new VolumeData();
+        v->name = volumeLabel;
+        v->type = "homogeneous";
+        v->absorption_val = transmission_color.value();
+        v->scattering_val = scattering_color.value();
+        v->asymmetry_val = scattering_direction;
+        v->multiscattering = true;
+        
+        // search volumelist
+        bool match_found = false;
+        for (QList<VolumeData*>::iterator el_iter = YaLuxGlobal.VolumeList.begin(); el_iter != YaLuxGlobal.VolumeList.end(); el_iter++)
+        {
+            VolumeData *el = *el_iter;
+            if (*v == *el)
+            {
+                match_found = true;
+                // change volumeLabel to matched label
+                volumeLabel = el->name;
+                delete(v);
+                break;
+            }
+        }
+        if (match_found == false)
+        {
+            // add to volumelist
+            YaLuxGlobal.VolumeList.append(v);
+
+            // create volume block
+            ret_str += QString("scene.volumes.%1.type = \"homogeneous\"\n").arg(volumeLabel);
+            ret_str += QString("scene.volumes.%1.absorption = \"%2\"\n").arg(volumeLabel).arg(scaled_transmissionTexture);
+            ret_str += QString("scene.volumes.%1.scattering = \"%2\"\n").arg(volumeLabel).arg(scaled_scatteringTexture);
+            ret_str += QString("scene.volumes.%1.assymetry = \"%2\"\n").arg(volumeLabel).arg(scattering_direction);
+            ret_str += QString("scene.volumes.%1.multiscattering = %2\n").arg(volumeLabel).arg(1);
+        }
+
     }
 
 
