@@ -62,6 +62,110 @@ bool operator==(const VolumeData& a, const VolumeData& b)
         );
 }
 
+void Worker_UpdateInfoWindow::processCoreRenderLog()
+{
+    if (YaLuxGlobal.luxRenderProc == NULL) return;
+    if (YaLuxGlobal.logWindow == NULL) return;
+    if (YaLuxGlobal.logText == NULL) return;
+
+    QProcess* process = YaLuxGlobal.luxRenderProc;
+
+    // Read the remainder of the stdoutput to the logfile
+    if (YaLuxGlobal.bShowLuxRenderWindow)
+    {
+        process->setProcessChannelMode(QProcess::MergedChannels);
+        process->setReadChannel(QProcess::StandardOutput);
+    }
+    while (process->canReadLine())
+    {
+
+        // NOTE: we don't need to process the "writing tonemapped PNG" because a
+        //   final loading of the file was done when the process called the finish() signal.
+        QByteArray qa = process->readLine();
+
+        if (qa.contains("Outputting film:"))
+        {
+//            if (bUpdateRender)
+//                updateData();
+            emit updateData();
+        }
+        else if (qa.contains("ERROR"))
+        {
+            emit updateLogWindow(QString(qa.data()), QColor(255, 0, 0), true);
+        }
+        else if (qa.contains("Lux version"))
+        {
+            emit updateLogWindow(QString(qa.data()), QColor(0, 255, 0), true);
+        }
+        else if (qa.contains("rendering done"))
+        {
+            emit updateLogWindow(QString(qa.data()), QColor(0, 255, 0), true);
+        }
+        else if (qa.contains("server"))
+        {
+            emit updateLogWindow(QString(qa.data()), QColor(100, 200, 255), true);
+        }
+        else if (qa.contains("Tessellating"))
+        {
+            emit updateLogWindow(QString(qa.data()));
+        }
+        else if (qa.contains("% T)") || qa.contains("% Thld)") || qa.contains("Elapsed time"))
+        {
+            if (YaLuxGlobal.debugLevel >= 1)
+            {
+                emit updateLogWindow(QString(qa.data()), QColor(100, 200, 255));
+            }
+            QRegExp regexp("\\(([\\d]*)% T\\)");
+            if (regexp.indexIn(QString(qa)) != -1)
+            {
+                QString percentString = regexp.cap(1);
+                //                YaLuxGlobal.FrameProgress->setInfo( QString("Frame render: %1\% completed").arg(percentString));
+                YaLuxGlobal.FrameProgress->update(percentString.toInt());
+            }
+
+        }
+        //else if (qa.contains("INFO") && YaLuxGlobal.debugLevel >= 2)
+        else if (YaLuxGlobal.debugLevel >= 2)
+        {
+            emit updateLogWindow(QString(qa.data()), QColor(255, 255, 255));
+        }
+
+    }
+
+}
+
+void Worker_UpdateInfoWindow::doUpdate()
+{
+    while (true)
+    {
+        // wait state first, then process everything else
+        int timeout2 = 50;
+#ifdef Q_OS_WIN
+        Sleep(uint(timeout2));
+#else
+        struct timespec ts = { timeout2 / 1000, (timeout2 % 1000) * 1000 * 1000 };
+        nanosleep(&ts, NULL);
+#endif
+
+        if (YaLuxGlobal.inProgress == false) continue;
+        if (YaLuxGlobal.RenderProgress == NULL) continue;
+        if (YaLuxGlobal.handler == NULL) continue;
+        if (YaLuxGlobal.luxRenderProc == NULL) continue;
+        if (YaLuxGlobal.luxRenderProc->state() != QProcess::Running) continue;
+        if (YaLuxGlobal.logWindow == NULL) continue;
+        if (YaLuxGlobal.logWindow->isEnabled() == false) continue;
+
+        int processState = -1;
+        processState = YaLuxGlobal.luxRenderProc->state();
+        if ((processState == QProcess::NotRunning) || (YaLuxGlobal.RenderProgress->isCancelled() == true))
+            continue;
+
+        processCoreRenderLog();
+
+    }
+
+}
+
 void WorkerPrepareImage::doPrepareImage()
 {
     // DO NOT CALL DzImageMgr in this thread ( DzImageMgr is not threadsafe!). Instead, use QImage calls.

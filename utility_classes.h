@@ -169,5 +169,22 @@ struct VolumeData
 
 };
 
+class Worker_UpdateInfoWindow : public QObject
+{
+    Q_OBJECT
+
+public:
+    QThread* myThread;
+    void processCoreRenderLog();
+
+public slots:
+    void doUpdate();
+
+signals:
+    void finished();
+    void updateLogWindow(QString data, QColor textcolor = QColor(255, 255, 255), bool bIsBold = false);
+    void updateData();
+
+};
 
 #endif /* defined(__yaluxplug__utility_classes__) */

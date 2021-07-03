@@ -28,15 +28,15 @@ class QTemporaryFile;
 
 struct G
 {
-    DzRenderHandler *handler; // is only alive during render() function
-    DzRenderSettings *settings; // used when calling node->render
+    DzRenderHandler *handler = NULL; // is only alive during render() function
+    DzRenderSettings *settings = NULL; // used when calling node->render
     DzRenderOptions options;
 
     DzOptionsFrame *optFrame;
-    QFrame *logWindow;
-    QTextEdit *logText;
-    DzProgress *RenderProgress;
-    DzProgress *FrameProgress;
+    QFrame *logWindow = NULL;
+    QTextEdit *logText = NULL;
+    DzProgress *RenderProgress = NULL;
+    DzProgress *FrameProgress = NULL;
     DzBackgroundProgress *backgroundProgress;
     int numBackgroundThreads=0;
     float currentBackgroundProgress=0;
@@ -80,7 +80,7 @@ struct G
     QString workingRenderFilename;
 
 
-    QProcess *luxRenderProc;
+    QProcess *luxRenderProc = NULL;
     bool bFrameisFinished;
     bool bIsCancelled;
     int tempCounter;
