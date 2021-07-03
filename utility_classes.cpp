@@ -3415,24 +3415,20 @@ QString LuxCoreProcessDazDefaultMaterial(DzMaterial* material, QString& mesg, QS
     QString ret_str = "# MATERIAL " + matLabel + "\n";
 
     // diffuse image and color
-    float diffuse_vscale = -1;
-    float diffuse_uscale = 1;
+    float material_vscale = -1;
+    float material_uscale = 1;
     float diffuse_gamma = 2.2;
-    float diffuse_voffset = 0; // vdelta
-    float diffuse_uoffset = 0; // udelta
+    float material_voffset = 0; // vdelta
+    float material_uoffset = 0; // udelta
     QString diffuse_wrap = "repeat"; // repeat|black|clamp
     QString diffuse_filtertype = "bilinear";
     QString diffuse_channel = "";
     QString diffuse_mapfile = ""; // Diffuse Color
-    QColor diffuse_value;
+    QColor diffuse_value = QColor(255,255,255);
     bool diffuse_exists = false;
 
     // specular image and color
-    float spec_vscale = -1;
-    float spec_uscale = 1;
     float spec_gamma = 2.2;
-    float spec_voffset = 0;
-    float spec_uoffset = 0;
     QString spec_wrap = "repeat"; // repeat|black|clamp
     QString spec_filtertype = "bilinear";
     QString spec_channel = "";
@@ -3441,11 +3437,7 @@ QString LuxCoreProcessDazDefaultMaterial(DzMaterial* material, QString& mesg, QS
     bool spec_exists = false;
 
     // bump image and values
-    float bump_vscale = -1;
-    float bump_uscale = 1;
     float bump_gamma = 1;
-    float bump_voffset = 0;
-    float bump_uoffset = 0;
     QString bump_channel = "";
     QString bump_wrap = "repeat";
     QString bump_filtertype = "bilinear";
@@ -3465,14 +3457,6 @@ QString LuxCoreProcessDazDefaultMaterial(DzMaterial* material, QString& mesg, QS
 
     QString propertyLabel;
     DzProperty* currentProperty;
-
-    // Multiply Specular Through Opacity
-    bool bMultiplySpecularThroughOpacity = false;
-    currentProperty = material->findProperty("Multiply Specular Through Opacity");
-    if (currentProperty != NULL)
-    {
-//        bMultiplySpecularThroughOpacity = ((DzBoolProperty*)currentProperty)->getValue(dzScene->getTime());
-    }
 
     // material types
     enum { glossy, matte, plastic, metal } material_type = glossy;
@@ -3509,30 +3493,22 @@ QString LuxCoreProcessDazDefaultMaterial(DzMaterial* material, QString& mesg, QS
     currentProperty = material->findProperty("Horizontal Tiles");
     if (currentProperty != NULL)
     {
-        diffuse_uscale = 1 / ((DzFloatProperty*)currentProperty)->getValue();
-        spec_uscale = diffuse_uscale;
-        bump_uscale = diffuse_uscale;
+        material_uscale = 1 / ((DzFloatProperty*)currentProperty)->getValue();
     }
     currentProperty = material->findProperty("Vertical Tiles");
     if (currentProperty != NULL)
     {
-        diffuse_vscale = -1 / ((DzFloatProperty*)currentProperty)->getValue();
-        spec_vscale = diffuse_vscale;
-        bump_vscale = diffuse_vscale;
+        material_vscale = -1 / ((DzFloatProperty*)currentProperty)->getValue();
     }
     currentProperty = material->findProperty("Horizontal Offset");
     if (currentProperty != NULL)
     {
-        diffuse_uoffset = ((DzFloatProperty*)currentProperty)->getValue();
-        spec_uoffset = diffuse_uoffset;
-        bump_uoffset = diffuse_uoffset;
+        material_uoffset = ((DzFloatProperty*)currentProperty)->getValue();
     }
     currentProperty = material->findProperty("Vertical Offset");
     if (currentProperty != NULL)
     {
-        diffuse_voffset = ((DzFloatProperty*)currentProperty)->getValue();
-        spec_voffset = diffuse_voffset;
-        bump_voffset = diffuse_voffset;
+        material_voffset = ((DzFloatProperty*)currentProperty)->getValue();
     }
     currentProperty = material->findProperty("Specular Color");
     if (currentProperty != NULL)
@@ -3589,7 +3565,7 @@ QString LuxCoreProcessDazDefaultMaterial(DzMaterial* material, QString& mesg, QS
     if (diffuse_exists)
         ret_str += GenerateCoreTextureBlock3(matLabel + "_d", diffuse_mapfile,
             diffuse_value.redF(), diffuse_value.greenF(), diffuse_value.blueF(),
-            diffuse_uscale, diffuse_vscale, diffuse_uoffset, diffuse_voffset,
+            material_uscale, material_vscale, material_uoffset, material_voffset,
             diffuse_gamma, diffuse_wrap, diffuse_channel);
 
     // Specular Block
@@ -3599,101 +3575,51 @@ QString LuxCoreProcessDazDefaultMaterial(DzMaterial* material, QString& mesg, QS
         QString realSpecularLabel = matLabel + "_s";
         bool bDoMixtureTexture = false;
         float spec_strength = 1.0;
-        if ( bMultiplySpecularThroughOpacity || 
-            ( LuxGetFloatProperty(material, "Specular Strength", spec_strength, mesg) && spec_strength < 1.0 ) )
+        if ( LuxGetFloatProperty(material, "Specular Strength", spec_strength, mesg) && spec_strength < 1.0 )
         {
             bDoMixtureTexture = true;
             realSpecularLabel = matLabel + "_s" + "_0";
         }
         ret_str += GenerateCoreTextureBlock3(realSpecularLabel, spec_mapfile,
             spec_value.redF(), spec_value.greenF(), spec_value.blueF(),
-            spec_uscale, spec_vscale, spec_uoffset, spec_voffset, spec_gamma,
+            material_uscale, material_vscale, material_uoffset, material_voffset, spec_gamma,
             spec_wrap, spec_channel);
         if (bDoMixtureTexture)
         {
             QString specularScaleLabel = matLabel + "_s";
-            if (bMultiplySpecularThroughOpacity)
-            {
-                specularScaleLabel = matLabel + "_s" + "_opacity0";
-            }
-            ret_str += QString("scene.textures.%1.type = \"mix\"\n").arg(specularScaleLabel);
-            ret_str += QString("scene.textures.%1.texture1 = 0 0 0\n").arg(specularScaleLabel);
-            ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specularScaleLabel).arg(realSpecularLabel);
-            ret_str += QString("scene.textures.%1.amount = %2\n").arg(specularScaleLabel).arg(spec_strength);
-            if (bMultiplySpecularThroughOpacity)
-            {
-                ret_str += QString("scene.textures.%1.type = \"mix\"\n").arg(matLabel + "_s");
-                ret_str += QString("scene.textures.%1.texture1 = 0 0 0\n").arg(matLabel + "_s").arg(specularScaleLabel);
-                ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(matLabel + "_s").arg(specularScaleLabel);
-                if (opacity_exists && opacity_mapfile != "")
-                    ret_str += QString("scene.textures.%1.amount = \"%2\"\n").arg(matLabel + "_s").arg(matLabel + "_o");
-                else
-                    ret_str += QString("scene.textures.%1.amount = %2\n").arg(matLabel + "_s").arg(opacity_value);
-            }
-
+            ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(specularScaleLabel);
+            ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specularScaleLabel).arg(realSpecularLabel);
+            ret_str += QString("scene.textures.%1.texture2 = %2\n").arg(specularScaleLabel).arg(spec_strength);
         }
     }
 
     // Bumpmap Block
     if (bump_exists)
         ret_str += GenerateCoreTextureBlock1_Grey(matLabel + "_b", bump_mapfile, bump_value,
-            bump_uscale, bump_vscale, bump_uoffset, bump_voffset, bump_gamma,
+            material_uscale, material_vscale, material_uoffset, material_voffset, bump_gamma,
             bump_wrap, bump_channel);
 
 
     // Material definition
-    // decide what type of material...
-    if (!opacity_exists)
+    ret_str += QString("scene.materials.%1.type = \"glossy2\"\n").arg(matLabel);
+    if (diffuse_exists) ret_str += QString("scene.materials.%1.kd = \"%2\"\n").arg(matLabel).arg(matLabel + "_d");
+    if (spec_exists) ret_str += QString("scene.materials.%1.ks = \"%2\"\n").arg(matLabel).arg(matLabel + "_s");
+
+    if (YaLuxGlobal.bDoBumpMaps)
     {
-        ret_str += QString("scene.materials.%1.type = \"glossy2\"\n").arg(matLabel);
-        if (diffuse_exists) ret_str += QString("scene.materials.%1.kd = \"%2\"\n").arg(matLabel).arg(matLabel + "_d");
-        if (spec_exists) ret_str += QString("scene.materials.%1.ks = \"%2\"\n").arg(matLabel).arg(matLabel + "_s");
-
-        if (YaLuxGlobal.bDoBumpMaps)
-        {
-            if (bump_exists) ret_str += QString("scene.materials.%1.bumptex = \"%2\"\n").arg(matLabel).arg(matLabel + "_b");
-            //ret_str += QString("scene.materials.%1.bumpsamplingdistance = \"%2\"\n").arg(matLabel).arg(1 / 1000000);
-        }
-
-        ret_str += QString("scene.materials.%1.uroughness = %2\n").arg(matLabel).arg(uroughness);
-        ret_str += QString("scene.materials.%1.vroughness = %2\n").arg(matLabel).arg(vroughness);
-        if (!spec_exists) ret_str += QString("scene.materials.%1.index = %2 %2 %2\n").arg(matLabel).arg(index_refraction);
+        if (bump_exists) ret_str += QString("scene.materials.%1.bumptex = \"%2\"\n").arg(matLabel).arg(matLabel + "_b");
     }
+
+    ret_str += QString("scene.materials.%1.uroughness = %2\n").arg(matLabel).arg(uroughness);
+    ret_str += QString("scene.materials.%1.vroughness = %2\n").arg(matLabel).arg(vroughness);
 
     if (opacity_exists)
     {
-        // setup mix material
-        QString realmatLabel = matLabel + "_0";
-        QString nullmatLabel = matLabel + "_1";
-        ret_str += QString("scene.materials.%1.type = \"null\"\n").arg(nullmatLabel);
-
-        //ret_str += QString("scene.materials.%1.type = \"glossytranslucent\"\n").arg(realmatLabel);
-        ret_str += QString("scene.materials.%1.type = \"glossy2\"\n").arg(realmatLabel);
-
-        if (diffuse_exists) ret_str += QString("scene.materials.%1.kd = \"%2\"\n").arg(realmatLabel).arg(matLabel + "_d");
-        if (spec_exists) ret_str += QString("scene.materials.%1.ks = \"%2\"\n").arg(realmatLabel).arg(matLabel + "_s");
-        
-        if (YaLuxGlobal.bDoBumpMaps)
-        {
-            if (bump_exists) ret_str += QString("scene.materials.%1.bumptex = \"%2\"\n").arg(realmatLabel).arg(matLabel + "_b");
-            //ret_str += QString("scene.materials.%1.bumpsamplingdistance = \"%2\"\n").arg(realmatLabel).arg(1 / 1000000);
-        }
-
-        ret_str += QString("scene.materials.%1.uroughness = %2\n").arg(realmatLabel).arg(uroughness);
-        ret_str += QString("scene.materials.%1.vroughness = %2\n").arg(realmatLabel).arg(vroughness);
-        if (!spec_exists) ret_str += QString("scene.materials.%1.index = %2 %2 %2\n").arg(realmatLabel).arg(index_refraction);
-
-        ret_str += QString("scene.materials.%1.type = \"mix\"\n").arg(matLabel);
-        ret_str += QString("scene.materials.%1.material2 = \"%2\"\n").arg(matLabel).arg(realmatLabel);
-        ret_str += QString("scene.materials.%1.material1 = \"%2\"\n").arg(matLabel).arg(nullmatLabel);
-
         if (opacity_mapfile != "")
-            ret_str += QString("scene.materials.%1.amount = \"%2\"\n").arg(matLabel).arg(matLabel + "_o");
+            ret_str += QString("scene.materials.%1.transparency = \"%2\"\n").arg(matLabel).arg(matLabel + "_o");
         else
-            ret_str += QString("scene.materials.%1.amount = %2\n").arg(matLabel).arg(opacity_value);
-
+            ret_str += QString("scene.materials.%1.transparency = %2\n").arg(matLabel).arg(opacity_value);
     }
-
 
     return ret_str;
 }
