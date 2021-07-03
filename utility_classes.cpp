@@ -4719,7 +4719,8 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
         ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specA_metallic_override).arg("0.01 0.01 0.01");
         ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specA_metallic_override).arg(filterMetallicityTex);
         // merge with metal-filtered, subtracted specular from above
-        if (spec_weight > 0 || glossy_layered_weight > 0)
+        //if (spec_weight > 0 || glossy_layered_weight > 0)
+        if (false)
         {
             // create black out or scale down metal-filtered specular
             ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(specB_metallic_override);
