@@ -4864,16 +4864,7 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
             if (YaLuxGlobal.bDoTranslucency)
             {
                 ret_str += QString("scene.materials.%1.kt = \"%2\"\n").arg(glossy2Label).arg(translucencyTexture);
-//                ret_str += QString("scene.materials.%1.kt = \"%2\"\n").arg(glossy2Label).arg(transmissionTexture);
             }
-            /////
-            // This may actually be topcoat
-            /////
-            //if (YaLuxGlobal.bDoSSSAbsorption)
-            //{
-            //    ret_str += QString("scene.materials.%1.ka = \"%2\"\n").arg(glossy2Label).arg(absorptionTexture);
-            //    ret_str += QString("scene.materials.%1.d = %2\n").arg(glossy2Label).arg(transmission_distance); //??
-            //}
         }
         else
         {
@@ -4964,10 +4955,10 @@ QString GenerateCoreTextureBlock3(QString textureName, QString mapName, float te
         {
             // set up mix texture
             bMixTextures = true;
-            realtextureName = textureName + "_0";
-            scaletextureName = textureName + "_1";
-            ret_str += QString("scene.textures.%1.type = \"constfloat3\"\n").arg(scaletextureName);
-            ret_str += QString("scene.textures.%1.value = %2 %3 %4\n").arg(scaletextureName).arg(textureValue1).arg(textureValue2).arg(textureValue3);
+            realtextureName = textureName + "_raw";
+            //scaletextureName = textureName + "_1";
+            //ret_str += QString("scene.textures.%1.type = \"constfloat3\"\n").arg(scaletextureName);
+            //ret_str += QString("scene.textures.%1.value = %2 %3 %4\n").arg(scaletextureName).arg(textureValue1).arg(textureValue2).arg(textureValue3);
         }
         ret_str += QString("scene.textures.%1.type = \"imagemap\"\n").arg(realtextureName);
         ret_str += QString("scene.textures.%1.file = \"%2\"\n").arg(realtextureName).arg(mapName);
@@ -4984,13 +4975,15 @@ QString GenerateCoreTextureBlock3(QString textureName, QString mapName, float te
         if (channel != "")
             ret_str += QString("scene.textures.%1.channel = \"%2\"\n").arg(realtextureName).arg(channel);
 
-
         if (bMixTextures)
         {
-            ret_str += QString("scene.textures.%1.type = \"mix\"\n").arg(textureName);
-            ret_str += QString("scene.textures.%1.texture1 = 0 0 0\n").arg(textureName);
-            ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(textureName).arg(realtextureName);
-            ret_str += QString("scene.textures.%1.amount = \"%2\"\n").arg(textureName).arg(scaletextureName);
+            //ret_str += QString("scene.textures.%1.type = \"mix\"\n").arg(textureName);
+            //ret_str += QString("scene.textures.%1.texture1 = 0 0 0\n").arg(textureName);
+            //ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(textureName).arg(realtextureName);
+            //ret_str += QString("scene.textures.%1.amount = \"%2\"\n").arg(textureName).arg(scaletextureName);
+            ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(textureName);
+            ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(textureName).arg(realtextureName);
+            ret_str += QString("scene.textures.%1.texture2 = %2 %3 %4\n").arg(textureName).arg(textureValue1).arg(textureValue2).arg(textureValue3);
         }
     }
     else {
