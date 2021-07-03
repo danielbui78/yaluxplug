@@ -3258,6 +3258,17 @@ QString LuxCoreProcessObject(DzObject* daz_obj, QString& mesg)
         DzMaterial* material = shape->getAssemblyMaterial(i);
         if (material == NULL) continue;
 
+        // process related vertex group for this material
+        QString objMatName = QString("%1_%2").arg(nodeLabel).arg(matLabel);
+
+        QString plyFileName;
+        if (geo->inherits("DzFacetMesh"))
+        {
+            DazToPLY dzPLYexport((DzFacetMesh*)geo, objMatName, material);
+            plyFileName = dzPLYexport.LuxMakeBinPLY();
+        }
+        if (plyFileName == "") continue;
+
         matLabel = SanitizeCoreLabel(material->getLabel());
         // DEBUG
 //        if (YaLuxGlobal.debugLevel > 1)
@@ -3302,9 +3313,6 @@ QString LuxCoreProcessObject(DzObject* daz_obj, QString& mesg)
         {
             attributeblock += LuxCoreProcessDazDefaultMaterial(material, mesg, nodeLabel + matLabel);
         }
-
-        // process related vertex group for this material
-        QString objMatName = QString("%1_%2").arg(nodeLabel).arg(matLabel);
 
         ////////////////////////////////////////
         // Convert meshlight object to luxrender area light as appropriate
@@ -3375,12 +3383,7 @@ QString LuxCoreProcessObject(DzObject* daz_obj, QString& mesg)
 
         }
 
-        QString plyFileName;
-        if (geo->inherits("DzFacetMesh"))
-        {
-            DazToPLY dzPLYexport((DzFacetMesh*)geo, objMatName, material);
-            plyFileName = dzPLYexport.LuxMakeBinPLY();
-        }
+        // sanity check
         if (plyFileName != "")
         {
             // add in reference to plyFileName
