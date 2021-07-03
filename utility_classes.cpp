@@ -3485,9 +3485,14 @@ QString LuxCoreProcessDazDefaultMaterial(DzMaterial* material, QString& mesg, QS
     currentProperty = material->findProperty("Diffuse Color");
     if (currentProperty != NULL)
     {
-        diffuse_value = ((DzColorProperty*)currentProperty)->getColorValue();
-        diffuse_mapfile = propertyNumericImagetoString((DzNumericProperty*)currentProperty);
-        if ((diffuse_value != 1) || (diffuse_mapfile != ""))
+        // Sanity Check (FIX for Granite Iray Shader)
+        if (currentProperty->inherits("DzColorProperty"))
+            diffuse_value = ((DzColorProperty*)currentProperty)->getColorValue();
+        if (currentProperty->inherits("DzNumericProperty"))
+            diffuse_mapfile = propertyNumericImagetoString((DzNumericProperty*)currentProperty);
+        else if (currentProperty->inherits("DzImageProperty"))
+            diffuse_mapfile = ((DzImageProperty*)currentProperty)->getValue()->getTempFilename();
+        if ((diffuse_value != QColor(255, 255,255)) || (diffuse_mapfile != ""))
             diffuse_exists = true;
     }
     currentProperty = material->findProperty("Horizontal Tiles");
