@@ -4121,7 +4121,7 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
     currentProperty = material->findProperty("Bump Strength");
     if (currentProperty != NULL)
     {
-        bump_value = ((DzFloatProperty*)currentProperty)->getValue() / 1000;
+        bump_value = ((DzFloatProperty*)currentProperty)->getValue() / 500;
         bump_mapfile = propertyNumericImagetoString((DzNumericProperty*)currentProperty);
         if (bump_mapfile != "")
             bump_exists = true;
@@ -4430,6 +4430,8 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
 
     // Bumpmap Block
     QString bumpMapName = matLabel + "_b";
+    if (matLabel.toLower().contains("face") || matLabel.toLower().contains("lip") || matLabel.toLower().contains("ear"))
+        bump_value /= 4;
     if (bump_exists && YaLuxGlobal.bDoBumpMaps)
         ret_str += GenerateCoreTextureBlock1_Grey(bumpMapName, bump_mapfile, bump_value,
             bump_uscale, bump_vscale, bump_uoffset, bump_voffset, bump_gamma,
