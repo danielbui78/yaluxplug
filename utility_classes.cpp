@@ -4311,7 +4311,7 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
     QString spec2_label = rawDualRoughness + "_spec2";
     QString specratio_label = rawDualRoughness + "_specratio";
 
-    if (spec_weight != 0 && YaLuxGlobal.bDoSpecular)
+    if (spec_weight > 0 && YaLuxGlobal.bDoSpecular)
     {
 
         LuxGetFloatProperty(material, "Specular Lobe 1 Roughness", spec1_float, mesg);
@@ -4372,26 +4372,27 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
             ret_str += QString("scene.textures.%1.amount = %2\n").arg(scaledSpec1Roughness).arg(spec_weight);
 
 
-        //// mix specref with rawDualLobe
+        // mix specweight
         //if (specref_mapfile != "")
         //{
-        //    ret_str += QString("scene.textures.%1.type = \"mix\"\n").arg(mainSpec + "_spec_reflect_mix");
-        //    ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(mainSpec + "_spec_reflect_mix").arg(specref_label);
-        //    ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(mainSpec + "_spec_reflect_mix").arg(rawDualLobe);
-        //    ret_str += QString("scene.textures.%1.amount = %2\n").arg(mainSpec + "_spec_reflect_mix").arg(0.5);
+        //    //// no scaling of specular reflectivity
+        //    //mainSpec = QString("%1 %1 %1").arg(spec_reflectivity);
+        //    //if (specref_mapfile != "") mainSpec = specref_label;
+        //    mainSpec = specref_label;
         //}
-
-        // mix specweight
         QString finalMix = QString("%1 %1 %1").arg(spec_reflectivity);
         if (specref_mapfile != "") finalMix = specref_label;
-        ret_str += QString("scene.textures.%1.type = \"mix\"\n").arg(mainSpec);
-        ret_str += QString("scene.textures.%1.texture1 = 0 0 0\n").arg(mainSpec);
-        ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(mainSpec).arg(finalMix);
+        ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(mainSpec);
+        ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(mainSpec).arg(finalMix);
         if (specweight_mapfile != "")
-            ret_str += QString("scene.textures.%1.amount = \"%2\"\n").arg(mainSpec).arg(mainSpec + "_weight");
+            ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(mainSpec).arg(mainSpec + "_weight");
         else
-            ret_str += QString("scene.textures.%1.amount = %2\n").arg(mainSpec).arg(spec_weight);
+            ret_str += QString("scene.textures.%1.texture2 = %2\n").arg(mainSpec).arg(spec_weight);
 
+    }
+    else
+    {
+        mainSpec = "0 0 0";
     }
 
     // Glossy Layer
