@@ -192,7 +192,7 @@ YaLuxOptionsFrame::YaLuxOptionsFrame() : DzOptionsFrame("yaluxplug Options Frame
     doBumpMaps->setLabel("Render Bump Maps");
     listView->addProperty(doBumpMaps);
 
-    doNormalMaps = new DzBoolProperty("yalux_do_normalmaps", true, false, true);
+    doNormalMaps = new DzBoolProperty("yalux_do_normalmaps", true, false, false);
     doNormalMaps->setLabel("Render Normal Maps");
     listView->addProperty(doNormalMaps);
 
@@ -216,11 +216,11 @@ YaLuxOptionsFrame::YaLuxOptionsFrame() : DzOptionsFrame("yaluxplug Options Frame
     doSSS_Absorption->setLabel("Render SSS Absorption");
     listView->addProperty(doSSS_Absorption);
 
-    doSSS_Scattering = new DzBoolProperty("yalux_do_sss_scattering", true, false, true);
+    doSSS_Scattering = new DzBoolProperty("yalux_do_sss_scattering", true, false, false);
     doSSS_Scattering->setLabel("Render SSS Scattering");
     listView->addProperty(doSSS_Scattering);
 
-    doDebugSSS = new DzBoolProperty("yalux_do_debug_sss", true, false, true);
+    doDebugSSS = new DzBoolProperty("yalux_do_debug_sss", true, false, false);
     doDebugSSS->setLabel("Debug SSS");
     listView->addProperty(doDebugSSS);
 
