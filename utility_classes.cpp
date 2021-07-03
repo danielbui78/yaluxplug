@@ -4028,7 +4028,7 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
     // translucency (volume rendering)
     QColor translucency_color; // "Translucency Color"
     QString translucency_mapfile = ""; // "Translucency Color"
-    QColor sss_tint; // "SSS Reflectance Tint"
+    QColor sss_tint = QColor(255, 255, 255); // "SSS Reflectance Tint"
     bool translucency_exists = false;
     bool volume_exists = false;
     /////////////////// Volume
@@ -4515,6 +4515,13 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
             // create new volume block.....
             QString transmission_mapfile = "";
             QString scattering_mapfile = "";
+
+            if ( sss_tint != QColor(255,255,255) )
+            {
+                transmission_color.setRedF(transmission_color.redF() * sss_tint.redF());
+                transmission_color.setGreenF(transmission_color.greenF() * sss_tint.greenF());
+                transmission_color.setBlueF(transmission_color.blueF() * sss_tint.blueF());
+            }
 
             if (transmission_mapfile != "")
                 ret_str += GenerateCoreTextureBlock3(transmissionTexture, transmission_mapfile,
