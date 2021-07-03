@@ -4352,7 +4352,7 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
 
         // scale roughness from grey (0.5)
         ret_str += QString("scene.textures.%1.type = \"mix\"\n").arg(scaledDualRoughness);
-        ret_str += QString("scene.textures.%1.texture1 = 0.5 0.5 0.5\n").arg(scaledDualRoughness);
+        ret_str += QString("scene.textures.%1.texture1 = 0 0 0\n").arg(scaledDualRoughness);
         ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(scaledDualRoughness).arg(rawDualRoughness);
         if (specweight_mapfile != "")
             ret_str += QString("scene.textures.%1.amount = \"%2\"\n").arg(scaledDualRoughness).arg(mainSpec + "_weight");
@@ -4361,7 +4361,7 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
 
         // scale roughness from grey (0.5)
         ret_str += QString("scene.textures.%1.type = \"mix\"\n").arg(scaledSpec1Roughness);
-        ret_str += QString("scene.textures.%1.texture1 = 0.5 0.5 0.5\n").arg(scaledSpec1Roughness);
+        ret_str += QString("scene.textures.%1.texture1 = 0 0 0\n").arg(scaledSpec1Roughness);
         if (spec1_mapfile != "")
             ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(scaledSpec1Roughness).arg(spec1_label);
         else
