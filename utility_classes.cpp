@@ -4413,8 +4413,7 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
 
             // mix glossy with mainSpec (dual spec)
             QString glossyMixTex = matLabel + "_glossy" + "_mix";
-            if (spec_weight <= 0)
-                mainSpec = "0 0 0";
+
             ret_str += QString("scene.textures.%1.type = \"mix\"\n").arg(glossyMixTex);
             ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(glossyMixTex).arg(mainSpec);
             ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(glossyMixTex).arg(glossyTex);
