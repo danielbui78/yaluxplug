@@ -4265,7 +4265,7 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
             if (currentProperty != NULL)
             {
                 // I think Daz values are in cm, so divide by 100 to get meters for lux?
-                transmission_distance = ((DzFloatProperty*)currentProperty)->getValue() / 1000;  
+                transmission_distance = ((DzFloatProperty*)currentProperty)->getValue() / 100;  
             }
             currentProperty = material->findProperty("Scattering Measurement Distance");
             if (currentProperty != NULL)
@@ -4530,13 +4530,47 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
                 transmissionTexture = QString("%1 %2 %3").arg(transmission_color.redF()).arg(transmission_color.greenF()).arg(transmission_color.blueF());
 
             scatteringTexture = QString("%1 %2 %3").arg(1-scattering_color.redF()).arg(1-scattering_color.greenF()).arg(1-scattering_color.blueF());
-    //        scatteringTexture = QString("%1 %2 %3").arg(scattering_color.redF()).arg(scattering_color.greenF()).arg(scattering_color.blueF());
+//            scatteringTexture = QString("%1 %2 %3").arg(scattering_color.redF()).arg(scattering_color.greenF()).arg(scattering_color.blueF());
             //scatteringTexture = "0 0 0";
 
             // Assume absorption = 1 - transmission
             ret_str += QString("scene.textures.%1.type = \"subtract\"\n").arg(absorptionTexture);
             ret_str += QString("scene.textures.%1.texture1 = 1 1 1\n").arg(absorptionTexture);
             ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(absorptionTexture).arg(transmissionTexture);
+
+            //////////////////////////////////////////
+            // scale conversion for Daz Volume parameters to Lux Volume parameters
+            //////////////////////////////////////////
+            float transmissionDelta = (transmission_distance - 0.008)/0.0068;
+            float scatteringDelta = (scattering_distance - 0.15)/0.135;
+
+            //// transmissionDelta == 0, no recalibration, transmissionDelta == 0.1 --> 
+            //float adjustment_a = 1.0;
+            //float adjustment_b = 3.125;
+            //float inverseTransmissionDelta = 1-transmissionDelta;
+            //if (inverseTransmissionDelta < 0) inverseTransmissionDelta = 0;
+            //float adjustment = (adjustment_a)*(inverseTransmissionDelta) + (adjustment_b)*(transmissionDelta);
+            //transmission_distance*= adjustment;
+
+            // numbers made to multiply by 15/scattering
+            //adjustment_a = 1.0;
+            //adjustment_b = 5.0;
+            //float inverseScatteringDelta = 1-scatteringDelta;
+            //if (inverseScatteringDelta < 0) inverseScatteringDelta = 0;
+            //adjustment = (adjustment_a)*(inverseScatteringDelta) + (adjustment_b)*(scatteringDelta);
+            //scattering_distance *= adjustment;
+
+            // transmissionDelta == 0, no recalibration, transmissionDelta == 0.1 --> 
+            float adjustment_a = 0.008;
+            float adjustment_b = 0.00425;
+            float adjustment = (adjustment_a) + (adjustment_b) * (transmissionDelta);
+            transmission_distance = adjustment;
+
+            adjustment_a = 0.01;
+            adjustment_b = 0.005;
+            adjustment = (adjustment_a) + (adjustment_b) * (scatteringDelta);
+            scattering_distance = adjustment;
+
 
             // scale conversion
             //QColor scaled_absorption_color = QColor(0,0,0);
@@ -4583,11 +4617,11 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
             {
                 ret_str += QString("scene.textures.%1.type = \"colordepth\"\n").arg(scaled_scatteringTexture);
                 ret_str += QString("scene.textures.%1.kt = \"%2\"\n").arg(scaled_scatteringTexture).arg(scatteringTexture);
-                ret_str += QString("scene.textures.%1.depth = \"%2\"\n").arg(scaled_scatteringTexture).arg(scattering_distance/4.5);
+                ret_str += QString("scene.textures.%1.depth = \"%2\"\n").arg(scaled_scatteringTexture).arg(scattering_distance);
             }
             else
             {
-                scaled_scatteringTexture = QString("%1").arg(4.5/scattering_distance);
+                scaled_scatteringTexture = QString("%1").arg(1/scattering_distance);
             }
 
             // create volume block
