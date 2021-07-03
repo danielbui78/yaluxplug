@@ -4638,20 +4638,38 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
 
     // Opacity Block
     // modify for refraction
+    QString OpacityTex = matLabel + "_o";
+    QString SSSMaskTex0 = matLabel + "_SSS_MASK" + "_0";
+    QString SSSMaskTex1 = matLabel + "_SSS_MASK" + "_1";
     double override_opacity;
     override_opacity = 1 - (refraction_weight * 0.99);
     if (refraction_weight > 0 && opacity_value == 0) opacity_value = override_opacity;
     opacity_value = (opacity_value < override_opacity) ? opacity_value : override_opacity;
-    if (YaLuxGlobal.bDoSSSVolume && volume_exists)
-    {
-        // modify for translucency/SSS
-        override_opacity = 1 - (translucency_weight * 0.5);
-        opacity_value = (opacity_value < override_opacity) ? opacity_value : override_opacity;
-    }
     if (opacity_exists && opacity_mapfile != "")
-        ret_str += GenerateCoreTextureBlock1(matLabel + "_o", opacity_mapfile, opacity_value,
+        ret_str += GenerateCoreTextureBlock1(OpacityTex, opacity_mapfile, opacity_value,
             bump_uscale, bump_vscale, bump_uoffset, bump_voffset, bump_gamma,
             bump_wrap, bump_channel);
+    else
+        OpacityTex = QString("%1 %1 %1").arg(opacity_value);
+    if (YaLuxGlobal.bDoSSSVolume && volume_exists && refraction_weight == 0)
+    {
+        // create SSS mask
+        // 1. start with diffuse texture
+        // 2. apply/filter-out SSS filter-color (translucency_color)
+        // 3. scale down by translucency_weight
+        ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(SSSMaskTex0);
+        ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(SSSMaskTex0).arg(translucencyTexture);
+        ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(SSSMaskTex0).arg(translucency_weight);
+
+        ret_str += QString("scene.textures.%1.type = \"subtract\"\n").arg(SSSMaskTex1);
+        ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(SSSMaskTex1).arg(OpacityTex);
+        ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(SSSMaskTex1).arg(SSSMaskTex0);
+
+        OpacityTex = SSSMaskTex1;
+        opacity_exists = true;
+    }
+    if (!volume_exists) translucency_exists = false;
+
 
 
     // Metallicity
@@ -4916,9 +4934,9 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
 
         if (YaLuxGlobal.bDoDebugSSS && volume_exists)
             ret_str += QString("scene.materials.%1.transparency = 1\n").arg(glossy2Label);
-        else if (opacity_mapfile != "")
-            ret_str += QString("scene.materials.%1.transparency = \"%2\"\n").arg(glossy2Label).arg(matLabel + "_o");
-        else
+        else if (opacity_exists)
+            ret_str += QString("scene.materials.%1.transparency = \"%2\"\n").arg(glossy2Label).arg(OpacityTex);
+        else if (opacity_value != 1)
             ret_str += QString("scene.materials.%1.transparency = %2\n").arg(glossy2Label).arg(opacity_value);
 
     }
