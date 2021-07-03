@@ -4333,7 +4333,8 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
         if (specratio_mapfile != "")
             ret_str += GenerateCoreTextureBlock1(specratio_label, specratio_mapfile, spec_ratio);
         if (specref_mapfile != "")
-            ret_str += GenerateCoreTextureBlock1(specref_label, specref_mapfile, spec_reflectivity);
+//            ret_str += GenerateCoreTextureBlock1(specref_label, specref_mapfile, spec_reflectivity);
+            ret_str += GenerateCoreTextureBlock1(specref_label, specref_mapfile, 1.0);
 
         // mix spec1 + spec2
         ret_str += QString("scene.textures.%1.type = \"mix\"\n").arg(rawDualRoughness);
