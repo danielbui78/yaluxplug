@@ -4480,7 +4480,7 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
             diffuse_uscale, diffuse_vscale, diffuse_uoffset, diffuse_voffset,
             diffuse_gamma, diffuse_wrap, diffuse_channel);
     }
-    if (volume_exists && YaLuxGlobal.bDoSSSVolume)
+    if (volume_exists && YaLuxGlobal.bDoSSSVolume && refraction_weight == 0)
     {
         // create volumedata and check against volumelist
         VolumeData* v = new VolumeData();
@@ -4638,8 +4638,9 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
 
     // Opacity Block
     // modify for refraction
-    float override_opacity;
+    double override_opacity;
     override_opacity = 1 - (refraction_weight * 0.99);
+    if (refraction_weight > 0 && opacity_value == 0) opacity_value = override_opacity;
     opacity_value = (opacity_value < override_opacity) ? opacity_value : override_opacity;
     if (YaLuxGlobal.bDoSSSVolume && volume_exists)
     {
@@ -4839,7 +4840,7 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
                 ret_str += QString("scene.materials.%1.type = \"glossytranslucent\"\n").arg(glossy2Label);
             else
                 ret_str += QString("scene.materials.%1.type = \"glossy2\"\n").arg(glossy2Label);
-            if (YaLuxGlobal.bDoSSSVolume && volume_exists)
+            if (YaLuxGlobal.bDoSSSVolume && volume_exists && refraction_weight == 0)
                 ret_str += QString("scene.materials.%1.volume.interior = \"%2\"\n").arg(glossy2Label).arg(volumeLabel);
             if (YaLuxGlobal.bDoTranslucency)
             {
