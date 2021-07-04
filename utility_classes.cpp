@@ -4677,9 +4677,18 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
     QString SSSMaskTex0 = matLabel + "_SSS_MASK" + "_0";
     QString SSSMaskTex1 = matLabel + "_SSS_MASK" + "_1";
     double override_opacity;
-    override_opacity = 1 - (refraction_weight * 0.99);
-    if (refraction_weight > 0 && opacity_value == 0) opacity_value = override_opacity;
-    opacity_value = (opacity_value < override_opacity) ? opacity_value : override_opacity;
+    // over 0.75, use glass instead of glossytranslucent for refraction
+    if (refraction_weight > 0 && refraction_weight < 0.5)
+    {
+        override_opacity = 1 - (refraction_weight * 0.99);
+        if (refraction_weight > 0 && opacity_value == 0) opacity_value = override_opacity;
+        opacity_value = (opacity_value < override_opacity) ? opacity_value : override_opacity;
+        if (translucency_exists == false)
+        {
+            translucencyTexture = "";
+            translucency_exists = true;
+        }
+    }
     if (opacity_exists && opacity_mapfile != "")
         ret_str += GenerateCoreTextureBlock1(OpacityTex, opacity_mapfile, opacity_value,
             bump_uscale, bump_vscale, bump_uoffset, bump_voffset, bump_gamma,
@@ -4703,7 +4712,7 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
         OpacityTex = SSSMaskTex1;
         opacity_exists = true;
     }
-    if (!volume_exists) translucency_exists = false;
+//    if (!volume_exists) translucency_exists = false;
 
 
 
@@ -4886,17 +4895,19 @@ QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QStr
 
         QString glossy2Label = matLabel;
 
-        if (translucency_exists)
+        if (translucency_exists || refraction_weight > 0)
         {
             if (YaLuxGlobal.bDoDebugSSS && volume_exists)
                 ret_str += QString("scene.materials.%1.type = \"null\"\n").arg(glossy2Label);
-            else if (YaLuxGlobal.bDoTranslucency)
+            else if (refraction_weight >= 0.5)
+                ret_str += QString("scene.materials.%1.type = \"glass\"\n").arg(glossy2Label);
+            else if (translucency_exists && YaLuxGlobal.bDoTranslucency)
                 ret_str += QString("scene.materials.%1.type = \"glossytranslucent\"\n").arg(glossy2Label);
             else
                 ret_str += QString("scene.materials.%1.type = \"glossy2\"\n").arg(glossy2Label);
             if (YaLuxGlobal.bDoSSSVolume && volume_exists && refraction_weight == 0)
                 ret_str += QString("scene.materials.%1.volume.interior = \"%2\"\n").arg(glossy2Label).arg(volumeLabel);
-            if (YaLuxGlobal.bDoTranslucency)
+            if (YaLuxGlobal.bDoTranslucency && translucency_exists)
             {
                 ret_str += QString("scene.materials.%1.kt = \"%2\"\n").arg(glossy2Label).arg(translucencyTexture);
             }
