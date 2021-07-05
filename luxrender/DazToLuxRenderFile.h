@@ -1,9 +1,9 @@
 #pragma once
 #include "DazToRenderFile.h"
-class DazToLuxRender : DazToRenderFile
+class DazToLuxRenderFile : DazToRenderFile
 {
 public:
-	DazToLuxRender(DzRenderer* r, DzCamera* c, const DzRenderOptions& opt, QString filenameBase) :
+	DazToLuxRenderFile(DzRenderer* r, DzCamera* c, const DzRenderOptions& opt, QString filenameBase) :
 		DazToRenderFile(r, c, opt, filenameBase)
 	{
 		renderfilename = filenameBase + "." + renderfilenameEXT;

@@ -1,4 +1,4 @@
-#include "DazToLuxRender.h"
+#include "DazToLuxRenderFile.h"
 
 #include "dzapp.h"
 #include "dzfileio.h"
@@ -1772,10 +1772,10 @@ bool LuxMakeLXSFile(QString fileNameLXS, DzRenderer *r, DzCamera *camera, const 
     return true;
 }
 
-bool DazToLuxRender::WriteRenderFiles()
+bool DazToLuxRenderFile::WriteRenderFiles()
 {
     bool result = LuxMakeLXSFile(renderfilename, renderer, camera, options);
     return result;
 }
 
-#include "moc_DazToLuxRender.cpp"
+#include "moc_DazToLuxRenderFile.cpp"
