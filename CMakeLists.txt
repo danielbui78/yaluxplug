@@ -190,6 +190,9 @@ elseif(APPLE)
 endif()
 
 add_library( ${DZ_PLUGIN_TGT_NAME} SHARED
+	DazToLuxRender.cpp
+	DazToLuxRender.h
+	DazToRenderFile.h
 	dazToPLY.cpp
 	dazToPLY.h
 	optionsframe.cpp

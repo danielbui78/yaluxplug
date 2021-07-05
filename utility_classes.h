@@ -98,6 +98,11 @@ const QStringList distantLightPlane = QStringList() <<
 //"\t\"float uv\" [0 0 1 0 1 1 0 1]\n" <<
 "\t\"integer quadindices\" [0 1 2 3]\n";
 
+bool LuxGetIntProperty(DzElement* el, QString propertyName, int& prop_val, QString& mesg);
+bool LuxGetFloatProperty(DzElement* el, QString propertyName, float& prop_val, QString& mesg);
+QString LuxGetStringProperty(DzElement* el, QString propertyName, QString& mesg);
+QString LuxGetImageMapProperty(DzElement* el, QString propertyName, QString& mesg);
+QString propertyNumericImagetoString(DzNumericProperty* prop);
 
 QString LuxProcessObject(DzObject *daz_obj, QString &mesg);
 //QString LuxProcessGenMaterial(DzMaterial *material, QString &mesg, QString matLabel);
