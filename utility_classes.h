@@ -103,22 +103,23 @@ bool LuxGetFloatProperty(DzElement* el, QString propertyName, float& prop_val, Q
 QString LuxGetStringProperty(DzElement* el, QString propertyName, QString& mesg);
 QString LuxGetImageMapProperty(DzElement* el, QString propertyName, QString& mesg);
 QString propertyNumericImagetoString(DzNumericProperty* prop);
+int whichClass(QObject* obj, const QStringList& classNames);
 
-QString LuxProcessObject(DzObject *daz_obj, QString &mesg);
+//QString LuxProcessObject(DzObject *daz_obj, QString &mesg);
 //QString LuxProcessGenMaterial(DzMaterial *material, QString &mesg, QString matLabel);
 //QString LuxProcessGlossyMaterial(DzMaterial *material, QString &mesg, QString matLabel);
 //QString LuxProcessMatteMaterial(DzMaterial *material, QString &mesg, QString matLabel);
-QString LuxProcessProperties(DzElement *el, QString &mesg);
-QString LuxProcessLight(DzLight *currentLight, QString &mesg);
-QString LuxCoreProcessLight(DzLight* currentLight, QString& mesg);
-bool LuxMakeLXSFile(QString filenameLXS, DzRenderer *r, DzCamera *camera, const DzRenderOptions &opt);
+//QString LuxProcessProperties(DzElement *el, QString &mesg);
+//QString LuxProcessLight(DzLight *currentLight, QString &mesg);
+//QString LuxCoreProcessLight(DzLight* currentLight, QString& mesg);
+//bool LuxMakeLXSFile(QString filenameLXS, DzRenderer *r, DzCamera *camera, const DzRenderOptions &opt);
 
 bool LuxMakeCFGFile(QString filenameLXS, DzRenderer* r, DzCamera* camera, const DzRenderOptions& opt);
 bool LuxMakeSCNFile(QString filenameLXS, DzRenderer* r, DzCamera* camera, const DzRenderOptions& opt);
-QString LuxCoreProcessObject(DzObject* daz_obj, QString& mesg);
-QString LuxCoreProcessDazDefaultMaterial(DzMaterial* material, QString& mesg, QString matLabel);
-QString LuxCoreProcessOmUberSurfaceMaterial(DzMaterial* material, QString& mesg, QString matLabel);
-QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QString matLabel);
+//QString LuxCoreProcessObject(DzObject* daz_obj, QString& mesg);
+//QString LuxCoreProcessDazDefaultMaterial(DzMaterial* material, QString& mesg, QString matLabel);
+//QString LuxCoreProcessOmUberSurfaceMaterial(DzMaterial* material, QString& mesg, QString matLabel);
+//QString LuxCoreProcessIrayUberMaterial(DzMaterial* material, QString& mesg, QString matLabel);
 
 QString GenerateCoreTextureBlock3(QString textureName, QString mapName, float textureValue1, float textureValue2, float textureValue3,
     float uscale = 1, float vscale = -1, float uoffset = 0, float voffset = 0, float gamma = 2.2,

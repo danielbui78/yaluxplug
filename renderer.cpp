@@ -68,7 +68,8 @@
 #include "renderer.h"
 #include "plugin.h"
 
-
+#include "luxcore/DazToLuxCoreFile.h"
+#include "luxrender/DazToLuxRenderFile.h"
 
 ///////////////////////////////////////////////////////////////////////
 // yaluxplug - YaLuxRender class
@@ -567,8 +568,9 @@ bool YaLuxRender::render(DzRenderHandler *old_handler, DzCamera *camera, const D
         /////////////////////////////
         dzScene->setFrame(YaLuxGlobal.activeFrame);
         //LuxMakeLXSFile(fullPathFileNameLXS, this, camera, opt);
-        LuxMakeCFGFile(fullPathTempFileNameNoExt + ".cfg", this, camera, opt);
-        LuxMakeSCNFile(fullPathTempFileNameNoExt + ".scn", this, camera, opt);
+//        LuxMakeCFGFile(fullPathTempFileNameNoExt + ".cfg", this, camera, opt);
+//        LuxMakeSCNFile(fullPathTempFileNameNoExt + ".scn", this, camera, opt);
+        DazToLuxCoreFile(this, camera, opt, fullPathTempFileNameNoExt).WriteRenderFiles();
 
         // Set up progress bar for the current frame
         YaLuxGlobal.FrameProgress = new DzProgress("Current Frame Progress", 100);

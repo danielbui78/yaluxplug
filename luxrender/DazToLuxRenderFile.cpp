@@ -112,6 +112,179 @@ QString GenerateTextureBlock(QString textureName, QString textureType, QString m
 
 }
 
+QString LuxProcessProperties(DzElement* el, QString& mesg)
+{
+    // 1. get property
+    // 2. print name of property and values
+    // 3. next property
+
+    // Iterate through properties of DzMaterial
+    DzPropertyListIterator propList = el->propertyListIterator();
+    DzProperty* currentProperty;
+    QString propertyLabel;
+    QString outstr;
+    QColor colorval;
+    QString propertyName;
+
+    while (propList.hasNext())
+    {
+        DzTexture* propTex;
+        currentProperty = propList.next();
+        propertyLabel = currentProperty->getLabel();
+        propertyName = currentProperty->getAssetId();
+        mesg += QString("\tproperty [%1] (\"%2\") = ").arg(propertyName).arg(propertyLabel);
+        // find out what property type and get value
+        QStringList classNames = QStringList() << "DzStringProperty" << "DzColorProperty" << "DzFloatProperty" << "DzIntProperty" << "DzNodeProperty" << "DzImageProperty";
+        int nClassType = whichClass(currentProperty, classNames);
+        switch (nClassType)
+        {
+        case 0:
+            mesg += "unimplemented property type\n";
+            break;
+        case 1: // DzStringProperty
+            mesg += QString("[\"%1\"]\n").arg(((DzStringProperty*)currentProperty)->getValue());
+            break;
+        case 2: // DzColorProperty
+            colorval = ((DzColorProperty*)currentProperty)->getColorValue();
+            mesg += QString("[R%1 G%2 B%3]\n").arg(colorval.red()).arg(colorval.green()).arg(colorval.blue());
+            break;
+        case 3: // DzFloatProperty
+            mesg += QString("[%1]\n").arg(((DzFloatProperty*)currentProperty)->getValue());
+            break;
+        case 4: // DzIntProperty
+            mesg += QString("[%1]\n").arg(((DzIntProperty*)currentProperty)->getValue());
+            break;
+        case 5: // DzNodeProperty
+            mesg += "(node) unimplemented\n";
+            break;
+        case 6: // DzImageProperty
+            propTex = ((DzImageProperty*)currentProperty)->getValue();
+            if (propTex != NULL)
+                mesg += QString("(image) tempname = [\"%1\"]\n").arg(propTex->getTempFilename());
+            else
+                mesg += "(image) = NULL\n";
+            break;
+        default:
+            mesg += "(no class) unimplemented\n";
+            break;
+            // none of the above
+        }
+        // handle number properties with images
+        if (currentProperty->inherits("DzNumericProperty"))
+        {
+            if (((DzNumericProperty*)currentProperty)->isMappable())
+            {
+                mesg += "\t\t++";
+                // get image name
+                propTex = ((DzNumericProperty*)currentProperty)->getMapValue();
+                if (propTex != NULL)
+                    mesg += QString("(image) tempname = [\"%1\"]\n").arg(propTex->getTempFilename());
+                else
+                    mesg += "(image) = NULL\n";
+            }
+        }
+    }
+
+    return outstr;
+}
+
+QString LuxProcessProperties(DzMaterial* el, QString& mesg, QString& matDef, QString matLabel = "")
+{
+    // 1. get property
+    // 2. print name of property and values
+    // 3. next property
+
+    // Iterate through properties of DzMaterial
+    DzPropertyListIterator propList = el->propertyListIterator();
+    DzProperty* currentProperty;
+    QString propertyLabel;
+    QString outstr;
+    QColor colorval;
+    int nClassType;
+    QString extraMapFilename;
+
+    // store up all the values then write out at once
+    // ...........
+
+    while (propList.hasNext())
+    {
+        DzTexture* propTex;
+        currentProperty = propList.next();
+        propertyLabel = currentProperty->getLabel();
+
+        // process property name and use it to create Lux entry (ie, Texture "...")
+        if (propertyLabel.contains("Diffuse Color"))
+        {
+            // process the propvalue to create diffuse color and diffuse map Texture entries
+            // then add an additional entry into the material definition
+            if (currentProperty->inherits("DzNumericProperty"))
+                extraMapFilename = propertyNumericImagetoString((DzNumericProperty*)currentProperty);
+            if (extraMapFilename != "")
+            {
+                // create image map entry
+                outstr += QString("Texture \"%1.diffuse_map\" \"color\" \"imagemap\"\n").arg(matLabel);
+                outstr += QString("\t\"string filename\" [\"%1\"]\n").arg(extraMapFilename);
+                outstr += "\n";
+                // add entry material definition
+                matDef += QString("\t\"texture Kd\" [\"%1.diffuse_map\"]").arg(matLabel);
+            }
+            // create non-image texture entry
+            outstr += QString("Texture \"%1.diffuse_color\" \"color\" \"scale\"\n").arg(matLabel);
+
+        }
+
+        mesg += QString("\tproperty [%1] = ").arg(propertyLabel);
+        // find out what property type and get value
+        nClassType = whichClass(currentProperty, classNamesProperties);
+        switch (nClassType)
+        {
+        case 1: // DzStringProperty
+            mesg += QString("[\"%1\"]\n").arg(((DzStringProperty*)currentProperty)->getValue());
+            break;
+        case 2: // DzColorProperty
+            colorval = ((DzColorProperty*)currentProperty)->getColorValue();
+            mesg += QString("[R%1 G%2 B%3]\n").arg(colorval.red()).arg(colorval.green()).arg(colorval.blue());
+            break;
+        case 3: // DzFloatProperty
+            mesg += QString("[%1]\n").arg(((DzFloatProperty*)currentProperty)->getValue());
+            break;
+        case 4: // DzIntProperty
+            mesg += QString("[%1]\n").arg(((DzIntProperty*)currentProperty)->getValue());
+            break;
+        case 5: // DzNodeProperty
+            mesg += "(node) unimplemented\n";
+            break;
+        case 6: // DzImageProperty
+            propTex = ((DzImageProperty*)currentProperty)->getValue();
+            if (propTex != NULL)
+                mesg += QString("(image) tempname = [\"%1\"]\n").arg(propTex->getTempFilename());
+            else
+                mesg += "(image) = NULL\n";
+            break;
+        default:
+            mesg += "unimplemented property type\n";
+            break;
+            // none of the above
+        }
+        // handle number properties with images
+        if (currentProperty->inherits("DzNumericProperty"))
+        {
+            if (((DzNumericProperty*)currentProperty)->isMappable())
+            {
+                mesg += "\t\t++";
+                // get image name
+                propTex = ((DzNumericProperty*)currentProperty)->getMapValue();
+                if (propTex != NULL)
+                    mesg += QString("(image) tempname = [\"%1\"]\n").arg(propTex->getTempFilename());
+                else
+                    mesg += "(image) = NULL\n";
+            }
+        }
+    }
+
+    return outstr;
+}
+
 QString LuxProcessLight(DzLight* currentLight, QString& mesg)
 {
     QString outstr;
