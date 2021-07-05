@@ -1774,6 +1774,8 @@ bool LuxMakeLXSFile(QString fileNameLXS, DzRenderer *r, DzCamera *camera, const 
 
 bool DazToLuxRender::WriteRenderFiles()
 {
-    return true;
+    bool result = LuxMakeLXSFile(renderfilename, renderer, camera, options);
+    return result;
 }
 
+#include "moc_DazToLuxRender.cpp"
