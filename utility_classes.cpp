@@ -48,7 +48,28 @@
 #include "dazToPLY.h"
 #include "plugin.h"
 
+#include "luxcore/DzMaterialToLuxCoreMaterial.h"
+
 struct G YaLuxGlobal;
+
+bool operator==(const DzMaterialToLuxCoreMaterial& a, const DzMaterialToLuxCoreMaterial& b)
+{
+    bool result = false;
+
+    result = (
+        (a.m_DiffuseMap == b.m_DiffuseMap) &&
+        (a.m_DiffuseColor == b.m_DiffuseColor) &&
+        (a.m_SpecularMap == b.m_SpecularMap) &&
+        (a.m_SpecularColor == b.m_SpecularColor) &&
+        (a.m_BumpMap == b.m_BumpMap) &&
+        (a.m_BumpStrength == b.m_BumpStrength) &&
+        (a.m_Roughness == b.m_Roughness) &&
+        (a.m_OpacityMap == b.m_OpacityMap) &&
+        (a.m_OpacityValue == b.m_OpacityValue)
+        );
+
+    return result;
+}
 
 bool operator==(const VolumeData& a, const VolumeData& b)
 {

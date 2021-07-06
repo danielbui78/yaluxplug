@@ -114,8 +114,8 @@ int whichClass(QObject* obj, const QStringList& classNames);
 //QString LuxCoreProcessLight(DzLight* currentLight, QString& mesg);
 //bool LuxMakeLXSFile(QString filenameLXS, DzRenderer *r, DzCamera *camera, const DzRenderOptions &opt);
 
-bool LuxMakeCFGFile(QString filenameLXS, DzRenderer* r, DzCamera* camera, const DzRenderOptions& opt);
-bool LuxMakeSCNFile(QString filenameLXS, DzRenderer* r, DzCamera* camera, const DzRenderOptions& opt);
+//bool LuxMakeCFGFile(QString filenameLXS, DzRenderer* r, DzCamera* camera, const DzRenderOptions& opt);
+//bool LuxMakeSCNFile(QString filenameLXS, DzRenderer* r, DzCamera* camera, const DzRenderOptions& opt);
 //QString LuxCoreProcessObject(DzObject* daz_obj, QString& mesg);
 //QString LuxCoreProcessDazDefaultMaterial(DzMaterial* material, QString& mesg, QString matLabel);
 //QString LuxCoreProcessOmUberSurfaceMaterial(DzMaterial* material, QString& mesg, QString matLabel);

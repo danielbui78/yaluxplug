@@ -225,7 +225,7 @@ void YaLuxRender::handleResumeRender()
     // 4. restart it!    
     YaLuxGlobal.inProgress = true;
     YaLuxGlobal.RenderProgress->resume();
-    YaLuxGlobal.FrameProgress->resume();;
+//    YaLuxGlobal.FrameProgress->resume();;
     YaLuxGlobal.handler->beginRender();
 
     YaLuxGlobal.luxRenderProc->start(file, args);
@@ -242,7 +242,7 @@ void YaLuxRender::handleResumeRender()
         YaLuxGlobal.handler->finishRender();
         YaLuxGlobal.inProgress = false;
         YaLuxGlobal.RenderProgress->finish();
-        YaLuxGlobal.FrameProgress->finish();
+//        YaLuxGlobal.FrameProgress->finish();
 //        logFile.close();
         return;
     }
@@ -380,7 +380,7 @@ bool YaLuxRender::render(DzRenderHandler *old_handler, DzCamera *camera, const D
 
     YaLuxGlobal.optFrame->applyChanges();
 
-    YaLuxGlobal.RenderProgress = new DzProgress("yaluxplug Render Started", steps, false, false);
+    YaLuxGlobal.RenderProgress = new DzProgress("yaluxplug Render Started", steps, true, true);
     YaLuxGlobal.RenderProgress->setUseCloseCheckbox(true);
     YaLuxGlobal.RenderProgress->setCloseOnFinish(true);
 
@@ -556,7 +556,7 @@ bool YaLuxRender::render(DzRenderHandler *old_handler, DzCamera *camera, const D
         if (YaLuxGlobal.bIsSpotRender == true)
         {
             YaLuxGlobal.RenderProgress->finish();
-            YaLuxGlobal.FrameProgress->finish();
+//            YaLuxGlobal.FrameProgress->finish();
             YaLuxGlobal.inProgress = false;
             return false;
         }
@@ -573,7 +573,9 @@ bool YaLuxRender::render(DzRenderHandler *old_handler, DzCamera *camera, const D
         DazToLuxCoreFile(this, camera, opt, fullPathTempFileNameNoExt).WriteRenderFiles();
 
         // Set up progress bar for the current frame
-        YaLuxGlobal.FrameProgress = new DzProgress("Current Frame Progress", 100);
+        YaLuxGlobal.FrameProgress = new DzProgress("Current Frame Progress", 100, true, true);
+        YaLuxGlobal.FrameProgress->setUseCloseCheckbox(true);
+        YaLuxGlobal.RenderProgress->setCloseOnFinish(true);
 
         //////////////////////////////
         //
@@ -602,7 +604,7 @@ bool YaLuxRender::render(DzRenderHandler *old_handler, DzCamera *camera, const D
         YaLuxGlobal.RenderProgress->setCurrentInfo(mesg);
         emit updateLogWindow("yaluxplug: " + mesg, QColor(255, 255, 255), true);
         float progressFraction = ((float)YaLuxGlobal.frame_counter+1)/((float)YaLuxGlobal.totalFrames);
-        int updateProgress = 9 + (progressFraction)*90;
+        int updateProgress = 0 + (progressFraction)*90;
         YaLuxGlobal.RenderProgress->update( updateProgress );
         YaLuxGlobal.FrameProgress->step();
 
@@ -723,7 +725,7 @@ bool YaLuxRender::render(DzRenderHandler *old_handler, DzCamera *camera, const D
         YaLuxGlobal.RenderProgress->setCurrentInfo(mesg);
         emit updateLogWindow("yaluxplug: " + mesg, QColor(255, 255, 255), true);
         progressFraction = ((float)YaLuxGlobal.frame_counter)/((float)YaLuxGlobal.totalFrames);
-        updateProgress = 10 + (progressFraction)*90;
+        updateProgress = 5 + (progressFraction)*90;
         YaLuxGlobal.RenderProgress->update( updateProgress );
 
     } // while (YaLuxGlobal.frame_counter < YaLuxGlobal.totalFrames)
@@ -817,7 +819,7 @@ void YaLuxRender::processCoreRenderLog(QProcess* process, QFile& logFile, bool b
             {
                 QString percentString = regexp.cap(1);
 //                YaLuxGlobal.FrameProgress->setInfo( QString("Frame render: %1\% completed").arg(percentString));
-                YaLuxGlobal.FrameProgress->update(percentString.toInt());
+//                YaLuxGlobal.FrameProgress->update(percentString.toInt());
             }
 
         }
