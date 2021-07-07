@@ -1,7 +1,6 @@
 #pragma once
 #include "DazToRenderFile.h"
-class DazToLuxCoreFile :
-    public DazToRenderFile
+class DazToLuxCoreFile : public DazToRenderFile
 {
 public:
 	DazToLuxCoreFile(DzRenderer* r, DzCamera* c, const DzRenderOptions& opt, QString filenameBase) :

@@ -260,7 +260,6 @@ void WorkerPrepareImage::doPrepareImage()
     emit finished();
 };
 
-
 int whichClass(QObject *obj, const QStringList &classNames)
 {
     int retval = -1;
@@ -278,9 +277,6 @@ int whichClass(QObject *obj, const QStringList &classNames)
     
     return retval;
 }
-
-
-
 
 QString LuxUnsortedMaps(DzMaterial *pMaterial, QString matLabel)
 {
@@ -315,8 +311,6 @@ QString LuxUnsortedMaps(DzMaterial *pMaterial, QString matLabel)
     // dzApp->log(mesg);
     return outstr;
 }
-
-
 
 QString propertyValuetoString(DzProperty *prop)
 {
@@ -381,7 +375,6 @@ QString makeScaledTempImage(DzTexture *texture)
     return newFilename;
 }
 
-
 QString propertyNumericImagetoString(DzNumericProperty *prop)
 {
     DzTexture *propTex;
@@ -434,17 +427,6 @@ QString propertyNumericImagetoString(DzNumericProperty *prop)
     
     return ret_str;
 }
-
-
-
-
-
-
-
-
-
-
-
 
 QString LuxGetImageMapProperty(DzElement* el, QString propertyName, QString& mesg)
 {
@@ -564,8 +546,6 @@ QString LuxGetStringProperty(DzElement *el, QString propertyName, QString &mesg)
     return outstr;
 }
 
-
-
 bool LuxGetFloatProperty(DzElement* el, QString propertyName, float& prop_val, QString& mesg)
 {
     // 1. get property
@@ -615,8 +595,6 @@ bool LuxGetFloatProperty(DzElement* el, QString propertyName, float& prop_val, Q
     return retval;
 }
 
-
-
 bool LuxGetIntProperty(DzElement *el, QString propertyName, int &prop_val, QString &mesg)
 {
     // 1. get property
@@ -662,19 +640,6 @@ bool LuxGetIntProperty(DzElement *el, QString propertyName, int &prop_val, QStri
     
     return retval;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 QString processChildNodes(DzNode *parentNode, QString &mesg, QString parentLabel)
 {
@@ -735,28 +700,6 @@ QString processChildNodes(DzNode *parentNode, QString &mesg, QString parentLabel
     
     return ret_str;
 }
-
-
-//
-
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 QString GenerateCoreTextureBlock3(QString textureName, QString mapName, float textureValue1, float textureValue2, float textureValue3,
     float uscale, float vscale, float uoffset, float voffset, float gamma,

@@ -1,4 +1,4 @@
-#include "DazDefaultToLuxCoreMaterial.h"
+#include "OmUberSurfaceToLuxCoreMaterial.h"
 
 #include "dzapp.h"
 #include "dzfileio.h"
@@ -42,32 +42,36 @@
 #include "dazToPLY.h"
 #include "plugin.h"
 
-DazDefaultToLuxCoreMaterial::DazDefaultToLuxCoreMaterial(DzMaterial* material, QString luxMatName)
-	: DzMaterialToLuxCoreMaterial(material, luxMatName)
+OmUberSurfaceToLuxCoreMaterial::OmUberSurfaceToLuxCoreMaterial(DzMaterial* m, QString luxMatName) :
+    DzMaterialToLuxCoreMaterial(m, luxMatName)
 {
     ImportValues();
     CreateTextures();
     CreateMaterials();
 }
 
-bool DazDefaultToLuxCoreMaterial::ImportValues()
+bool OmUberSurfaceToLuxCoreMaterial::ImportValues()
 {
 
-    // diffuse image and color
-    //float m_vscale = -1;
-    //float m_uscale = 1;
+    //// diffuse image and color
+    //float diffuse_vscale = -1;
+    //float diffuse_uscale = 1;
     //float diffuse_gamma = 2.2;
-    //float m_Material_voffset = 0; // vdelta
-    //float m_Material_uoffset = 0; // udelta
+    //float diffuse_voffset = 0; // vdelta
+    //float diffuse_uoffset = 0; // udelta
     //QString diffuse_wrap = "repeat"; // repeat|black|clamp
     //QString diffuse_filtertype = "bilinear";
     //QString diffuse_channel = "";
-    //QString m_DiffuseMap = ""; // Diffuse Color
-    //QColor m_DiffuseColor = QColor(255, 255, 255);
+    //QString diffuse_mapfile = ""; // Diffuse Color
+    //QColor diffuse_value;
     //bool diffuse_exists = false;
 
-    // specular image and color
+    //// specular image and color
+    //float spec_vscale = -1;
+    //float spec_uscale = 1;
     //float spec_gamma = 2.2;
+    //float spec_voffset = 0;
+    //float spec_uoffset = 0;
     //QString spec_wrap = "repeat"; // repeat|black|clamp
     //QString spec_filtertype = "bilinear";
     //QString spec_channel = "";
@@ -75,8 +79,12 @@ bool DazDefaultToLuxCoreMaterial::ImportValues()
     //QColor spec_value;
     //bool spec_exists = false;
 
-    // bump image and values
+    //// bump image and values
+    //float bump_vscale = -1;
+    //float bump_uscale = 1;
     //float bump_gamma = 1;
+    //float bump_voffset = 0;
+    //float bump_uoffset = 0;
     //QString bump_channel = "";
     //QString bump_wrap = "repeat";
     //QString bump_filtertype = "bilinear";
@@ -84,54 +92,51 @@ bool DazDefaultToLuxCoreMaterial::ImportValues()
     //float bump_value;
     //bool bump_exists = false;
 
-    // transmission map
+    //// transmission map
     //QString opacity_mapfile = "";
     //float opacity_value = 1;
     //bool opacity_exists = false;
 
-    // m_Material definition
+    //// material definition
     //float uroughness = 0.8;
     //float vroughness = 0.8;
     //float index_refraction = 0.0; // IOR
 
+
+    enum { glossy, matte, plastic, metal } material_type = glossy;
+
     QString propertyLabel;
     DzProperty* currentProperty;
 
-    // m_Material types
-    enum { glossy, matte, plastic, metal } m_Material_type = glossy;
+    // Matte vs Glossy
     currentProperty = m_Material->findProperty("Lighting Model");
     if (currentProperty != NULL)
     {
         QString lighting_model = ((DzEnumProperty*)currentProperty)->getStringValue().toLower();
         if (lighting_model.contains("glossy"))
         {
-            m_Material_type = glossy;
+            material_type = glossy;
         }
         else if (lighting_model.contains("matte"))
         {
-            m_Material_type = matte;
+            material_type = matte;
         }
         else if (lighting_model.contains("plastic"))
         {
-            m_Material_type = plastic;
+            material_type = plastic;
         }
         else if (lighting_model.contains("metal"))
         {
-            m_Material_type = metal;
+            material_type = metal;
         }
     }
 
     currentProperty = m_Material->findProperty("Diffuse Color");
     if (currentProperty != NULL)
     {
-        // Sanity Check (FIX for Granite Iray Shader)
-        if (currentProperty->inherits("DzColorProperty"))
-            m_DiffuseColor = ((DzColorProperty*)currentProperty)->getColorValue();
-        if (currentProperty->inherits("DzNumericProperty"))
-            m_DiffuseMap = propertyNumericImagetoString((DzNumericProperty*)currentProperty);
-        else if (currentProperty->inherits("DzImageProperty"))
-            m_DiffuseMap = ((DzImageProperty*)currentProperty)->getValue()->getTempFilename();
-        if ((m_DiffuseColor != QColor(255, 255, 255)) || (m_DiffuseMap != ""))
+        m_DiffuseColor = ((DzColorProperty*)currentProperty)->getColorValue();
+        m_DiffuseMap = propertyNumericImagetoString((DzNumericProperty*)currentProperty);
+        if ((m_DiffuseColor != QColor(255,255,255)) || (m_DiffuseMap!= ""))
             m_DiffuseExists = true;
     }
     currentProperty = m_Material->findProperty("Horizontal Tiles");
@@ -157,9 +162,9 @@ bool DazDefaultToLuxCoreMaterial::ImportValues()
     currentProperty = m_Material->findProperty("Specular Color");
     if (currentProperty != NULL)
     {
-        m_SpecularColor = ((DzColorProperty*)currentProperty)->getColorValue();
+        m_SpecularColor= ((DzColorProperty*)currentProperty)->getColorValue();
         m_SpecularMap = propertyNumericImagetoString((DzNumericProperty*)currentProperty);
-        if ((m_SpecularColor != 1) || (m_SpecularMap != ""))
+        if ((m_SpecularColor != QColor(255,255,255)) || (m_SpecularMap != ""))
             m_SpecularExists = true;
     }
     // Note that the Luxrender units for specifying bump are 1 = one meter.  So we must scale
@@ -167,18 +172,16 @@ bool DazDefaultToLuxCoreMaterial::ImportValues()
     currentProperty = m_Material->findProperty("Bump Strength");
     if (currentProperty != NULL)
     {
-        m_BumpStrength = ((DzFloatProperty*)currentProperty)->getValue() / 100;
+        m_BumpStrength= ((DzFloatProperty*)currentProperty)->getValue() / 100;
         m_BumpMap = propertyNumericImagetoString((DzNumericProperty*)currentProperty);
-        if (m_BumpMap != "")
+        if (m_BumpMap!= "")
             m_BumpExists = true;
     }
-
     //currentProperty = m_Material->findProperty("eta"); // index of refreaction
     //if (currentProperty != NULL)
     //{
     //    index_refraction = ((DzFloatProperty*)currentProperty)->getValue();
     //}
-
     currentProperty = m_Material->findProperty("Opacity Strength"); // index of refreaction
     if (currentProperty != NULL)
     {
@@ -193,7 +196,7 @@ bool DazDefaultToLuxCoreMaterial::ImportValues()
         m_Roughness = 1 - ((DzFloatProperty*)currentProperty)->getValue();
         if (m_Roughness > 0.8) m_Roughness = 0.8;
 
-        if (m_Material_type == plastic)
+        if (material_type == plastic)
         {
             m_Roughness += 0.5;
             m_Roughness = (m_Roughness > 1.0) ? 1.0 : m_Roughness;
@@ -204,97 +207,90 @@ bool DazDefaultToLuxCoreMaterial::ImportValues()
     return true;
 }
 
-bool DazDefaultToLuxCoreMaterial::CreateTextures()
+bool OmUberSurfaceToLuxCoreMaterial::CreateTextures()
 {
 
-    // Opacity Block
-    m_OpacityTex.name = m_LuxMaterialName + "_o";
-    if (m_OpacityExists && m_OpacityMap != "")
-        m_OpacityTex.data = GenerateCoreTextureBlock1(m_OpacityTex.name, m_OpacityMap, m_OpacityValue);
-
-    // Diffuse Texture Block
     m_DiffuseTex.name = m_LuxMaterialName + "_d";
+    // Diffuse Texture Block
     if (m_DiffuseExists)
-        m_DiffuseTex.data = GenerateCoreTextureBlock3(m_DiffuseTex.name, m_DiffuseMap,
+        m_DiffuseTex.data += GenerateCoreTextureBlock3(m_DiffuseTex.name, m_DiffuseMap,
             m_DiffuseColor.redF(), m_DiffuseColor.greenF(), m_DiffuseColor.blueF(),
-            m_uscale, m_vscale, m_uoffset, m_voffset,
-            m_DiffuseGamma, "", "");
+            m_uscale, m_vscale, m_uoffset, m_voffset);
 
     // Specular Block
     if (m_SpecularExists)
     {
         // check specular strength!!!
-        m_SpecularTex.name = m_LuxMaterialName + "_s";
-        QString realSpecularLabel = m_SpecularTex.name;
+        QString realSpecularLabel = m_LuxMaterialName + "_s";
+        m_SpecularTex.name = realSpecularLabel;
         bool bDoMixtureTexture = false;
         float spec_strength = 1.0;
-        QString mesg;
-        if (LuxGetFloatProperty(m_Material, "Specular Strength", spec_strength, mesg) && spec_strength < 1.0)
-        {
-            bDoMixtureTexture = true;
-            realSpecularLabel = m_SpecularTex.name + "_0";
-        }
-        m_SpecularTex.data = GenerateCoreTextureBlock3(realSpecularLabel, m_SpecularMap,
-            m_SpecularColor.redF(), m_SpecularColor.greenF(), m_SpecularColor.blueF(),
-            m_uscale, m_vscale, m_uoffset, m_voffset, 
-            m_DiffuseGamma, "", "");
 
-        if (bDoMixtureTexture)
-        {
-            QString specularScaleLabel = m_SpecularTex.name;
-            m_SpecularTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(specularScaleLabel);
-            m_SpecularTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specularScaleLabel).arg(realSpecularLabel);
-            m_SpecularTex.data += QString("scene.textures.%1.texture2 = %2\n").arg(specularScaleLabel).arg(spec_strength);
-        }
+        // Always mix down by 25%
+        QString mesg;
+        LuxGetFloatProperty(m_Material, "Specular Strength", spec_strength, mesg);
+        realSpecularLabel = m_LuxMaterialName + "_s" + "_0";
+        spec_strength *= 0.25;
+
+        m_SpecularTex.data += GenerateCoreTextureBlock3(realSpecularLabel, m_SpecularMap,
+            m_SpecularColor.redF(), m_SpecularColor.greenF(), m_SpecularColor.blueF(),
+            m_uscale, m_vscale, m_uoffset, m_voffset);
+
+        m_SpecularTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(m_SpecularTex.name);
+        m_SpecularTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(m_SpecularTex.name).arg(realSpecularLabel);
+        m_SpecularTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(m_SpecularTex.name).arg(spec_strength);
+
     }
 
     // Bumpmap Block
     m_BumpTex.name = m_LuxMaterialName + "_b";
-    float bump_gamma = 1.0;
     if (m_BumpExists)
-        m_BumpTex.data = GenerateCoreTextureBlock1_Grey(m_BumpTex.name, m_BumpMap, m_BumpStrength,
-            m_uscale, m_vscale, m_uoffset, m_voffset,
-            bump_gamma, "", "");
+        m_BumpTex.data += GenerateCoreTextureBlock1_Grey(m_BumpTex.name, m_BumpMap, m_BumpStrength,
+            m_uscale, m_vscale, m_uoffset, m_voffset);
+
+
+    // Opacity Block
+    m_OpacityTex.name = m_LuxMaterialName + "_o";
+    if (m_OpacityExists && m_OpacityMap!= "")
+        m_OpacityTex.data += GenerateCoreTextureBlock1(m_OpacityTex.name, m_OpacityMap, m_OpacityValue);
 
     return true;
 }
 
-bool DazDefaultToLuxCoreMaterial::CreateMaterials()
+bool OmUberSurfaceToLuxCoreMaterial::CreateMaterials()
 {
     QString ret_str = "";
-    QString matLabel = m_LuxMaterialName;
 
-    ret_str += QString("scene.materials.%1.type = \"glossy2\"\n").arg(matLabel);
-    if (m_DiffuseExists) ret_str += QString("scene.materials.%1.kd = \"%2\"\n").arg(matLabel).arg(m_DiffuseTex.name);
-    if (m_SpecularExists) ret_str += QString("scene.materials.%1.ks = \"%2\"\n").arg(matLabel).arg(m_SpecularTex.name);
+    // Material definition
+    // decide what type of material...
+    ret_str += QString("scene.materials.%1.type = \"glossy2\"\n").arg(m_LuxMaterialName);
+    if (m_DiffuseExists) ret_str += QString("scene.materials.%1.kd = \"%2\"\n").arg(m_LuxMaterialName).arg(m_DiffuseTex.name);
+    if (m_SpecularExists) ret_str += QString("scene.materials.%1.ks = \"%2\"\n").arg(m_LuxMaterialName).arg(m_SpecularTex.name);
 
     if (YaLuxGlobal.bDoBumpMaps)
     {
-        if (m_BumpExists) ret_str += QString("scene.materials.%1.bumptex = \"%2\"\n").arg(matLabel).arg(m_BumpTex.name);
+        if (m_BumpExists) ret_str += QString("scene.materials.%1.bumptex = \"%2\"\n").arg(m_LuxMaterialName).arg(m_BumpTex.name);
     }
 
-    ret_str += QString("scene.materials.%1.uroughness = %2\n").arg(matLabel).arg(m_Roughness);
-    ret_str += QString("scene.materials.%1.vroughness = %2\n").arg(matLabel).arg(m_Roughness);
+    ret_str += QString("scene.materials.%1.uroughness = %2\n").arg(m_LuxMaterialName).arg(m_Roughness);
+    ret_str += QString("scene.materials.%1.vroughness = %2\n").arg(m_LuxMaterialName).arg(m_Roughness);
 
-    if (m_OpacityExists)
-    {
-        if (m_OpacityMap != "")
-            ret_str += QString("scene.materials.%1.transparency = \"%2\"\n").arg(matLabel).arg(m_OpacityTex.name);
-        else
-            ret_str += QString("scene.materials.%1.transparency = %2\n").arg(matLabel).arg(m_OpacityValue);
-    }
+    if (m_OpacityExists && m_OpacityMap != "")
+        ret_str += QString("scene.materials.%1.transparency = \"%2\"\n").arg(m_LuxMaterialName).arg(m_OpacityTex.name);
+    else if (m_OpacityExists)
+        ret_str += QString("scene.materials.%1.transparency = %2\n").arg(m_LuxMaterialName).arg(m_OpacityValue);
 
-    m_PrimaryMaterialBlock.name = matLabel;
+
+    m_PrimaryMaterialBlock.name = m_LuxMaterialName;
     m_PrimaryMaterialBlock.data = ret_str;
 
-    return true;
+    return false;
 }
 
-QString DazDefaultToLuxCoreMaterial::toString()
-{
-    QString ret_str;
 
-    ret_str = "# (DazDefault) MATERIAL " + m_LuxMaterialName + "\n";
+QString OmUberSurfaceToLuxCoreMaterial::toString()
+{
+    QString ret_str = "# (OmUberSurface) MATERIAL " + m_LuxMaterialName + "\n";
 
     // add texture blocks
     ret_str += m_DiffuseTex.data;
@@ -308,4 +304,4 @@ QString DazDefaultToLuxCoreMaterial::toString()
     return ret_str;
 }
 
-#include "moc_DazDefaultToLuxCoreMaterial.cpp"
+#include "moc_OmUberSurfaceToLuxCoreMaterial.cpp"

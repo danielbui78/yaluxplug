@@ -53,8 +53,6 @@ IrayUberToLuxCoreMaterial::IrayUberToLuxCoreMaterial(DzMaterial* m, QString luxM
 bool IrayUberToLuxCoreMaterial::ImportValues()
 {
  
-    //QString ret_str = "# MATERIAL " + m_LuxMaterialName + "\n";
-
     // diffuse image and color
     //float diffuse_vscale = -1;
     //float diffuse_uscale = 1;
@@ -1035,6 +1033,8 @@ bool IrayUberToLuxCoreMaterial::CreateMaterials()
 QString IrayUberToLuxCoreMaterial::toString()
 {
     QString ret_str;
+
+    ret_str = "# (IrayUber) MATERIAL " + m_LuxMaterialName + "\n";
 
     // add texture blocks
     ret_str += m_DiffuseTex.data;
