@@ -8,16 +8,16 @@ public:
 	class TextureBlock
 	{
 	public:
-		QString name;
-		QString data;
+		QString name = "";
+		QString data= "";
 
 	};
 
 	class MaterialBlock
 	{
 	public:
-		QString name;
-		QString data;
+		QString name = "";
+		QString data = "";
 	};
 
 	DzMaterialToLuxCoreMaterial(DzMaterial* m, QString luxMatName)
@@ -61,7 +61,7 @@ protected:
 	QString		m_SpecularMap = "";
 	QColor		m_SpecularColor = QColor(0,0,0);
 	QString		m_BumpMap = "";
-	double		m_BumpStrength;
+	double		m_BumpStrength = 0;
 	double		m_Roughness = 0.5;
 	QString		m_OpacityMap = "";
 	double		m_OpacityValue = 1.0;

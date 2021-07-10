@@ -173,14 +173,14 @@ private:
 
 struct VolumeData
 {
-    QString name;
-    QString type;
-    int transmission_color;
-    float transmission_distance;
-    int scattering_color;
-    float scattering_distance;
-    float asymmetry_val;
-    bool    multiscattering;
+    QString name = "";
+    QString type = "";
+    int transmission_color = 0;
+    float transmission_distance = 1;
+    int scattering_color = 0;
+    float scattering_distance = 1;
+    float asymmetry_val = 0;
+    bool    multiscattering = 1;
 
     friend bool operator==(const VolumeData& a, const VolumeData& b);
 
