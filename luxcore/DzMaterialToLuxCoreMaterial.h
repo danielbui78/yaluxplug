@@ -57,14 +57,14 @@ protected:
 	bool m_OpacityExists = false;
 
 	QString		m_DiffuseMap = "";
-	QColor		m_DiffuseColor;
+	QColor		m_DiffuseColor = QColor(255,255,255);
 	QString		m_SpecularMap = "";
-	QColor		m_SpecularColor;
+	QColor		m_SpecularColor = QColor(0,0,0);
 	QString		m_BumpMap = "";
 	double		m_BumpStrength;
-	double		m_Roughness;
+	double		m_Roughness = 0.5;
 	QString		m_OpacityMap = "";
-	double		m_OpacityValue;
+	double		m_OpacityValue = 1.0;
 
 };
 
