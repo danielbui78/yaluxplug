@@ -713,8 +713,8 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
             m_TranslucencyTex.data += QString("scene.volumes.%1.multiscattering = %2\n").arg(volumeLabel).arg(1);
         }
 
+        m_VolumeName = volumeLabel;
     }
-    m_VolumeName = volumeLabel;
 
 
     // Opacity Block
