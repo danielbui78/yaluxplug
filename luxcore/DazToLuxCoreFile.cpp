@@ -2296,7 +2296,7 @@ bool LuxMakeCFGFile(QString filenameCFG, DzRenderer* r, DzCamera* camera, const 
         case 0: // Software
             mesg += "\"PATHCPU\"\n";
 //            mesg += "native.threads.count = 4\n";
-            mesg += "path.hybridbackforward.enable = 1\n";
+            mesg += "path.hybridbackforward.enable = 0\n";
             break;
         case 1: // Hybrid (Native CPU + OpenCL GPU)
 //            return false;
@@ -2305,7 +2305,7 @@ bool LuxMakeCFGFile(QString filenameCFG, DzRenderer* r, DzCamera* camera, const 
             mesg += "opencl.gpu.use = 1\n";
 //            mesg += "native.threads.count = 0\n";
             mesg += "opencl.native.threads.count = 2\n";
-            mesg += "path.hybridbackforward.enable = 1\n";
+            mesg += "path.hybridbackforward.enable = 0\n";
             mesg += "path.hybridbackforward.partition = 0.0\n";
             break;
         case 2: // OpenCL GPU only
