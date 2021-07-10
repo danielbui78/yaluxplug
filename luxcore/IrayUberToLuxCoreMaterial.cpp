@@ -244,12 +244,12 @@ bool IrayUberToLuxCoreMaterial::ImportValues()
     {
         m_GlossyReflectivity = ((DzFloatProperty*)currentProperty)->getValue() * m_GlossyLayeredWeight;
     }
-    currentProperty = m_Material->findProperty("Glossy Roughness"); // glossy roughness
-    if (currentProperty != NULL)
-    {
-        m_GlossyRoughness = ((DzFloatProperty*)currentProperty)->getValue() * m_GlossyLayeredWeight;
-        m_GlossyRoughnessMap = propertyNumericImagetoString((DzNumericProperty*)currentProperty);
-    }
+//    currentProperty = m_Material->findProperty("Glossy Roughness"); // glossy roughness
+//    if (currentProperty != NULL)
+//    {
+//        m_GlossyRoughness = ((DzFloatProperty*)currentProperty)->getValue() * m_GlossyLayeredWeight;
+//        m_GlossyRoughnessMap = propertyNumericImagetoString((DzNumericProperty*)currentProperty);
+//    }
     if (material_type == metal_roughness)
     {
         currentProperty = m_Material->findProperty("Metallic Weight"); // metallicity
@@ -268,6 +268,8 @@ bool IrayUberToLuxCoreMaterial::ImportValues()
             m_Roughness = 1.0 * (1 - m_GlossyLayeredWeight) + ((DzFloatProperty*)currentProperty)->getValue() * m_GlossyLayeredWeight;
             if (m_Roughness > 0.8) m_Roughness = 0.8;
 
+            m_GlossyRoughness = m_Roughness;
+            m_GlossyRoughnessMap = propertyNumericImagetoString((DzNumericProperty*)currentProperty);
         }
     }
     else
@@ -362,7 +364,7 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
 
     if (m_DiffuseExists)
         m_DiffuseTex.data += GenerateCoreTextureBlock3(mainDiffTex, m_DiffuseMap,
-            m_DiffuseColor.redF(), m_DiffuseColor.greenF(), m_DiffuseColor.blueF(),
+            GetRed(m_DiffuseColor), GetGreen(m_DiffuseColor), GetBlue(m_DiffuseColor),
             m_uscale, m_vscale, m_uoffset, m_voffset,
             2.2, "", "");
 
@@ -378,8 +380,6 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
     QString specref_mapfile = "";
 
     QString mainSpec = m_LuxMaterialName + "_s";
-    m_SpecularTex.name = mainSpec;
-
     QString specref_label = mainSpec + "_spec_reflect";
     QString rawDualRoughness = mainSpec + "_raw_rough";
     m_SpecRoughness_1 = mainSpec + "_scaled_rough1";
@@ -476,8 +476,8 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
     else
     {
         mainSpec = "0 0 0";
-        m_SpecularTex.name = mainSpec;
     }
+    m_SpecularTex.name = mainSpec;
 
     // Glossy Layer
     QString glossyRoughnessTexLabel = m_LuxMaterialName + "_glossyRoughnessTex";
@@ -488,10 +488,10 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
             QString glossyTex = m_LuxMaterialName + "_glossy";
             if (m_GlossyMap != "")
                 m_GlossyTex.data += GenerateCoreTextureBlock3(glossyTex, m_GlossyMap,
-                    m_GlossyColor.redF(), m_GlossyColor.greenF(), m_GlossyColor.blueF(),
+                    GetRed(m_GlossyColor), GetGreen(m_GlossyColor), GetBlue(m_GlossyColor),
                     m_uscale, m_vscale, m_uoffset, m_voffset);
             else
-                glossyTex = QString("%1 %2 %3").arg(m_GlossyColor.redF()).arg(m_GlossyColor.greenF()).arg(m_GlossyColor.blueF());
+                glossyTex = QString("%1 %2 %3").arg(GetRed(m_GlossyColor)).arg(GetGreen(m_GlossyColor)).arg(GetBlue(m_GlossyColor));
 
             // mix glossy with mainSpec (dual spec)
             QString glossyMixTex = m_LuxMaterialName + "_glossy" + "_mix";
@@ -501,15 +501,14 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
             m_GlossyTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(glossyMixTex).arg(mainSpec);
             m_GlossyTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(glossyMixTex).arg(glossyTex);
             m_GlossyTex.data += QString("scene.textures.%1.amount = \"%2\"\n").arg(glossyMixTex).arg(m_GlossyLayeredWeight * 0.05);
-            mainSpec = glossyMixTex;
-            m_SpecularTex.name = mainSpec;
+            m_SpecularTex.name = glossyMixTex;
         }
 
         if (m_GlossyRoughnessMap != "")
         {
             // note: roughness is already multiplied by glossy_layered_weight when imported above
             m_GlossyRoughnessTex.name = glossyRoughnessTexLabel;
-            m_GlossyRoughnessTex.data += GenerateCoreTextureBlock1(glossyRoughnessTexLabel, m_GlossyMap, m_GlossyRoughness,
+            m_GlossyRoughnessTex.data += GenerateCoreTextureBlock1(glossyRoughnessTexLabel, m_GlossyRoughnessMap, m_GlossyRoughness,
                 m_uscale, m_vscale, m_uoffset, m_voffset);
         }
 
@@ -558,7 +557,7 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
     if (m_TranslucencyExists && YaLuxGlobal.bDoTranslucency)
     {
         m_TranslucencyTex.data += GenerateCoreTextureBlock3(translucencyTexture, m_TranslucencyMap,
-            m_TranslucencyColor.redF(), m_TranslucencyColor.greenF(), m_TranslucencyColor.blueF(),
+            GetRed(m_TranslucencyColor), GetGreen(m_TranslucencyColor), GetBlue(m_TranslucencyColor),
             m_uscale, m_vscale, m_uoffset, m_voffset);
     }
     if (m_VolumeExists && YaLuxGlobal.bDoSSSVolume && m_RefractionWeight == 0)
@@ -600,20 +599,20 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
 
             if (m_SSS_tint != QColor(255, 255, 255))
             {
-                m_TransmissionColor.setRedF(m_TransmissionColor.redF() * m_SSS_tint.redF());
-                m_TransmissionColor.setGreenF(m_TransmissionColor.greenF() * m_SSS_tint.greenF());
-                m_TransmissionColor.setBlueF(m_TransmissionColor.blueF() * m_SSS_tint.blueF());
+                m_TransmissionColor.setRedF(GetRed(m_TransmissionColor) * GetRed(m_SSS_tint));
+                m_TransmissionColor.setGreenF(GetGreen(m_TransmissionColor) * GetGreen(m_SSS_tint));
+                m_TransmissionColor.setBlueF(GetBlue(m_TransmissionColor) * GetBlue(m_SSS_tint));
             }
 
             if (transmission_mapfile != "")
                 m_TranslucencyTex.data += GenerateCoreTextureBlock3(transmissionTexture, transmission_mapfile,
-                    m_TransmissionColor.redF(), m_TransmissionColor.greenF(), m_TransmissionColor.blueF());
+                    GetRed(m_TransmissionColor), GetGreen(m_TransmissionColor), GetBlue(m_TransmissionColor));
             else
-                transmissionTexture = QString("%1 %2 %3").arg(m_TransmissionColor.redF()).arg(m_TransmissionColor.greenF()).arg(m_TransmissionColor.blueF());
+                transmissionTexture = QString("%1 %2 %3").arg(GetRed(m_TransmissionColor)).arg(GetGreen(m_TransmissionColor)).arg(GetBlue(m_TransmissionColor));
 
-            scatteringTexture = QString("%1 %2 %3").arg(1 - m_ScatteringColor.redF()).arg(1 - m_ScatteringColor.greenF()).arg(1 - m_ScatteringColor.blueF());
-            //            scatteringTexture = QString("%1 %2 %3").arg(scattering_color.redF()).arg(scattering_color.greenF()).arg(scattering_color.blueF());
-                        //scatteringTexture = "0 0 0";
+            scatteringTexture = QString("%1 %2 %3").arg(1 - GetRed(m_ScatteringColor)).arg(1 - GetGreen(m_ScatteringColor)).arg(1 - GetBlue(m_ScatteringColor));
+//          scatteringTexture = QString("%1 %2 %3").arg(scattering_color.redF()).arg(scattering_color.greenF()).arg(scattering_color.blueF());
+//          scatteringTexture = "0 0 0";
 
             // Assume absorption = 1 - transmission
             m_TranslucencyTex.data += QString("scene.textures.%1.type = \"subtract\"\n").arg(absorptionTexture);
@@ -721,7 +720,6 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
     // Opacity Block
     // modify for refraction
     QString OpacityTex = m_LuxMaterialName + "_o";
-    m_OpacityTex.name = OpacityTex;
     QString SSSMaskTex0 = m_LuxMaterialName + "_SSS_MASK" + "_0";
     QString SSSMaskTex1 = m_LuxMaterialName + "_SSS_MASK" + "_1";
     double override_opacity;
@@ -738,8 +736,14 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
         }
     }
     if (m_OpacityExists && m_OpacityMap != "")
-        m_OpacityTex.data += GenerateCoreTextureBlock1(OpacityTex, m_OpacityMap, m_OpacityValue,
-            m_uscale, m_vscale, m_uoffset, m_voffset);
+    {
+        double cutoff_threshold = 0.01;
+        double feather_amount = 0.5;
+        m_OpacityTex.data = GenerateCoreTextureBlock1(OpacityTex, m_OpacityMap, m_OpacityValue,
+            m_uscale, m_vscale, m_uoffset, m_voffset, 1.0);
+        m_OpacityTex.data += CreateFeatheredCutOffTexture(OpacityTex, "greaterthan", cutoff_threshold, feather_amount);
+        OpacityTex += "_cutoff_feathered";
+    }
     else
         OpacityTex = QString("%1 %1 %1").arg(m_OpacityValue);
     if (YaLuxGlobal.bDoSSSVolume && m_VolumeExists && m_RefractionWeight == 0)
@@ -763,17 +767,26 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
     m_OpacityTex.name = OpacityTex;
 
 
-        // Metallicity
+    // Metallicity
     QString metallicityTex = m_LuxMaterialName + "_metallicity";
+    QString specA_metallic_override = metallicityTex + "_override_spec_A";
+    QString specB_metallic_override = metallicityTex + "_override_spec_B";
+    QString specC_metallic_override = metallicityTex + "_override_spec_C";
+    QString specD_metallic_override = metallicityTex + "_override_spec_D";
+    QString diffFilter = metallicityTex + "_diffuse_filtered";
+    QString clamped_metallic_override = specD_metallic_override + "_clamped";
+    QString filterMetallicityTex = metallicityTex + "_raw_filter";
+    QString inverseFitlerMetallicityTex = metallicityTex + "_raw_filter_inverse";
+    QString diffuseA_metallic_override = metallicityTex + "_override_diff_A";
+    QString diffuseB_metallic_override = metallicityTex + "_override_diff_B"; // not needed?
+    QString inverseMetallicityTex = metallicityTex + "_inverse";
+
     m_MetallicTex.name = metallicityTex;
     if (m_MetallicWeight > 0 && YaLuxGlobal.bDoMetallic)
     {
-        //if (metallic_weight == 0) metallic_weight = 0.01;
         float metallicity_scale = m_MetallicWeight;
-        //if (glossy_layered_weight > 0) metallicity_scale *= glossy_layered_weight;
+        //if (m_GlossyLayeredWeight > 0) metallicity_scale *= m_GlossyLayeredWeight;
 
-        QString filterMetallicityTex = metallicityTex + "_raw_filter";
-        QString inverseFitlerMetallicityTex = metallicityTex + "_raw_filter_inverse";
         if (m_MetallicMap != "")
         {
             m_MetallicTex.data += GenerateCoreTextureBlock1(metallicityTex, m_MetallicMap, metallicity_scale,
@@ -788,103 +801,179 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
         }
         else
         {
-            m_MetallicTex.data += QString("scene.textures.%1.type = \"constfloat3\"\n").arg(metallicityTex);
-            m_MetallicTex.data += QString("scene.textures.%1.texture1 = %2 %2 %2\n").arg(metallicityTex).arg(metallicity_scale);
-            m_MetallicTex.data += QString("scene.textures.%1.type = \"constfloat3\"\n").arg(filterMetallicityTex);
-            m_MetallicTex.data += QString("scene.textures.%1.texture1 = %2 %2 %2\n").arg(filterMetallicityTex).arg(m_MetallicWeight);
-            m_MetallicTex.data += QString("scene.textures.%1.type = \"constfloat3\"\n").arg(inverseFitlerMetallicityTex);
-            m_MetallicTex.data += QString("scene.textures.%1.texture1 = %2 %2 %2\n").arg(inverseFitlerMetallicityTex).arg(1 - m_MetallicWeight);
+            //m_MetallicTex.data += QString("scene.textures.%1.type = \"constfloat3\"\n").arg(metallicityTex);
+            //m_MetallicTex.data += QString("scene.textures.%1.texture1 = %2 %2 %2\n").arg(metallicityTex).arg(metallicity_scale);
+            //m_MetallicTex.data += QString("scene.textures.%1.type = \"constfloat3\"\n").arg(filterMetallicityTex);
+            //m_MetallicTex.data += QString("scene.textures.%1.texture1 = %2 %2 %2\n").arg(filterMetallicityTex).arg(m_MetallicWeight);
+            //m_MetallicTex.data += QString("scene.textures.%1.type = \"constfloat3\"\n").arg(inverseFitlerMetallicityTex);
+            //m_MetallicTex.data += QString("scene.textures.%1.texture1 = %2 %2 %2\n").arg(inverseFitlerMetallicityTex).arg(1 - m_MetallicWeight);
+
+            //metallicityTex = QString("%1 %1 %1").arg(metallicity_scale);
+            //filterMetallicityTex = QString("%1 %1 %1").arg(m_MetallicWeight);
+            //inverseFitlerMetallicityTex = QString("%1 %1 %1").arg(1 - m_MetallicWeight);
+
+            metallicityTex = "";
+            filterMetallicityTex = "";
+            inverseFitlerMetallicityTex = "";
+
         }
+
         /////////////
         // Mix into specular
         ////////////////
-        QString specA_metallic_override = metallicityTex + "_override_spec_A";
-        QString specB_metallic_override = metallicityTex + "_override_spec_B";
-        QString specC_metallic_override = metallicityTex + "_override_spec_C";
-        QString specD_metallic_override = metallicityTex + "_override_spec_D";
 
         // create filtered-metal specular grey: 0.5? 0.1?
         m_MetallicTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(specA_metallic_override);
-        m_MetallicTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specA_metallic_override).arg("0.01 0.01 0.01");
-        m_MetallicTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specA_metallic_override).arg(filterMetallicityTex);
-        // merge with metal-filtered, subtracted specular from above
-        //if (spec_weight > 0 || glossy_layered_weight > 0)
-        if (false)
+        if (m_MetallicMap != "")
+            m_MetallicTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specA_metallic_override).arg("0.01");
+        else
+            m_MetallicTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specA_metallic_override).arg("0.5");
+        if (filterMetallicityTex != "")
+            m_MetallicTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specA_metallic_override).arg(filterMetallicityTex);
+        else
+            m_MetallicTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specA_metallic_override).arg(m_MetallicWeight);
+        //specA_metallic_override = "0 0 0";
+
+        /// Diffuse Filter
+        if (metallicityTex == "" && metallicity_scale == 1)
         {
-            // create black out or scale down metal-filtered specular
-            m_MetallicTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(specB_metallic_override);
-            m_MetallicTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specB_metallic_override).arg(mainSpec);
-            m_MetallicTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specB_metallic_override).arg(inverseFitlerMetallicityTex);
-
-            // add A + B
-            m_MetallicTex.data += QString("scene.textures.%1.type = \"add\"\n").arg(specC_metallic_override);
-            m_MetallicTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specC_metallic_override).arg(specA_metallic_override);
-            m_MetallicTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specC_metallic_override).arg(specB_metallic_override);
-
-            // add metallized+colored specular
-            // 1. create metallic-filtered diffuse texture
-            // use the true scaled metallicity instead of the raw filtered metallicity
-            QString diffFilter = metallicityTex + "_diffuse_filtered";
-            m_MetallicTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(diffFilter);
-            m_MetallicTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffFilter).arg(mainDiffTex);
-            m_MetallicTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffFilter).arg(metallicityTex);
-            // 2. add to subtracted specular
-            m_MetallicTex.data += QString("scene.textures.%1.type = \"add\"\n").arg(specD_metallic_override);
-            m_MetallicTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specD_metallic_override).arg(specC_metallic_override);
-            m_MetallicTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specD_metallic_override).arg(diffFilter);
-            // clamp
-            QString clamped_metallic_override = specD_metallic_override + "_clamped";
-            m_MetallicTex.data += QString("scene.textures.%1.type = \"clamp\"\n").arg(clamped_metallic_override);
-            m_MetallicTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(clamped_metallic_override).arg(specD_metallic_override);
-            m_MetallicTex.data += QString("scene.textures.%1.min = 0\n").arg(clamped_metallic_override);
-            m_MetallicTex.data += QString("scene.textures.%1.max = 1\n").arg(clamped_metallic_override);
-
-            mainSpec = clamped_metallic_override;
+            diffFilter = mainDiffTex;
         }
         else
         {
-            QString diffFilter = metallicityTex + "_diffuse_filtered";
             m_MetallicTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(diffFilter);
             m_MetallicTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffFilter).arg(mainDiffTex);
-            m_MetallicTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffFilter).arg(metallicityTex);
+            if (metallicityTex != "")
+                m_MetallicTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffFilter).arg(metallicityTex);
+            else
+                m_MetallicTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffFilter).arg(metallicity_scale);
+        }
 
-            //// add A + B
-            //ret_str += QString("scene.textures.%1.type = \"add\"\n").arg(specC_metallic_override);
-            //ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specC_metallic_override).arg(specA_metallic_override);
-            //ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specC_metallic_override).arg(diffFilter);
+        // merge with metal-filtered, subtracted specular from above
+        if (m_SpecularWeight > 0 || m_GlossyLayeredWeight > 0)
+        {
+            // create black out or scale down metal-filtered specular
+            if (mainSpec == "0 0 0" || mainSpec == "")
+            {
+                specB_metallic_override = "0 0 0";
+            }
+            else if (mainSpec == "1 1 1")
+            {
+                specB_metallic_override = inverseFitlerMetallicityTex;
+            }
+            else
+            {
+                m_MetallicTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(specB_metallic_override);
+                m_MetallicTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specB_metallic_override).arg(mainSpec);
+                if (inverseFitlerMetallicityTex != "")
+                    m_MetallicTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specB_metallic_override).arg(inverseFitlerMetallicityTex);
+                else
+                    m_MetallicTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specB_metallic_override).arg(1-m_MetallicWeight);
+            }
+
+            // add A + B
+            if (specA_metallic_override == "" || specA_metallic_override == "0 0 0")
+            {
+                specC_metallic_override = specB_metallic_override;
+            }
+            else if (specB_metallic_override == "0 0 0")
+            {
+                specC_metallic_override = specA_metallic_override;
+            }
+            else
+            {
+                m_MetallicTex.data += QString("scene.textures.%1.type = \"add\"\n").arg(specC_metallic_override);
+                m_MetallicTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specC_metallic_override).arg(specA_metallic_override);
+                m_MetallicTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specC_metallic_override).arg(specB_metallic_override);
+            }
+
+            // 2. add to subtracted specular
+            if (specC_metallic_override == "" || specC_metallic_override == "0 0 0")
+            {
+                specD_metallic_override = diffFilter;
+            }
+            else
+            {
+                m_MetallicTex.data += QString("scene.textures.%1.type = \"add\"\n").arg(specD_metallic_override);
+                m_MetallicTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specD_metallic_override).arg(specC_metallic_override);
+                m_MetallicTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specD_metallic_override).arg(diffFilter);
+            }
 
             //// clamp
-            //QString clamped_metallic_override = specC_metallic_override + "_clamped";
-            //ret_str += QString("scene.textures.%1.type = \"clamp\"\n").arg(clamped_metallic_override);
-            //ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(clamped_metallic_override).arg(specC_metallic_override);
-            //ret_str += QString("scene.textures.%1.min = 0\n").arg(clamped_metallic_override);
-            //ret_str += QString("scene.textures.%1.max = 1\n").arg(clamped_metallic_override);
+            //m_MetallicTex.data += QString("scene.textures.%1.type = \"clamp\"\n").arg(clamped_metallic_override);
+            //m_MetallicTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(clamped_metallic_override).arg(specD_metallic_override);
+            //m_MetallicTex.data += QString("scene.textures.%1.min = 0\n").arg(clamped_metallic_override);
+            //m_MetallicTex.data += QString("scene.textures.%1.max = 1\n").arg(clamped_metallic_override);
 
-            mainSpec = diffFilter;
+            m_SpecularTex.name = specD_metallic_override;
         }
-        m_SpecularTex.name = mainSpec;
+        else
+        {
+
+            // add A + B
+            if (specA_metallic_override == "" || specA_metallic_override == "0 0 0")
+            {
+                specC_metallic_override = diffFilter;
+            }
+            else
+            {
+                m_MetallicTex.data += QString("scene.textures.%1.type = \"add\"\n").arg(specC_metallic_override);
+                m_MetallicTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specC_metallic_override).arg(specA_metallic_override);
+                m_MetallicTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specC_metallic_override).arg(diffFilter);
+            }
+
+            //// clamp
+            //m_MetallicTex.data += QString("scene.textures.%1.type = \"clamp\"\n").arg(clamped_metallic_override);
+            //m_MetallicTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(clamped_metallic_override).arg(specC_metallic_override);
+            //m_MetallicTex.data += QString("scene.textures.%1.min = 0\n").arg(clamped_metallic_override);
+            //m_MetallicTex.data += QString("scene.textures.%1.max = 1\n").arg(clamped_metallic_override);
+
+            m_SpecularTex.name = specC_metallic_override;
+        }
         m_SpecularExists = true;
 
         /////////////
         // Subtract from Diffuse
         /////////////
-        QString diffuseA_metallic_override = metallicityTex + "_override_diff_A";
-        QString diffuseB_metallic_override = metallicityTex + "_override_diff_B"; // not needed?
-        QString inverseMetallicityTex = metallicityTex + "_inverse";
 
         // create proper inverse of scaled metallicity
-        m_MetallicTex.data += QString("scene.textures.%1.type = \"subtract\"\n").arg(inverseMetallicityTex);
-        m_MetallicTex.data += QString("scene.textures.%1.texture1 = 1\n").arg(inverseMetallicityTex);
-        m_MetallicTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(inverseMetallicityTex).arg(metallicityTex);
+        if (metallicityTex == "" && metallicity_scale == 1)
+        {
+            inverseMetallicityTex = "0 0 0";
+        }
+        else if (metallicityTex == "" && metallicity_scale == 0)
+        {
+            inverseMetallicityTex = "1 1 1";
+        }
+        else
+        {
+            m_MetallicTex.data += QString("scene.textures.%1.type = \"subtract\"\n").arg(inverseMetallicityTex);
+            m_MetallicTex.data += QString("scene.textures.%1.texture1 = 1 1 1\n").arg(inverseMetallicityTex);
+            if (metallicityTex != "")
+                m_MetallicTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(inverseMetallicityTex).arg(metallicityTex);
+            else
+                m_MetallicTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(inverseMetallicityTex).arg(metallicity_scale);
+
+        }
 
         // black out or scale down metal-filtered diffuse
-        m_MetallicTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(diffuseA_metallic_override);
-        m_MetallicTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffuseA_metallic_override).arg(mainDiffTex);
-        m_MetallicTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffuseA_metallic_override).arg(inverseMetallicityTex);
+        if (inverseMetallicityTex == "0 0 0")
+        {
+            diffuseA_metallic_override = "0 0 0";
+        }
+        else if (inverseMetallicityTex == "1 1 1")
+        {
+            diffuseA_metallic_override = mainDiffTex;
+        }
+        else
+        {
+            m_MetallicTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(diffuseA_metallic_override);
+            m_MetallicTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffuseA_metallic_override).arg(mainDiffTex);
+            m_MetallicTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffuseA_metallic_override).arg(inverseMetallicityTex);
+        }
 
         //// rename maindiff
-        mainDiffTex = diffuseA_metallic_override;
-        m_DiffuseTex.name = mainDiffTex;
+        m_DiffuseTex.name = diffuseA_metallic_override;
     }
 
 
@@ -954,7 +1043,7 @@ bool IrayUberToLuxCoreMaterial::CreateMaterials()
                 ret_str += QString("scene.materials.%1.type = \"glossytranslucent\"\n").arg(glossy2Label);
             else
                 ret_str += QString("scene.materials.%1.type = \"glossy2\"\n").arg(glossy2Label);
-            if (YaLuxGlobal.bDoSSSVolume && m_VolumeExists && m_RefractionWeight == 0)
+            if (YaLuxGlobal.bDoSSSVolume && m_VolumeExists)
                 ret_str += QString("scene.materials.%1.volume.interior = \"%2\"\n").arg(glossy2Label).arg(m_VolumeName);
             if (YaLuxGlobal.bDoTranslucency && m_TranslucencyExists)
             {
@@ -965,6 +1054,7 @@ bool IrayUberToLuxCoreMaterial::CreateMaterials()
         {
             ret_str += QString("scene.materials.%1.type = \"glossy2\"\n").arg(glossy2Label);
         }
+
         ret_str += QString("scene.materials.%1.kd = \"%2\"\n").arg(glossy2Label).arg(m_DiffuseTex.name);
 
         if ((m_SpecularExists || m_GlossyLayeredWeight > 0 || m_MetallicWeight > 0) && YaLuxGlobal.bDoSpecular)

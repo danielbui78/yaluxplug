@@ -52,6 +52,50 @@
 
 struct G YaLuxGlobal;
 
+
+double GetRed(QColor color)
+{
+    return gammaUnCorrect(color.redF());
+}
+
+double GetGreen(QColor color)
+{
+    return gammaUnCorrect(color.greenF());
+}
+
+double GetBlue(QColor color)
+{
+    return gammaUnCorrect(color.blueF());
+}
+
+double gammaUnCorrect(double x) 
+{ 
+    return pow(x, 2.2); 
+}
+double gammaCorrect(double x) { 
+    return pow(x, 0.4545); 
+}
+
+QString CreateFeatheredCutOffTexture(QString texturename, QString cutoffFunction, double cutoff_threshold, double feather_edge_amount)
+{
+    QString ret_str;
+
+    QString texture_0 = texturename;
+    QString cutoff_raw = texturename + "_cutoff_raw";
+    QString cutoff_feathered = texturename + "_cutoff_feathered";
+
+    ret_str += QString("scene.textures.%1.type = \"%2\"\n").arg(cutoff_raw).arg(cutoffFunction);
+    ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(cutoff_raw).arg(texture_0);
+    ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(cutoff_raw).arg(cutoff_threshold);
+
+    ret_str += QString("scene.textures.%1.type = \"mix\"\n").arg(cutoff_feathered);
+    ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(cutoff_feathered).arg(texture_0);
+    ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(cutoff_feathered).arg(cutoff_raw);
+    ret_str += QString("scene.textures.%1.amount = \"%2\"\n").arg(cutoff_feathered).arg(1.0 - feather_edge_amount);
+
+    return ret_str;
+}
+
 bool operator==(const DzMaterialToLuxCoreMaterial& a, const DzMaterialToLuxCoreMaterial& b)
 {
     bool result = false;

@@ -2015,7 +2015,7 @@ bool LuxMakeSCNFile(QString filenameSCN, DzRenderer* r, DzCamera* camera, const 
     // LIGHTS
     ///////////////////////////////////////////////
     DzNode* environment = dzScene->findNode("Environment Options");
-    if (environment)
+    if (environment && !environment->isHidden())
     {
         // Dome Mode (enum: 6)
         // Draw Dome (bool)
@@ -2295,32 +2295,41 @@ bool LuxMakeCFGFile(QString filenameCFG, DzRenderer* r, DzCamera* camera, const 
         {
         case 0: // Software
             mesg += "\"PATHCPU\"\n";
+//            mesg += "native.threads.count = 4\n";
+            mesg += "path.hybridbackforward.enable = 1\n";
             break;
-        case 1: // Hybrid
+        case 1: // Hybrid (Native CPU + OpenCL GPU)
 //            return false;
             mesg += "\"PATHOCL\"\n";
-            mesg += "opencl.cpu.use = 1\n";
-            mesg += "opencl.cpu.workgroup.size = 32\n";
+            mesg += "opencl.cpu.use = 0\n";
             mesg += "opencl.gpu.use = 1\n";
+//            mesg += "native.threads.count = 0\n";
+            mesg += "opencl.native.threads.count = 2\n";
+            mesg += "path.hybridbackforward.enable = 1\n";
+            mesg += "path.hybridbackforward.partition = 0.0\n";
             break;
         case 2: // OpenCL GPU only
             mesg += "\"PATHOCL\"\n";
             mesg += "opencl.cpu.use = 0\n";
             mesg += "opencl.gpu.use = 1\n";
-            mesg += "native.threads.count = 0\n";
+//            mesg += "native.threads.count = 0\n";
             mesg += "opencl.native.threads.count = 0\n";
             break;
         case 3: // OpenCL CPU only
             mesg += "\"PATHOCL\"\n";
             mesg += "opencl.cpu.use = 1\n";
-            mesg += "opencl.cpu.workgroup.size = 32\n";
+            mesg += "opencl.cpu.workgroup.size = 0\n";
             mesg += "opencl.gpu.use = 0\n";
+//            mesg += "native.threads.count = 0\n";
+            mesg += "opencl.native.threads.count = 0\n";
             break;
-        case 4: // OpenCL GPU+CPU
+        case 4: // OpenCL GPU + OpenCL CPU
             mesg += "\"PATHOCL\"\n";
             mesg += "opencl.cpu.use = 1\n";
-            mesg += "opencl.cpu.workgroup.size = 32\n";
+            mesg += "opencl.cpu.workgroup.size = 0\n";
             mesg += "opencl.gpu.use = 1\n";
+//            mesg += "native.threads.count = 0\n";
+            mesg += "opencl.native.threads.count = 0\n";
             break;
         case 5: // custom
             mesg = "\n" + YaLuxGlobal.customRenderString + "\n";
@@ -2333,7 +2342,7 @@ bool LuxMakeCFGFile(QString filenameCFG, DzRenderer* r, DzCamera* camera, const 
     // Search for Tonemapper and Environment Nodes
     /////////////////////////////////////////
     DzNode* tonemapper = dzScene->findNode("Tonemapper Options");
-    if (tonemapper)
+    if (tonemapper && !tonemapper->isHidden())
     {
         float floatval = 0;
         YaLuxGlobal.LuxToneMapper = "linear";
@@ -2376,7 +2385,7 @@ bool LuxMakeCFGFile(QString filenameCFG, DzRenderer* r, DzCamera* camera, const 
     mesg = "\n";
     mesg += "film.safesave = 1\n";
     mesg += "film.outputs.safesave = 1\n";
-    mesg += "periodicsave.film.outputs.period = 5\n";
+    mesg += "periodicsave.film.outputs.period = 10\n";
     mesg += "film.imagepipelines.0.0.type = \"NOP\"\n";
     if (YaLuxGlobal.LuxToneMapper == "linear")
     {

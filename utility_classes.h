@@ -131,9 +131,20 @@ QString GenerateCoreTextureBlock1_Grey(QString textureName, QString mapName, flo
     float uscale = 1, float vscale = -1, float uoffset = 0, float voffset = 0, float gamma = 2.2,
     QString wrap = "repeat", QString channel = "rgb");
 
+/* Returns textureblock named: "<texturename>_cutoff_feathered" */
+QString CreateFeatheredCutOffTexture(QString texturename, QString cutoffFunction, double cutoff_threshold, double feather_edge_amount);
+
 QString SanitizeCoreLabel(QString label);
 QString LuxGetImageMapProperty(DzElement* el, QString propertyName, QString& mesg);
 QString MakeTempImgFilename(QString origFilename);
+
+double gammaUnCorrect(double x);
+double gammaCorrect(double x);
+
+double GetRed(QColor color);
+double GetGreen(QColor color);
+double GetBlue(QColor color);
+
 
 class WorkerPrepareImage : public QObject
 {

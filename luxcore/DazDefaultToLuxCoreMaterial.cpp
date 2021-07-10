@@ -179,7 +179,7 @@ bool DazDefaultToLuxCoreMaterial::ImportValues()
     //    index_refraction = ((DzFloatProperty*)currentProperty)->getValue();
     //}
 
-    currentProperty = m_Material->findProperty("Opacity Strength"); // index of refreaction
+    currentProperty = m_Material->findProperty("Opacity Strength");
     if (currentProperty != NULL)
     {
         m_OpacityValue = ((DzFloatProperty*)currentProperty)->getValue();
@@ -210,13 +210,21 @@ bool DazDefaultToLuxCoreMaterial::CreateTextures()
     // Opacity Block
     m_OpacityTex.name = m_LuxMaterialName + "_o";
     if (m_OpacityExists && m_OpacityMap != "")
-        m_OpacityTex.data = GenerateCoreTextureBlock1(m_OpacityTex.name, m_OpacityMap, m_OpacityValue);
+    {
+        double cutoff_threshold = 0.01;
+        double feather_amount = 0.05;
+        m_OpacityTex.data = GenerateCoreTextureBlock1(m_OpacityTex.name, m_OpacityMap, m_OpacityValue,
+            m_uscale, m_vscale, m_uoffset, m_voffset, 1.0 );
+
+        m_OpacityTex.data += CreateFeatheredCutOffTexture(m_OpacityTex.name, "greaterthan", cutoff_threshold, feather_amount);
+        m_OpacityTex.name += "_cutoff_feathered";
+    }
 
     // Diffuse Texture Block
     m_DiffuseTex.name = m_LuxMaterialName + "_d";
     if (m_DiffuseExists)
         m_DiffuseTex.data = GenerateCoreTextureBlock3(m_DiffuseTex.name, m_DiffuseMap,
-            m_DiffuseColor.redF(), m_DiffuseColor.greenF(), m_DiffuseColor.blueF(),
+            GetRed(m_DiffuseColor), GetGreen(m_DiffuseColor), GetBlue(m_DiffuseColor),
             m_uscale, m_vscale, m_uoffset, m_voffset,
             m_DiffuseGamma, "", "");
 
@@ -235,7 +243,7 @@ bool DazDefaultToLuxCoreMaterial::CreateTextures()
             realSpecularLabel = m_SpecularTex.name + "_0";
         }
         m_SpecularTex.data = GenerateCoreTextureBlock3(realSpecularLabel, m_SpecularMap,
-            m_SpecularColor.redF(), m_SpecularColor.greenF(), m_SpecularColor.blueF(),
+            GetRed(m_SpecularColor), GetGreen(m_SpecularColor), GetBlue(m_SpecularColor),
             m_uscale, m_vscale, m_uoffset, m_voffset, 
             m_DiffuseGamma, "", "");
 
