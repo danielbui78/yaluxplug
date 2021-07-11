@@ -1731,7 +1731,7 @@ QString LuxCoreProcessLight(DzLight* currentLight, QString& mesg)
     {
         float scale = 1.0;
         LuxGetFloatProperty(currentLight, "Intensity Scale", scale, mesg);
-        lightIntensity = dynamic_cast<DzDistantLight*>(currentLight)->getIntensity() * scale;
+        lightIntensity = dynamic_cast<DzDistantLight*>(currentLight)->getIntensity() * scale * 5.0; // conversion factor == ~5
     }
 
     // Check to see if luxrender settings are present
@@ -2280,6 +2280,29 @@ bool LuxMakeSCNFile(QString filenameSCN, DzRenderer* r, DzCamera* camera, const 
 
 bool LuxMakeCFGFile(QString filenameCFG, DzRenderer* r, DzCamera* camera, const DzRenderOptions& opt)
 {
+    int numLogicalCores = QThread::idealThreadCount();
+    if (numLogicalCores == -1) numLogicalCores = 1;
+    int concurrentThreads = 1;
+    switch (numLogicalCores)
+    {
+    case 1:
+        concurrentThreads = 1;
+        break;
+    case 2:
+    case 3:
+    case 4:
+        concurrentThreads = numLogicalCores - 1;
+        break;
+    case 5:
+    case 6:
+    case 7:
+        concurrentThreads = numLogicalCores - 2;
+        break;
+    case 8:
+    default:
+        concurrentThreads = numLogicalCores * 0.75;
+    }
+
     YaLuxGlobal.bDefaultLightsOn = true;
     QSize renderImageSize;
     int ImgWidth, ImgHeight;
@@ -2323,7 +2346,7 @@ bool LuxMakeCFGFile(QString filenameCFG, DzRenderer* r, DzCamera* camera, const 
         {
         case 0: // Software
             mesg += "\"PATHCPU\"\n";
-//            mesg += "native.threads.count = 4\n";
+            mesg += QString("native.threads.count = %1\n").arg(concurrentThreads);
             mesg += "path.hybridbackforward.enable = 0\n";
             break;
         case 1: // Hybrid (Native CPU + OpenCL GPU)
@@ -2332,7 +2355,7 @@ bool LuxMakeCFGFile(QString filenameCFG, DzRenderer* r, DzCamera* camera, const 
             mesg += "opencl.cpu.use = 0\n";
             mesg += "opencl.gpu.use = 1\n";
 //            mesg += "native.threads.count = 0\n";
-            mesg += "opencl.native.threads.count = 2\n";
+            mesg += QString("opencl.native.threads.count = %1\n").arg(concurrentThreads);
             mesg += "path.hybridbackforward.enable = 0\n";
             mesg += "path.hybridbackforward.partition = 0.0\n";
             break;
@@ -2419,7 +2442,7 @@ bool LuxMakeCFGFile(QString filenameCFG, DzRenderer* r, DzCamera* camera, const 
     mesg = "\n";
     mesg += "film.safesave = 1\n";
     mesg += "film.outputs.safesave = 1\n";
-    mesg += "periodicsave.film.outputs.period = 10\n";
+    mesg += "periodicsave.film.outputs.period = 4\n";
     mesg += "film.imagepipelines.0.0.type = \"NOP\"\n";
     if (YaLuxGlobal.LuxToneMapper == "linear")
     {
