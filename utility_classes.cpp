@@ -454,7 +454,7 @@ QString propertyNumericImagetoString(DzNumericProperty *prop)
             {
                 // If the cached tempFile size is not equal to the max_texturesize, check if the original
                 // should be rescaled.
-                ret_str = tempFilename; // prepare to return tempFilename... this filename should actually not change, even if we rescale below
+                ret_str = tempFilename;
                 cachedImg.load(tempFilename);
                 if (cachedImg.width() != YaLuxGlobal.maxTextureSize)
                 {
@@ -682,6 +682,52 @@ bool LuxGetIntProperty(DzElement *el, QString propertyName, int &prop_val, QStri
 
     }
     
+    return retval;
+}
+
+bool LuxGetBoolProperty(DzElement* el, QString propertyName, bool& prop_val, QString& mesg)
+{
+    // 1. get property
+    // 2. print name of property and values
+    // 3. next property
+    bool retval = false;
+
+    DzProperty* currentProperty;
+    QString propertyLabel;
+    QString outstr = "";
+    QColor colorval;
+    int nClassType;
+    QString extraMapFilename;
+    DzTexture* propTex;
+
+    // store up all the values then write out at once
+    // ...........
+    currentProperty = el->findProperty(propertyName);
+    if (currentProperty != NULL)
+    {
+        propertyLabel = currentProperty->getLabel();
+
+        mesg += QString("\tproperty [%1] = ").arg(propertyLabel);
+        // find out what property type and get value
+        nClassType = whichClass(currentProperty, classNamesProperties);
+        switch (nClassType)
+        {
+        case 2: // DzBoolProperty
+            prop_val = ((DzIntProperty*)currentProperty)->getValue();
+            retval = true;
+            break;
+        case 5: // DzIntProperty
+        case 1: // DzStringProperty
+        case 3: // DzColorProperty
+        case 4: // DzFloatProperty
+        case 6: // DzNodeProperty
+        case 7: // DzImageProperty
+        default:;
+            // none of the above
+        }
+
+    }
+
     return retval;
 }
 
