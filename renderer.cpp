@@ -899,8 +899,14 @@ void YaLuxRender::processRenderLog(QProcess *process, QFile &logFile, bool bUpda
 
 }
 
+///////////////////////////////////////////
+// MAIN CALLBACK FOR UPDATING LOG WINDOW //
+///////////////////////////////////////////
 void YaLuxRender::handleLogWindow( QString data, QColor textcolor, bool bIsBold )
 {
+    // set cursor to end of log
+    YaLuxGlobal.logText->moveCursor(QTextCursor::End);
+
     QString formated = data.replace("\n", "").replace("\r", "");
     if (bIsBold) YaLuxGlobal.logText->setFontWeight(QFont::Bold);
     YaLuxGlobal.logText->setTextColor( textcolor );
