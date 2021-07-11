@@ -560,7 +560,7 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
             GetRed(m_TranslucencyColor), GetGreen(m_TranslucencyColor), GetBlue(m_TranslucencyColor),
             m_uscale, m_vscale, m_uoffset, m_voffset);
     }
-    if (m_VolumeExists && YaLuxGlobal.bDoSSSVolume && m_RefractionWeight == 0)
+    if (m_VolumeExists && YaLuxGlobal.bDoSSSVolume)
     {
         // create volumedata and check against volumelist
         VolumeData* v = new VolumeData();
