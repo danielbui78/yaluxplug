@@ -1832,14 +1832,21 @@ QString LuxCoreProcessLight(DzLight* currentLight, QString& mesg)
         //if (mapname != "")
         //    outstr += QString("\t\"string mapname\"\t[\"%1\"]\n").arg(mapname);
         //outstr += "\nAttributeEnd\n";
-        outstr += QString("scene.lights.%1.type = \"infinite\"\n").arg(lightLabel);
         QString mapname = propertyNumericImagetoString((DzNumericProperty*)currentLight->findProperty("Color"));
         if (mapname != "")
+        {
+            outstr += QString("scene.lights.%1.type = \"infinite\"\n").arg(lightLabel);
             outstr += QString("scene.lights.%1.file = \"%2\"\n").arg(lightLabel).arg(mapname);
-        outstr += QString("scene.lights.%1.gain = %2 %3 %4\n").arg(lightLabel).arg(lightColor.redF() * lightIntensity).arg(lightColor.greenF() * lightIntensity).arg(lightColor.blueF() * lightIntensity);
-        YaLuxGlobal.bDefaultLightsOn = false;
+            outstr += QString("scene.lights.%1.gain = %2 %3 %4\n").arg(lightLabel).arg(lightColor.redF() * lightIntensity).arg(lightColor.greenF() * lightIntensity).arg(lightColor.blueF() * lightIntensity);
+            YaLuxGlobal.bDefaultLightsOn = false;
 
-        return outstr;
+            return outstr;
+        }
+        else
+        {
+            lightLabel = lightLabel.toLower().replace("infinite", "distant");
+        }
+
     }
     if (lightLabel.toLower().contains("sun"))
     {
