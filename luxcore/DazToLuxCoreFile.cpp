@@ -1556,6 +1556,7 @@ QString LuxCoreProcessObject(DzObject* daz_obj, QString& mesg)
         if (material == NULL) continue;
 
         // process related vertex group for this material
+        matLabel = SanitizeCoreLabel(material->getLabel());
         QString objMatName = QString("%1_%2").arg(nodeLabel).arg(matLabel);
 
         QString plyFileName;
@@ -1566,7 +1567,6 @@ QString LuxCoreProcessObject(DzObject* daz_obj, QString& mesg)
         }
         if (plyFileName == "") continue;
 
-        matLabel = SanitizeCoreLabel(material->getLabel());
         // DEBUG
 //        if (YaLuxGlobal.debugLevel > 1)
 //            mesg += QString("\t\tmaterial[%1] = getLabel[%2], getName[%3], getMaterialName[%4]").arg(i).arg(matLabel).arg(materialList[i]->getName()).arg(materialList[i]->getMaterialName()) ;
