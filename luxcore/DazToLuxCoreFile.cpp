@@ -2017,6 +2017,22 @@ bool LuxMakeSCNFile(QString filenameSCN, DzRenderer* r, DzCamera* camera, const 
     DzNode* environment = dzScene->findNode("Environment Options");
     if (environment && !environment->isHidden())
     {
+        // check environment mode: "Environment Mode"
+        enum {dome_and_scene, dome_only, sun_sky_only, scene_only } environment_mode_enum = dome_and_scene;
+        QString environment_mode_string = "";
+        DzProperty *environment_mode_property = environment->findProperty("Environment Mode");
+        if (environment_mode_property != NULL)
+        {
+            if (environment_mode_property->inherits("DzEnumProperty"))
+            {
+                environment_mode_string = ((DzEnumProperty*)environment_mode_property)->getStringValue().toLower();
+            }
+        }
+        if (environment_mode_string.contains("dome and scene")) environment_mode_enum = dome_and_scene;
+        if (environment_mode_string.contains("dome only")) environment_mode_enum = dome_only;
+        if (environment_mode_string.contains("sun-sky only")) environment_mode_enum = sun_sky_only;
+        if (environment_mode_string.contains("scene only")) environment_mode_enum = scene_only;
+
         // Dome Mode (enum: 6)
         // Draw Dome (bool)
         // Environment Intensity (float)
@@ -2030,31 +2046,34 @@ bool LuxMakeSCNFile(QString filenameSCN, DzRenderer* r, DzCamera* camera, const 
         // Dome Orientation X (float)
         // Dome Rotation (float)
 
-        YaLuxGlobal.bDefaultLightsOn = false;
-        float floatval = 0;
-        QString stringval = "";
-        outstr = "scene.lights.environment_options.type = \"infinite\"\n";
-        stringval = LuxGetImageMapProperty(environment, "Environment Map", mesg);
-        if (stringval != "")
+        if (environment_mode_enum == dome_and_scene || environment_mode_enum == dome_only)
         {
-            outstr += QString("scene.lights.environment_options.file = \"%1\"\n").arg(stringval);
+            YaLuxGlobal.bDefaultLightsOn = false;
+            float floatval = 0;
+            QString stringval = "";
+            outstr = "scene.lights.environment_options.type = \"infinite\"\n";
+            stringval = LuxGetImageMapProperty(environment, "Environment Map", mesg);
+            if (stringval != "")
+            {
+                outstr += QString("scene.lights.environment_options.file = \"%1\"\n").arg(stringval);
+            }
+            if (LuxGetFloatProperty(environment, "Environment Intensity", floatval, mesg))
+                outstr += QString("scene.lights.environment_options.gain = %1 %1 %1\n").arg(floatval * 10000);
+            outstr += "scene.lights.environment_options.gamma = 1.0\n";
+            if (LuxGetFloatProperty(environment, "Dome Rotation", floatval, mesg))
+            {
+                DzMatrix4 mat4(true);
+                //mat4.rotateZ( (floatval + 165) * 0.0174533); // convert degree to radian
+                mat4[0][0] *= -1;
+                mat4.rotateZ((-floatval) * 0.0174533); // convert degree to radian
+                outstr += QString("scene.lights.environment_options.transformation = ");
+                outstr += QString("%1 %2 %3 %4 ").arg(mat4[0][0]).arg(mat4[0][1]).arg(mat4[0][2]).arg(mat4[0][3]);
+                outstr += QString("%5 %6 %7 %8 ").arg(mat4[1][0]).arg(mat4[1][1]).arg(mat4[1][2]).arg(mat4[1][3]);
+                outstr += QString("%9 %10 %11 %12 ").arg(mat4[2][0]).arg(mat4[2][1]).arg(mat4[2][2]).arg(mat4[2][3]);
+                outstr += QString("%13 %14 %15 %16\n").arg(mat4[3][0]).arg(mat4[3][1]).arg(mat4[3][2]).arg(mat4[3][3]);
+            }
+            outSCN.write(outstr.toAscii());
         }
-        if (LuxGetFloatProperty(environment, "Environment Intensity", floatval, mesg))
-            outstr += QString("scene.lights.environment_options.gain = %1 %1 %1\n").arg(floatval * 10000);
-        outstr += "scene.lights.environment_options.gamma = 1.0\n";
-        if (LuxGetFloatProperty(environment, "Dome Rotation", floatval, mesg))
-        {
-            DzMatrix4 mat4(true);
-            //mat4.rotateZ( (floatval + 165) * 0.0174533); // convert degree to radian
-            mat4[0][0] *= -1;
-            mat4.rotateZ((-floatval) * 0.0174533); // convert degree to radian
-            outstr += QString("scene.lights.environment_options.transformation = ");
-            outstr += QString("%1 %2 %3 %4 ").arg(mat4[0][0]).arg(mat4[0][1]).arg(mat4[0][2]).arg(mat4[0][3]);
-            outstr += QString("%5 %6 %7 %8 ").arg(mat4[1][0]).arg(mat4[1][1]).arg(mat4[1][2]).arg(mat4[1][3]);
-            outstr += QString("%9 %10 %11 %12 ").arg(mat4[2][0]).arg(mat4[2][1]).arg(mat4[2][2]).arg(mat4[2][3]);
-            outstr += QString("%13 %14 %15 %16\n").arg(mat4[3][0]).arg(mat4[3][1]).arg(mat4[3][2]).arg(mat4[3][3]);
-        }
-        outSCN.write(outstr.toAscii());
 
         ///////
         // Iray Ground
@@ -2176,8 +2195,17 @@ bool LuxMakeSCNFile(QString filenameSCN, DzRenderer* r, DzCamera* camera, const 
                 DzSkeleton* target = figure->getFollowTarget();
                 if (target && dynamic_cast<DzNode*>(target)->isVisible() && target->isVisibileInRender())
                 {
-                    //                    dzApp->log("yaluxplug: DEBUG: skipping geograft node: " + currentNode->getName());
-                    //                    continue;
+                    /// DB (2021-07-11)
+                    /// This code skips geografts that are grafted on to body parts that are not visible.
+                    /// The one edge case which theoretically won't work is when the geograft is larger
+                    /// than the body part, ex: horse body grafted onto human torso -- if you zoom into
+                    /// just the hooves or tail, the human torso is not visible in the viewfrustum.
+                    ///
+                    /// Instead, dazToPLY has new Per-Face-Culling for non-visible faces. If all faces
+                    /// are not visible, then no PLY is written, and empty filename string is returned.
+                    /// Caveat: the per-face-culling is more performance intensive.
+//                    dzApp->log("yaluxplug: DEBUG: skipping geograft node: " + currentNode->getName());
+//                    continue;
                 }
 
             }
@@ -2187,7 +2215,7 @@ bool LuxMakeSCNFile(QString filenameSCN, DzRenderer* r, DzCamera* camera, const 
         outSCN.write(QString("\n# AssetId=[" + nodeAssetId + "],nodeLabel=[" + currentNode->getLabel() + "]\n").toAscii());
         QString objectLabel = currentObject->getLabel();
 
-        //// DB (2021-06-15) This is probably not needed and may be introducing bad rener data
+        //// DB (2021-06-15) This is probably not needed and may be introducing bad render data
         //// FINALIZE Node's geometry cache for rendering
         ////currentNode->finalize(true,true);
         //currentObject->finalize(*currentNode, true, true);
@@ -2344,18 +2372,24 @@ bool LuxMakeCFGFile(QString filenameCFG, DzRenderer* r, DzCamera* camera, const 
     DzNode* tonemapper = dzScene->findNode("Tonemapper Options");
     if (tonemapper && !tonemapper->isHidden())
     {
-        float floatval = 0;
-        YaLuxGlobal.LuxToneMapper = "linear";
-        if (LuxGetFloatProperty(tonemapper, "Film ISO", floatval, mesg))
-            YaLuxGlobal.tonemapISO = floatval;
-        if (LuxGetFloatProperty(tonemapper, "Gamma", floatval, mesg))
-            YaLuxGlobal.tonemapGamma = floatval;
-        if (LuxGetFloatProperty(tonemapper, "Shutter Speed", floatval, mesg))
-            YaLuxGlobal.tonemapExposureTime = 1 / (floatval > 0 ? floatval : 0.00000001);
-        if (LuxGetFloatProperty(tonemapper, "Aperture", floatval, mesg))
-            YaLuxGlobal.tonemapFstop = floatval;
-        if (LuxGetFloatProperty(tonemapper, "Film ISO", floatval, mesg))
-            YaLuxGlobal.tonemapISO = floatval;
+        // If "Tone Mapping Enable" property does not exist, then default to true
+        bool tonemapping_enabled = true;
+        LuxGetBoolProperty(tonemapper, "Tone Mapping Enable", tonemapping_enabled, mesg);
+        if (tonemapping_enabled)
+        {
+            float floatval = 0;
+            YaLuxGlobal.LuxToneMapper = "linear";
+            if (LuxGetFloatProperty(tonemapper, "Film ISO", floatval, mesg))
+                YaLuxGlobal.tonemapISO = floatval;
+            if (LuxGetFloatProperty(tonemapper, "Gamma", floatval, mesg))
+                YaLuxGlobal.tonemapGamma = floatval;
+            if (LuxGetFloatProperty(tonemapper, "Shutter Speed", floatval, mesg))
+                YaLuxGlobal.tonemapExposureTime = 1 / (floatval > 0 ? floatval : 0.00000001);
+            if (LuxGetFloatProperty(tonemapper, "Aperture", floatval, mesg))
+                YaLuxGlobal.tonemapFstop = floatval;
+            if (LuxGetFloatProperty(tonemapper, "Film ISO", floatval, mesg))
+                YaLuxGlobal.tonemapISO = floatval;
+        }
     }
 
     // sampler settings
