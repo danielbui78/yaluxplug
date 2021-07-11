@@ -443,12 +443,18 @@ QString propertyNumericImagetoString(DzNumericProperty *prop)
             {
                 // the original file has not been cached yet
                 // check if the original image needs scaling
+                // if width or height == 0, assume something broke and scale texture
                 size = propTex->getOriginalImageSize();
-                if ( (size.width() > YaLuxGlobal.maxTextureSize) )
+                if ( (size.width() == 0 || size.height() == 0) ||
+                    (size.width() > YaLuxGlobal.maxTextureSize) )
+                {
                     // yes, we do need to prepare image
                     ret_str = makeScaledTempImage(propTex);
+                }
                 else
+                {
                     ret_str = propTex->getFilename();
+                }
             }
             else // the original file has already been cached
             {
