@@ -162,6 +162,12 @@ bool DazDefaultToLuxCoreMaterial::ImportValues()
         if ((m_SpecularColor != 1) || (m_SpecularMap != ""))
             m_SpecularExists = true;
     }
+    currentProperty = m_Material->findProperty("Specular Strength");
+    if (currentProperty != NULL)
+    {
+        m_SpecularStrength = ((DzFloatProperty*)currentProperty)->getValue();
+        m_SpecularStrengthMap = propertyNumericImagetoString((DzNumericProperty*)currentProperty);
+    }
     // Note that the Luxrender units for specifying bump are 1 = one meter.  So we must scale
     //   down the value read from Daz. ie, 100% Daz strength ~ 0.01 Luxrender units
     currentProperty = m_Material->findProperty("Bump Strength");
@@ -231,18 +237,23 @@ bool DazDefaultToLuxCoreMaterial::CreateTextures()
     // Specular Block
     if (m_SpecularExists)
     {
-        // check specular strength!!!
         m_SpecularTex.name = m_LuxMaterialName + "_s";
-        QString realSpecularLabel = m_SpecularTex.name;
+        QString specTex = m_SpecularTex.name;
+        QString specStrengthTex = m_SpecularTex.name + "_strength";
+
         bool bDoMixtureTexture = false;
-        float spec_strength = 1.0;
-        QString mesg;
-        if (LuxGetFloatProperty(m_Material, "Specular Strength", spec_strength, mesg) && spec_strength < 1.0)
+        if (m_SpecularStrength < 1.0 || m_SpecularStrengthMap != "")
         {
             bDoMixtureTexture = true;
-            realSpecularLabel = m_SpecularTex.name + "_0";
+            specTex = m_SpecularTex.name + "_0";
+            if (m_SpecularStrengthMap != "")
+                m_SpecularTex.data += GenerateCoreTextureBlock1(specStrengthTex, m_SpecularStrengthMap, m_SpecularStrength,
+                    m_uscale, m_vscale, m_uoffset, m_voffset);
+            else
+                specStrengthTex = QString("%1").arg(m_SpecularStrength);
         }
-        m_SpecularTex.data = GenerateCoreTextureBlock3(realSpecularLabel, m_SpecularMap,
+
+        m_SpecularTex.data += GenerateCoreTextureBlock3(specTex, m_SpecularMap,
             GetRed(m_SpecularColor), GetGreen(m_SpecularColor), GetBlue(m_SpecularColor),
             m_uscale, m_vscale, m_uoffset, m_voffset, 
             m_DiffuseGamma, "", "");
@@ -251,8 +262,8 @@ bool DazDefaultToLuxCoreMaterial::CreateTextures()
         {
             QString specularScaleLabel = m_SpecularTex.name;
             m_SpecularTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(specularScaleLabel);
-            m_SpecularTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specularScaleLabel).arg(realSpecularLabel);
-            m_SpecularTex.data += QString("scene.textures.%1.texture2 = %2\n").arg(specularScaleLabel).arg(spec_strength);
+            m_SpecularTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specularScaleLabel).arg(specTex);
+            m_SpecularTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specularScaleLabel).arg(specStrengthTex);
         }
     }
 

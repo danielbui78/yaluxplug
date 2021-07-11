@@ -17,6 +17,8 @@ protected:
     double m_voffset = 0; // vdelta
     double m_uoffset = 0; // udelta
     double m_DiffuseGamma = 2.2;
+    QString m_SpecularStrengthMap = "";
+    double m_SpecularStrength = 1.0;
 
 };
 
