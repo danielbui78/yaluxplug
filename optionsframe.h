@@ -52,7 +52,7 @@ private:
     DzFilterNavigationBar *filterBar;
     DzSideNavPropertyListView *listView;
 
-    QStringList maxTextureSizeList = QStringList() << "250" << "500" << "1000" << "2000" << "none";
+    QStringList maxTextureSizeList = QStringList() << "256" << "512" << "1024" << "2048" << "none";
     QStringList debugLevelList = QStringList() << "Level 0: Errors Only" << "Level 1: Errors and Info" << "Level 2: Errors, Info, Debug" << "Level 3: Verbose Debugging Data";
     QStringList toneMapMethodList = QStringList() << "linear" << "autolinear" << "maxwhite" << "contrast" << "reinhard";
     QStringList renderModeList = QStringList() << "Software" << "Hybrid" << "(PATH)OpenCL GPU only" << "(PATH)OpenCL CPU only" << "(PATH)OpenCL GPU+CPU" << "Custom Render String...";
