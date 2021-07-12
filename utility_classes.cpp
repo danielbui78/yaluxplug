@@ -462,11 +462,14 @@ QString propertyNumericImagetoString(DzNumericProperty *prop)
                 // should be rescaled.
                 ret_str = tempFilename;
                 cachedImg.load(tempFilename);
-                if (cachedImg.width() != YaLuxGlobal.maxTextureSize)
+                double cachedWidth = cachedImg.width();
+                if (cachedWidth != YaLuxGlobal.maxTextureSize)
                 {
-                    // if the original is larger than maxTextureSize, rescale the image to maxTextureSize
+                    // if cachedWidth is > maxTexture size
+                    // or cachedWidth is less than 80% maxtexturesize
                     // otherwise, just use the current tempfilename
-                    if (propTex->getOriginalImageSize().width() > YaLuxGlobal.maxTextureSize)
+                    double cachedToMaxRatio = cachedWidth / YaLuxGlobal.maxTextureSize;
+                    if ( (cachedWidth > YaLuxGlobal.maxTextureSize) || (cachedToMaxRatio < 0.80) )
                         ret_str = makeScaledTempImage(propTex);
                 }
             }
@@ -501,13 +504,14 @@ QString LuxGetImageMapProperty(DzElement* el, QString propertyName, QString& mes
         // handle number properties with images
         if (currentProperty->inherits("DzNumericProperty"))
         {
-            if (((DzNumericProperty*)currentProperty)->isMappable())
-            {
-                // get image name
-                DzTexture *propTex = ((DzNumericProperty*)currentProperty)->getMapValue();
-                if (propTex != NULL)
-                    outstr = propTex->getTempFilename();
-            }
+            //if (((DzNumericProperty*)currentProperty)->isMappable())
+            //{
+            //    // get image name
+            //    DzTexture *propTex = ((DzNumericProperty*)currentProperty)->getMapValue();
+            //    if (propTex != NULL)
+            //        outstr = propTex->getTempFilename();
+            //}
+            outstr = propertyNumericImagetoString((DzNumericProperty*)currentProperty);
         }
     }
 
