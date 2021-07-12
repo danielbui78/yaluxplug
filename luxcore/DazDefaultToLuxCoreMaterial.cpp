@@ -220,7 +220,7 @@ bool DazDefaultToLuxCoreMaterial::CreateTextures()
         double cutoff_threshold = 0.01;
         double feather_amount = 0.05;
         m_OpacityTex.data = GenerateCoreTextureBlock1(m_OpacityTex.name, m_OpacityMap, m_OpacityValue,
-            m_uscale, m_vscale, m_uoffset, m_voffset, 1.0 );
+            m_uscale, m_vscale, m_uoffset, m_voffset );
 
         m_OpacityTex.data += CreateFeatheredCutOffTexture(m_OpacityTex.name, "greaterthan", cutoff_threshold, feather_amount);
         m_OpacityTex.name += "_cutoff_feathered";
@@ -269,11 +269,9 @@ bool DazDefaultToLuxCoreMaterial::CreateTextures()
 
     // Bumpmap Block
     m_BumpTex.name = m_LuxMaterialName + "_b";
-    float bump_gamma = 1.0;
     if (m_BumpExists)
         m_BumpTex.data = GenerateCoreTextureBlock1_Grey(m_BumpTex.name, m_BumpMap, m_BumpStrength,
-            m_uscale, m_vscale, m_uoffset, m_voffset,
-            bump_gamma, "", "");
+            m_uscale, m_vscale, m_uoffset, m_voffset);
 
     return true;
 }

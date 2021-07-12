@@ -254,7 +254,7 @@ bool OmUberSurfaceToLuxCoreMaterial::CreateTextures()
     if (m_OpacityExists && m_OpacityMap != "")
     {
         m_OpacityTex.data = GenerateCoreTextureBlock1(m_OpacityTex.name, m_OpacityMap, m_OpacityValue,
-            m_uscale, m_vscale, m_uoffset, m_voffset, 1.0);
+            m_uscale, m_vscale, m_uoffset, m_voffset);
     }
 
     return true;
