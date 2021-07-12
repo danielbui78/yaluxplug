@@ -124,13 +124,13 @@ int whichClass(QObject* obj, const QStringList& classNames);
 
 QString GenerateCoreTextureBlock3(QString textureName, QString mapName, float textureValue1, float textureValue2, float textureValue3,
     float uscale = 1, float vscale = -1, float uoffset = 0, float voffset = 0, float gamma = 2.2,
-    QString wrap = "repeat", QString channel = "rgb");
+    QString wrap = "", QString channel = "rgb");
 QString GenerateCoreTextureBlock1(QString textureName, QString mapName, float textureValue,
     float uscale = 1, float vscale = -1, float uoffset = 0, float voffset = 0, float gamma = 2.2,
-    QString wrap = "repeat", QString channel = "rgb");
+    QString wrap = "", QString channel = "mean");
 QString GenerateCoreTextureBlock1_Grey(QString textureName, QString mapName, float textureValue,
-    float uscale = 1, float vscale = -1, float uoffset = 0, float voffset = 0, float gamma = 2.2,
-    QString wrap = "repeat", QString channel = "rgb");
+    float uscale = 1, float vscale = -1, float uoffset = 0, float voffset = 0, float gamma = 1.0,
+    QString wrap = "", QString channel = "mean");
 
 /* Returns textureblock named: "<texturename>_cutoff_feathered" */
 QString CreateFeatheredCutOffTexture(QString texturename, QString cutoffFunction, double cutoff_threshold, double feather_edge_amount);
