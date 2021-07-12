@@ -776,7 +776,7 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
     QString diffFilter = metallicityTex + "_diffuse_filtered";
     QString clamped_metallic_override = specD_metallic_override + "_clamped";
     QString filterMetallicityTex = metallicityTex + "_raw_filter";
-    QString inverseFitlerMetallicityTex = metallicityTex + "_raw_filter_inverse";
+    QString inverseFilterMetallicityTex = metallicityTex + "_raw_filter_inverse";
     QString diffuseA_metallic_override = metallicityTex + "_override_diff_A";
     QString diffuseB_metallic_override = metallicityTex + "_override_diff_B"; // not needed?
     QString inverseMetallicityTex = metallicityTex + "_inverse";
@@ -795,9 +795,9 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
             // create metal-filter and inverse-metal-fitler
             m_MetallicTex.data += GenerateCoreTextureBlock1(filterMetallicityTex, m_MetallicMap, 1.0,
                 m_uscale, m_vscale, m_uoffset, m_voffset);
-            m_MetallicTex.data += QString("scene.textures.%1.type = \"subtract\"\n").arg(inverseFitlerMetallicityTex);
-            m_MetallicTex.data += QString("scene.textures.%1.texture1 = 1\n").arg(inverseFitlerMetallicityTex);
-            m_MetallicTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(inverseFitlerMetallicityTex).arg(filterMetallicityTex);
+            m_MetallicTex.data += QString("scene.textures.%1.type = \"subtract\"\n").arg(inverseFilterMetallicityTex);
+            m_MetallicTex.data += QString("scene.textures.%1.texture1 = 1\n").arg(inverseFilterMetallicityTex);
+            m_MetallicTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(inverseFilterMetallicityTex).arg(filterMetallicityTex);
         }
         else
         {
@@ -805,16 +805,16 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
             //m_MetallicTex.data += QString("scene.textures.%1.texture1 = %2 %2 %2\n").arg(metallicityTex).arg(metallicity_scale);
             //m_MetallicTex.data += QString("scene.textures.%1.type = \"constfloat3\"\n").arg(filterMetallicityTex);
             //m_MetallicTex.data += QString("scene.textures.%1.texture1 = %2 %2 %2\n").arg(filterMetallicityTex).arg(m_MetallicWeight);
-            //m_MetallicTex.data += QString("scene.textures.%1.type = \"constfloat3\"\n").arg(inverseFitlerMetallicityTex);
-            //m_MetallicTex.data += QString("scene.textures.%1.texture1 = %2 %2 %2\n").arg(inverseFitlerMetallicityTex).arg(1 - m_MetallicWeight);
+            //m_MetallicTex.data += QString("scene.textures.%1.type = \"constfloat3\"\n").arg(inverseFilterMetallicityTex);
+            //m_MetallicTex.data += QString("scene.textures.%1.texture1 = %2 %2 %2\n").arg(inverseFilterMetallicityTex).arg(1 - m_MetallicWeight);
 
             //metallicityTex = QString("%1 %1 %1").arg(metallicity_scale);
             //filterMetallicityTex = QString("%1 %1 %1").arg(m_MetallicWeight);
-            //inverseFitlerMetallicityTex = QString("%1 %1 %1").arg(1 - m_MetallicWeight);
+            //inverseFilterMetallicityTex = QString("%1 %1 %1").arg(1 - m_MetallicWeight);
 
             metallicityTex = "";
             filterMetallicityTex = "";
-            inverseFitlerMetallicityTex = "";
+            inverseFilterMetallicityTex = "";
 
         }
 
@@ -859,14 +859,14 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
             }
             else if (mainSpec == "1 1 1")
             {
-                specB_metallic_override = inverseFitlerMetallicityTex;
+                specB_metallic_override = inverseFilterMetallicityTex;
             }
             else
             {
                 m_MetallicTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(specB_metallic_override);
                 m_MetallicTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specB_metallic_override).arg(mainSpec);
-                if (inverseFitlerMetallicityTex != "")
-                    m_MetallicTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specB_metallic_override).arg(inverseFitlerMetallicityTex);
+                if (inverseFilterMetallicityTex != "")
+                    m_MetallicTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specB_metallic_override).arg(inverseFilterMetallicityTex);
                 else
                     m_MetallicTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specB_metallic_override).arg(1-m_MetallicWeight);
             }

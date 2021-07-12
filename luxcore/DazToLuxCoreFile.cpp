@@ -771,7 +771,7 @@
 //        //if (glossy_layered_weight > 0) metallicity_scale *= glossy_layered_weight;
 //
 //        QString filterMetallicityTex = metallicityTex + "_raw_filter";
-//        QString inverseFitlerMetallicityTex = metallicityTex + "_raw_filter_inverse";
+//        QString inverseFilterMetallicityTex = metallicityTex + "_raw_filter_inverse";
 //        if (metallic_mapfile != "")
 //        {
 //            ret_str += GenerateCoreTextureBlock1(metallicityTex, metallic_mapfile, metallicity_scale,
@@ -782,9 +782,9 @@
 //            ret_str += GenerateCoreTextureBlock1(filterMetallicityTex, metallic_mapfile, 1.0,
 //                diffuse_uscale, diffuse_vscale, diffuse_uoffset, diffuse_voffset,
 //                diffuse_gamma, diffuse_wrap, diffuse_channel);
-//            ret_str += QString("scene.textures.%1.type = \"subtract\"\n").arg(inverseFitlerMetallicityTex);
-//            ret_str += QString("scene.textures.%1.texture1 = 1\n").arg(inverseFitlerMetallicityTex);
-//            ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(inverseFitlerMetallicityTex).arg(filterMetallicityTex);
+//            ret_str += QString("scene.textures.%1.type = \"subtract\"\n").arg(inverseFilterMetallicityTex);
+//            ret_str += QString("scene.textures.%1.texture1 = 1\n").arg(inverseFilterMetallicityTex);
+//            ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(inverseFilterMetallicityTex).arg(filterMetallicityTex);
 //        }
 //        else
 //        {
@@ -792,8 +792,8 @@
 //            ret_str += QString("scene.textures.%1.texture1 = %2 %2 %2\n").arg(metallicityTex).arg(metallicity_scale);
 //            ret_str += QString("scene.textures.%1.type = \"constfloat3\"\n").arg(filterMetallicityTex);
 //            ret_str += QString("scene.textures.%1.texture1 = %2 %2 %2\n").arg(filterMetallicityTex).arg(metallic_weight);
-//            ret_str += QString("scene.textures.%1.type = \"constfloat3\"\n").arg(inverseFitlerMetallicityTex);
-//            ret_str += QString("scene.textures.%1.texture1 = %2 %2 %2\n").arg(inverseFitlerMetallicityTex).arg(1 - metallic_weight);
+//            ret_str += QString("scene.textures.%1.type = \"constfloat3\"\n").arg(inverseFilterMetallicityTex);
+//            ret_str += QString("scene.textures.%1.texture1 = %2 %2 %2\n").arg(inverseFilterMetallicityTex).arg(1 - metallic_weight);
 //        }
 //
 //        /////////////
@@ -815,7 +815,7 @@
 //            // create black out or scale down metal-filtered specular
 //            ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(specB_metallic_override);
 //            ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specB_metallic_override).arg(mainSpec);
-//            ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specB_metallic_override).arg(inverseFitlerMetallicityTex);
+//            ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specB_metallic_override).arg(inverseFilterMetallicityTex);
 //
 //            // add A + B
 //            ret_str += QString("scene.textures.%1.type = \"add\"\n").arg(specC_metallic_override);
