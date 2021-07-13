@@ -362,7 +362,7 @@ void	YaLuxOptionsFrame::applyChanges()
     YaLuxGlobal.renderMode = renderMode->getValue();
     YaLuxGlobal.customRenderString = customRenderString->getValue();
     YaLuxGlobal.specularMode = specularMode->getValue();
-    if (maxTextureSize->getValue() == 4)
+    if (maxTextureSize->getStringValue().toLower() == "none")
         YaLuxGlobal.maxTextureSize = -1;
     else
         YaLuxGlobal.maxTextureSize = maxTextureSize->getStringValue().toInt();
@@ -417,7 +417,7 @@ void	YaLuxOptionsFrame::restoreOptions( DzRenderOptions *options )
     customRenderString->setValue("");
     specularMode->setValue(0);
     networkRenderOn->setBoolValue(false);
-    maxTextureSize->setValue(512);
+    maxTextureSize->setValue(4);
     doBumpMaps->setBoolValue(false);
     doMetallic->setBoolValue(false);
 
