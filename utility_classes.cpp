@@ -400,12 +400,13 @@ QString makeScaledTempImage(DzTexture *texture)
 {
     DzImageMgr *imgMgr = dzApp->getImageMgr();
     QString origFilename, newFilename;
-    QSize size;
+    //QSize size;
     QImage originalImg, scaledImg;
 
     if (texture->getImageData(originalImg) == true)
     {
-        scaledImg = originalImg.scaledToWidth(YaLuxGlobal.maxTextureSize);
+        int scaleWidth = (originalImg.width() < YaLuxGlobal.maxTextureSize) ? originalImg.width() : YaLuxGlobal.maxTextureSize;
+        scaledImg = originalImg.scaledToWidth(scaleWidth);
         origFilename = texture->getFilename();
         newFilename = YaLuxGlobal.cachePath + MakeTempImgFilename(origFilename) + ".png";
 
@@ -439,12 +440,12 @@ QString propertyNumericImagetoString(DzNumericProperty *prop)
             // *** I will assume all instructions past this point are only reachable when maxTextureSize != -1 ***
 
             tempFilename = propTex->getTempFilename();
+            size = propTex->getOriginalImageSize();
             if (tempFilename.contains(YaLuxGlobal.cachePath)==false)
             {
                 // the original file has not been cached yet
                 // check if the original image needs scaling
                 // if width or height == 0, assume something broke and scale texture
-                size = propTex->getOriginalImageSize();
                 if ( (size.width() == 0 || size.height() == 0) ||
                     (size.width() > YaLuxGlobal.maxTextureSize) )
                 {
@@ -469,7 +470,7 @@ QString propertyNumericImagetoString(DzNumericProperty *prop)
                     // or cachedWidth is less than 80% maxtexturesize
                     // otherwise, just use the current tempfilename
                     double cachedToMaxRatio = cachedWidth / YaLuxGlobal.maxTextureSize;
-                    if ( (cachedWidth > YaLuxGlobal.maxTextureSize) || (cachedToMaxRatio < 0.80) )
+                    if ( (cachedWidth > YaLuxGlobal.maxTextureSize) || ( cachedToMaxRatio < 0.80 && cachedWidth < size.width() ) )
                         ret_str = makeScaledTempImage(propTex);
                 }
             }
