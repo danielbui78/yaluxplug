@@ -167,12 +167,12 @@ bool IrayUberToLuxCoreMaterial::ImportValues()
     currentProperty = m_Material->findProperty("Horizontal Tiles");
     if (currentProperty != NULL)
     {
-        m_uscale = 1 / ((DzFloatProperty*)currentProperty)->getValue();
+        m_uscale = ((DzFloatProperty*)currentProperty)->getValue();
     }
     currentProperty = m_Material->findProperty("Vertical Tiles");
     if (currentProperty != NULL)
     {
-        m_vscale = -1 / ((DzFloatProperty*)currentProperty)->getValue();
+        m_vscale = -1 * ((DzFloatProperty*)currentProperty)->getValue();
     }
     currentProperty = m_Material->findProperty("Horizontal Offset");
     if (currentProperty != NULL)
