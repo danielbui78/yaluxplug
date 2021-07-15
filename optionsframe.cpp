@@ -216,7 +216,7 @@ YaLuxOptionsFrame::YaLuxOptionsFrame() : DzOptionsFrame("yaluxplug Options Frame
     doSSS_Absorption->setLabel("Render SSS Absorption");
     listView->addProperty(doSSS_Absorption);
 
-    doSSS_Scattering = new DzBoolProperty("yalux_do_sss_scattering", true, false, false);
+    doSSS_Scattering = new DzBoolProperty("yalux_do_sss_scattering", true, false, true);
     doSSS_Scattering->setLabel("Render SSS Scattering");
     listView->addProperty(doSSS_Scattering);
 

@@ -335,7 +335,7 @@ bool IrayUberToLuxCoreMaterial::ImportValues()
             if (currentProperty != NULL)
             {
                 // I think Daz values are in cm, so divide by 100 to get meters for lux?
-                m_TransmissionDistance = ((DzFloatProperty*)currentProperty)->getValue() / 100;
+                m_TransmissionDistance = ((DzFloatProperty*)currentProperty)->getValue() / 1;
             }
             currentProperty = m_Material->findProperty("Scattering Measurement Distance");
             if (currentProperty != NULL)
@@ -604,26 +604,33 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
                 m_TransmissionColor.setBlueF(GetBlue(m_TransmissionColor) * GetBlue(m_SSS_tint));
             }
 
+            QString transmissionTexture0 = transmissionTexture + "_0";
             if (transmission_mapfile != "")
-                m_TranslucencyTex.data += GenerateCoreTextureBlock3(transmissionTexture, transmission_mapfile,
+                m_TranslucencyTex.data += GenerateCoreTextureBlock3(transmissionTexture0, transmission_mapfile,
                     GetRed(m_TransmissionColor), GetGreen(m_TransmissionColor), GetBlue(m_TransmissionColor));
             else
-                transmissionTexture = QString("%1 %2 %3").arg(GetRed(m_TransmissionColor)).arg(GetGreen(m_TransmissionColor)).arg(GetBlue(m_TransmissionColor));
+                transmissionTexture0 = QString("%1 %2 %3").arg(GetRed(m_TransmissionColor)).arg(GetGreen(m_TransmissionColor)).arg(GetBlue(m_TransmissionColor));
+            m_TranslucencyTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(transmissionTexture);
+            m_TranslucencyTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(transmissionTexture).arg(transmissionTexture0);
+            m_TranslucencyTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(transmissionTexture).arg(m_TranslucencyTex.name);
 
-            scatteringTexture = QString("%1 %2 %3").arg(1 - GetRed(m_ScatteringColor)).arg(1 - GetGreen(m_ScatteringColor)).arg(1 - GetBlue(m_ScatteringColor));
+
+            scatteringTexture = QString("%1 %2 %3").arg(GetRed(m_ScatteringColor)).arg(GetGreen(m_ScatteringColor)).arg(GetBlue(m_ScatteringColor));
+//          scatteringTexture = QString("%1 %2 %3").arg(GetRed(m_ScatteringColor)).arg(GetGreen(m_ScatteringColor)).arg(GetBlue(m_ScatteringColor));
+//          scatteringTexture = QString("%1 %2 %3").arg(1 - GetRed(m_ScatteringColor)).arg(1 - GetGreen(m_ScatteringColor)).arg(1 - GetBlue(m_ScatteringColor));
 //          scatteringTexture = QString("%1 %2 %3").arg(scattering_color.redF()).arg(scattering_color.greenF()).arg(scattering_color.blueF());
 //          scatteringTexture = "0 0 0";
 
-            // Assume absorption = 1 - transmission
-            m_TranslucencyTex.data += QString("scene.textures.%1.type = \"subtract\"\n").arg(absorptionTexture);
-            m_TranslucencyTex.data += QString("scene.textures.%1.texture1 = 1 1 1\n").arg(absorptionTexture);
-            m_TranslucencyTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(absorptionTexture).arg(transmissionTexture);
+            //// Assume absorption = 1 - transmission
+            //m_TranslucencyTex.data += QString("scene.textures.%1.type = \"subtract\"\n").arg(absorptionTexture);
+            //m_TranslucencyTex.data += QString("scene.textures.%1.texture1 = 1 1 1\n").arg(absorptionTexture);
+            //m_TranslucencyTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(absorptionTexture).arg(transmissionTexture);
 
             //////////////////////////////////////////
             // scale conversion for Daz Volume parameters to Lux Volume parameters
             //////////////////////////////////////////
-            float transmissionDelta = (m_TransmissionDistance - 0.008) / 0.0068;
-            float scatteringDelta = (m_ScatteringDistance - 0.15) / 0.135;
+            //float transmissionDelta = (m_TransmissionDistance - 0.008) / 0.0068;
+            //float scatteringDelta = (m_ScatteringDistance - 0.15) / 0.135;
 
             //// transmissionDelta == 0, no recalibration, transmissionDelta == 0.1 --> 
             //float adjustment_a = 1.0;
@@ -641,17 +648,20 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
             //adjustment = (adjustment_a)*(inverseScatteringDelta) + (adjustment_b)*(scatteringDelta);
             //scattering_distance *= adjustment;
 
-            // transmissionDelta == 0, no recalibration, transmissionDelta == 0.1 --> 
-            float adjustment_a = 0.008;
-            float adjustment_b = 0.00425;
-            float adjustment = (adjustment_a)+(adjustment_b) * (transmissionDelta);
-            m_TransmissionDistance = adjustment;
+            //// transmissionDelta == 0, no recalibration, transmissionDelta == 0.1 --> 
+            //float adjustment_a = 0.008;
+            //float adjustment_b = 0.00425;
+            //float adjustment = (adjustment_a)+(adjustment_b) * (transmissionDelta);
+            //m_TransmissionDistance = adjustment;
 
-            adjustment_a = 0.01;
-            adjustment_b = 0.005;
-            adjustment = (adjustment_a)+(adjustment_b) * (scatteringDelta);
-            m_ScatteringDistance = adjustment;
+            //adjustment_a = 0.01;
+            //adjustment_b = 0.005;
+            //adjustment = (adjustment_a)+(adjustment_b) * (scatteringDelta);
+            //m_ScatteringDistance = adjustment;
 
+            ////// EXPERIMENTAL-3 /////////////
+            m_TransmissionDistance /= 1000;
+            m_ScatteringDistance /= 10;
 
             // scale conversion
             //QColor scaled_absorption_color = QColor(0,0,0);
@@ -1047,7 +1057,9 @@ bool IrayUberToLuxCoreMaterial::CreateMaterials()
                 ret_str += QString("scene.materials.%1.volume.interior = \"%2\"\n").arg(glossy2Label).arg(m_VolumeName);
             if (YaLuxGlobal.bDoTranslucency && m_TranslucencyExists)
             {
-                ret_str += QString("scene.materials.%1.kt = \"%2\"\n").arg(glossy2Label).arg(m_TranslucencyTex.name);
+//                ret_str += QString("scene.materials.%1.kt = \"%2\"\n").arg(glossy2Label).arg(m_TranslucencyTex.name);
+                ret_str += QString("scene.materials.%1.kt = \"%2\"\n").arg(glossy2Label).arg("0 0 0");
+                ret_str += QString("scene.materials.%1.kt_bf = \"%2\"\n").arg(glossy2Label).arg("0 0 0");
             }
         }
         else
