@@ -418,6 +418,23 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
             m_SpecularTex.data += GenerateCoreTextureBlock1(specref_label, specref_mapfile, 1.0,
                 m_uscale, m_vscale, m_uoffset, m_voffset);
 
+        //////// SPECULAR MASK /////
+        QString specular_mask = mainSpec + "_specular_mask";
+        //QString active_mask = "";
+        //if (spec1_mapfile != "") active_mask = spec1_label;
+        //else if (spec2_mapfile != "") active_mask = spec2_label;
+        //else if (specref_mapfile != "") active_mask = specref_label;
+        //if (active_mask != "")
+        //{
+            m_SpecularTex.data += QString("scene.textures.%1.type = \"greaterthan\"\n").arg(specular_mask);
+            m_SpecularTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specular_mask).arg(m_DiffuseTex.name);
+            m_SpecularTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specular_mask).arg(0.25);
+        //}
+        //else
+        //{
+        //    specular_mask = "";
+        //}
+
         // mix spec1 + spec2
         m_SpecularTex.data += QString("scene.textures.%1.type = \"mix\"\n").arg(rawDualRoughness);
         if (spec1_mapfile != "")
@@ -463,10 +480,33 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
         //    //if (specref_mapfile != "") mainSpec = specref_label;
         //    mainSpec = specref_label;
         //}
-        QString finalMix = QString("%1 %1 %1").arg(spec_reflectivity);
-        if (specref_mapfile != "") finalMix = specref_label;
+
+        //QString finalMix = QString("%1").arg(spec_reflectivity);
+        //if (specref_mapfile != "") finalMix = specref_label;
+
+        ///// FINAL SPECULAR MIX is reflectivity * roughness
+        QString finalMix0 = mainSpec + "_final_mix_0";
+        QString finalMix1 = mainSpec + "_final_mix_1";
+        if (specref_mapfile == "") specref_label = QString("%1").arg(spec_reflectivity);
+
+        //if (specular_mask != "")
+        //{
+            m_SpecularTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(finalMix0);
+            m_SpecularTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(finalMix0).arg(specref_label);
+            m_SpecularTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(finalMix0).arg(specular_mask);
+        //}
+        //else
+        //{
+        //    finalMix = specref_label;
+        //}
+
+        m_SpecularTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(finalMix1);
+        m_SpecularTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(finalMix1).arg(finalMix0);
+        m_SpecularTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(finalMix1).arg(0.2);
+
+
         m_SpecularTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(mainSpec);
-        m_SpecularTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(mainSpec).arg(finalMix);
+        m_SpecularTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(mainSpec).arg(finalMix1);
         if (m_SpecularMap != "")
             m_SpecularTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(mainSpec).arg(mainSpec + "_weight");
         else
