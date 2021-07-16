@@ -414,8 +414,8 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
             m_SpecularTex.data += GenerateCoreTextureBlock1(specratio_label, specratio_mapfile, spec_ratio,
                 m_uscale, m_vscale, m_uoffset, m_voffset);
         if (specref_mapfile != "")
-            //            ret_str += GenerateCoreTextureBlock1(specref_label, specref_mapfile, spec_reflectivity);
-            m_SpecularTex.data += GenerateCoreTextureBlock1(specref_label, specref_mapfile, 1.0,
+            m_SpecularTex.data += GenerateCoreTextureBlock1(specref_label, specref_mapfile, spec_reflectivity,
+            //m_SpecularTex.data += GenerateCoreTextureBlock1(specref_label, specref_mapfile, 1.0,
                 m_uscale, m_vscale, m_uoffset, m_voffset);
 
         //////// SPECULAR MASK /////
