@@ -365,8 +365,7 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
     if (m_DiffuseExists)
         m_DiffuseTex.data += GenerateCoreTextureBlock3(mainDiffTex, m_DiffuseMap,
             GetRed(m_DiffuseColor), GetGreen(m_DiffuseColor), GetBlue(m_DiffuseColor),
-            m_uscale, m_vscale, m_uoffset, m_voffset,
-            2.2, "", "");
+            m_uscale, m_vscale, m_uoffset, m_voffset);
 
 
     // Specular Block (DUAL LOBE)
