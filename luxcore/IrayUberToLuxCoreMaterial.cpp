@@ -450,18 +450,18 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
         else
             m_SpecularTex.data += QString("scene.textures.%1.amount = %2\n").arg(rawDualRoughness).arg(spec_ratio);
 
-        // scale roughness from grey (0.5)
+        // scale roughness from grey (0.5)?
         m_SpecularTex.data += QString("scene.textures.%1.type = \"mix\"\n").arg(m_SpecRoughness_2);
-        m_SpecularTex.data += QString("scene.textures.%1.texture1 = 0 0 0\n").arg(m_SpecRoughness_2);
+        m_SpecularTex.data += QString("scene.textures.%1.texture1 = 0.15\n").arg(m_SpecRoughness_2);
         m_SpecularTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(m_SpecRoughness_2).arg(rawDualRoughness);
         if (m_SpecularMap != "")
             m_SpecularTex.data += QString("scene.textures.%1.amount = \"%2\"\n").arg(m_SpecRoughness_2).arg(mainSpec + "_weight");
         else
             m_SpecularTex.data += QString("scene.textures.%1.amount = %2\n").arg(m_SpecRoughness_2).arg(m_SpecularWeight);
 
-        // scale roughness from grey (0.5)
+        // scale roughness from grey (0.5)?
         m_SpecularTex.data += QString("scene.textures.%1.type = \"mix\"\n").arg(m_SpecRoughness_1);
-        m_SpecularTex.data += QString("scene.textures.%1.texture1 = 0 0 0\n").arg(m_SpecRoughness_1);
+        m_SpecularTex.data += QString("scene.textures.%1.texture1 = 0.15\n").arg(m_SpecRoughness_1);
         if (spec1_mapfile != "")
             m_SpecularTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(m_SpecRoughness_1).arg(spec1_label);
         else
