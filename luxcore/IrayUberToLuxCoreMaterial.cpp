@@ -660,9 +660,8 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
             m_TranslucencyTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(transmissionTexture).arg(transmissionTexture0);
             m_TranslucencyTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(transmissionTexture).arg(translucencyTexture);
 
-            scatteringTexture = QString("%1 %2 %3").arg(GetRed(m_ScatteringColor)).arg(GetGreen(m_ScatteringColor)).arg(GetBlue(m_ScatteringColor));
 //          scatteringTexture = QString("%1 %2 %3").arg(GetRed(m_ScatteringColor)).arg(GetGreen(m_ScatteringColor)).arg(GetBlue(m_ScatteringColor));
-//          scatteringTexture = QString("%1 %2 %3").arg(1 - GetRed(m_ScatteringColor)).arg(1 - GetGreen(m_ScatteringColor)).arg(1 - GetBlue(m_ScatteringColor));
+            scatteringTexture = QString("%1 %2 %3").arg(1 - GetRed(m_ScatteringColor)).arg(1 - GetGreen(m_ScatteringColor)).arg(1 - GetBlue(m_ScatteringColor));
 //          scatteringTexture = QString("%1 %2 %3").arg(scattering_color.redF()).arg(scattering_color.greenF()).arg(scattering_color.blueF());
 //          scatteringTexture = "0 0 0";
 
@@ -705,8 +704,8 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
             //m_ScatteringDistance = adjustment;
 
             ////// EXPERIMENTAL-3 /////////////
-            m_TransmissionDistance /= 1000;
-            m_ScatteringDistance /= 10;
+            m_TransmissionDistance /= 100;
+            m_ScatteringDistance /= 1;
 
             // scale conversion
             //QColor scaled_absorption_color = QColor(0,0,0);
@@ -742,11 +741,11 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
             {
                 m_TranslucencyTex.data += QString("scene.textures.%1.type = \"colordepth\"\n").arg(scaled_transmissionTexture);
                 m_TranslucencyTex.data += QString("scene.textures.%1.kt = \"%2\"\n").arg(scaled_transmissionTexture).arg(transmissionTexture);
-                m_TranslucencyTex.data += QString("scene.textures.%1.depth = \"%2\"\n").arg(scaled_transmissionTexture).arg(m_TransmissionDistance);
+                m_TranslucencyTex.data += QString("scene.textures.%1.depth = \"%2\"\n").arg(scaled_transmissionTexture).arg(m_TransmissionDistance / 10);
             }
             else
             {
-                scaled_transmissionTexture = QString("%1 %1 %1").arg(1 / m_TransmissionDistance);
+                scaled_transmissionTexture = QString("%1 %1 %1").arg(1 / m_TransmissionDistance );
             }
 
             if (YaLuxGlobal.bDoSSSScattering)
