@@ -199,6 +199,8 @@ add_library( ${DZ_PLUGIN_TGT_NAME} SHARED
 	luxcore/DazDefaultToLuxCoreMaterial.h
 	luxcore/IrayUberToLuxCoreMaterial.cpp
 	luxcore/IrayUberToLuxCoreMaterial.h
+	luxcore/PBRSkinToLuxCoreMaterial.cpp
+	luxcore/PBRSkinToLuxCoreMaterial.h
 	luxcore/OmUberSurfaceToLuxCoreMaterial.cpp
 	luxcore/OmUberSurfaceToLuxCoreMaterial.h
 	DazToRenderFile.h
