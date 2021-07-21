@@ -759,11 +759,13 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
             }
 
             // create volume block
-            m_TranslucencyTex.data += QString("scene.volumes.%1.type = \"homogeneous\"\n").arg(volumeLabel);
+            m_TranslucencyTex.data += QString("scene.volumes.%1.type = \"heterogeneous\"\n").arg(volumeLabel);
             m_TranslucencyTex.data += QString("scene.volumes.%1.absorption = \"%2\"\n").arg(volumeLabel).arg(scaled_transmissionTexture);
             m_TranslucencyTex.data += QString("scene.volumes.%1.scattering = \"%2\"\n").arg(volumeLabel).arg(scaled_scatteringTexture);
             m_TranslucencyTex.data += QString("scene.volumes.%1.assymetry = \"%2\"\n").arg(volumeLabel).arg(m_ScatteringDirection);
             m_TranslucencyTex.data += QString("scene.volumes.%1.multiscattering = %2\n").arg(volumeLabel).arg(1);
+            m_TranslucencyTex.data += QString("scene.volumes.%1.steps.size = %2\n").arg(volumeLabel).arg(0.1);
+            m_TranslucencyTex.data += QString("scene.volumes.%1.steps.maxcount = %2\n").arg(volumeLabel).arg(5);
         }
 
         m_VolumeName = volumeLabel;
