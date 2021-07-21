@@ -71,6 +71,8 @@
 #include "luxcore/DazToLuxCoreFile.h"
 #include "luxrender/DazToLuxRenderFile.h"
 
+#include <csignal>
+
 ///////////////////////////////////////////////////////////////////////
 // yaluxplug - YaLuxRender class
 ///////////////////////////////////////////////////////////////////////
@@ -1211,14 +1213,68 @@ void YaLuxRender::killRender()
     if (YaLuxGlobal.debugLevel >=2) // debugging data
         dzApp->log("yaluxplug: killRender was called.");
 
-    if (YaLuxGlobal.luxRenderProc != NULL)
+    QProcess* process = YaLuxGlobal.luxRenderProc;
+
+    if (process != NULL)
     {
-        if (YaLuxGlobal.luxRenderProc->state() == QProcess::Running)
+        if (process->state() == QProcess::Running)
         {
-            // Kill Render process
+            // 1. Prepare for render shutdown
             YaLuxGlobal.RenderProgress->cancel();
             YaLuxGlobal.bIsCancelled = true;
-            YaLuxGlobal.luxRenderProc->kill();
+            // 2. Try to gracefully shutdown with SIGINT or CTRL+C
+#ifdef Q_OS_WIN
+            // 2a. Instead of sending SIGINT, send CTRL+C to console and custom luxcoreconsole will handle as SIGINT
+            INPUT input[4] = { 0, 0, 0, 0 };
+            // keys down
+            input[0].type = INPUT_KEYBOARD;
+            input[0].ki.wVk = VK_CONTROL;
+            input[0].ki.dwFlags = 0; // key down
+            input[1].type = INPUT_KEYBOARD;
+            input[1].ki.wVk = 'C';
+            input[1].ki.dwFlags = 0; // key down
+            // keys up
+            input[2].type = INPUT_KEYBOARD;
+            input[2].ki.wVk = 'C';
+            input[2].ki.dwFlags = KEYEVENTF_KEYUP; 
+            input[3].type = INPUT_KEYBOARD;
+            input[3].ki.wVk = VK_CONTROL;
+            input[3].ki.dwFlags = KEYEVENTF_KEYUP;
+            // send input
+            SendInput(4, &input[0], sizeof(INPUT));
+#else
+            // 2b. On other platforms, send actual SIGINT
+            kill(process->pid(), SIGINT);
+#endif
+            // 2c. update log window after sending sigint/ctrl+c
+            emit updateLogWindow("\nShutting down render process...\n", QColor(255,0,0), true);
+            // 3. After sending SIGINT or CTRL+C, wait for "shutting down..." message/event (processed by process log thread)
+            int timer = 0;
+            int sleep_amount = 100;
+            int timeout_period = 10000;
+            do
+            {
+#ifdef Q_OS_WIN
+                Sleep(uint(sleep_amount));
+#else
+                struct timespec ts = { sleep_amount / 1000, (sleep_amount % 1000) * 1000 * 1000 };
+                nanosleep(&ts, NULL);
+#endif
+                // check if process still running
+                if (process->state() != QProcess::Running)
+                    break;
+                // process events
+                QCoreApplication::processEvents(QEventLoop::AllEvents);
+                // increment timer
+                timer += sleep_amount;
+            } while (timer < timeout_period);
+            // 4. If wait times out, then forcefully kill process
+            if (process->state() == QProcess::Running)
+            {
+                emit updateLogWindow("\nFailed shutdown, killing render process...\n", QColor(255, 0, 0), true);
+                process->kill();
+
+            }
         }
     }
 
