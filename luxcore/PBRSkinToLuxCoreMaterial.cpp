@@ -1124,8 +1124,8 @@ bool PBRSkinToLuxCoreMaterial::CreateMaterials()
                 ret_str += QString("scene.materials.%1.volume.interior = \"%2\"\n").arg(glossy2Label).arg(m_VolumeName);
             if (YaLuxGlobal.bDoTranslucency && m_TranslucencyExists)
             {
-//                ret_str += QString("scene.materials.%1.kt = \"%2\"\n").arg(glossy2Label).arg(m_DiffuseTex.name);
-                ret_str += QString("scene.materials.%1.kt = \"%2\"\n").arg(glossy2Label).arg(m_TranslucencyTex.name);
+                ret_str += QString("scene.materials.%1.kt = \"%2\"\n").arg(glossy2Label).arg(m_DiffuseTex.name);
+//                ret_str += QString("scene.materials.%1.kt = \"%2\"\n").arg(glossy2Label).arg(m_TranslucencyTex.name);
 //                ret_str += QString("scene.materials.%1.kt = \"%2\"\n").arg(glossy2Label).arg("0 0 0");
 //                ret_str += QString("scene.materials.%1.kt_bf = \"%2\"\n").arg(glossy2Label).arg("0 0 0");
             }
