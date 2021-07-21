@@ -978,7 +978,7 @@ bool LuxMakeCFGFile(QString filenameCFG, DzRenderer* r, DzCamera* camera, const 
     mesg = "\n";
     mesg += "film.safesave = 1\n";
     mesg += "film.outputs.safesave = 1\n";
-    mesg += "periodicsave.film.outputs.period = 4\n";
+    mesg += "periodicsave.film.outputs.period = 5\n";
     mesg += "film.imagepipelines.0.0.type = \"NOP\"\n";
     if (YaLuxGlobal.LuxToneMapper == "linear")
     {
