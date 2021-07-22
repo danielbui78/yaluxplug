@@ -101,96 +101,8 @@ YaLuxRender::YaLuxRender()
 
     YaLuxGlobal.optFrame = NULL;
 
-    ///////////
-    // Create Log window
-    ////////////
-    if (YaLuxGlobal.logWindow == NULL)
-    {
-        YaLuxGlobal.logWindow = new QFrame();
-        YaLuxGlobal.logWindow->setParent((QWidget*)dzApp->getInterface());
-        YaLuxGlobal.logWindow->setWindowTitle("LogWindow");
-        YaLuxGlobal.logWindow->setMinimumSize(800, 100);
-        QVBoxLayout* layout = new QVBoxLayout(YaLuxGlobal.logWindow);
-        YaLuxGlobal.logText = new QTextEdit(YaLuxGlobal.logWindow);
-        layout->addWidget(YaLuxGlobal.logText);
-        QHBoxLayout* buttonBar = new QHBoxLayout();
-        //QPushButton *showLXS = new QPushButton("&Show Scenefile (.LXS)", YaLuxGlobal.logWindow);
-        //buttonBar->addWidget(showLXS);
-        QPushButton* showSCN = new QPushButton("&Show Scenefile (.SCN)", YaLuxGlobal.logWindow);
-        buttonBar->addWidget(showSCN);
-        QPushButton* previewCurrentFrame = new QPushButton("Pre&view current frame", YaLuxGlobal.logWindow);
-        buttonBar->addWidget(previewCurrentFrame);
-        QPushButton* stopRenderButton = new QPushButton("&Stop rendering", YaLuxGlobal.logWindow);
-        buttonBar->addWidget(stopRenderButton);
-        QPushButton* resumeRenderButton = new QPushButton("&Resume rendering", YaLuxGlobal.logWindow);
-        buttonBar->addWidget(resumeRenderButton);
-        QPushButton* nextFrameButton = new QPushButton("&Next frame", YaLuxGlobal.logWindow);
-        buttonBar->addWidget(nextFrameButton);
-
-        layout->addLayout(buttonBar);
-
-        connect(resumeRenderButton, SIGNAL(clicked()),
-            this, SLOT(handleResumeRender()));
-        connect(stopRenderButton, SIGNAL(clicked()),
-            this, SLOT(handleStopRender()));
-        connect(nextFrameButton, SIGNAL(clicked()),
-            this, SLOT(handleNextFrame()));
-        connect(previewCurrentFrame, SIGNAL(clicked()),
-            this, SLOT(handlePreviewCurrentFrame()));
-        connect(showSCN, SIGNAL(clicked()),
-            this, SLOT(handleShowSCN()));
-
-        connect(
-            this, SIGNAL(updateLogWindow(QString, QColor, bool)),
-            this, SLOT(handleLogWindow(QString, QColor, bool))
-            );
-
-        // create thread to process corerenderlog....etc
-        Worker_UpdateInfoWindow* worker = new Worker_UpdateInfoWindow();
-        worker->myThread = new QThread;
-        worker->moveToThread(worker->myThread);
-        connect(worker->myThread, SIGNAL(started()),
-            worker, SLOT(doUpdate()));
-        worker->myThread->start();
-
-        // same this->signal, modify this/that
-        connect(
-            worker, SIGNAL(updateLogWindow(QString, QColor, bool)),
-            this, SLOT(handleLogWindow(QString, QColor, bool))
-        );
-        //connect(
-        //    this, SIGNAL(updateLogWindow(QString, QColor, bool)),
-        //    worker, SLOT(handleLogWindow(QString, QColor, bool))
-        //);
-        //connect(
-        //    worker, SIGNAL(updateLogWindow(QString, QColor, bool)),
-        //    worker, SLOT(worker->handleLogWindow(QString, QColor, bool))
-        //);
-
-        //// modify worker->signal, this/that
-        //connect(
-        //    this, SIGNAL(worker->updateLogWindow(QString, QColor, bool)),
-        //    this, SLOT(handleLogWindow(QString, QColor, bool))
-        //);
-        //connect(
-        //    worker, SIGNAL(worker->updateLogWindow(QString, QColor, bool)),
-        //    this, SLOT(handleLogWindow(QString, QColor, bool))
-        //);
-        //connect(
-        //    this, SIGNAL(worker->updateLogWindow(QString, QColor, bool)),
-        //    worker, SLOT(handleLogWindow(QString, QColor, bool))
-        //);
-        //connect(
-        //    worker, SIGNAL(worker->updateLogWindow(QString, QColor, bool)),
-        //    worker, SLOT(handleLogWindow(QString, QColor, bool))
-        //);
-
-        connect(
-            worker, SIGNAL(updateData()),
-            this, SLOT(updateData())
-        );
-
-    }
+    // TODO: more GUI mainwindow checks needed
+    createLogWindow();
     emit updateLogWindow(QString("YaluxRender initialized..."));
 
     return;
@@ -618,6 +530,7 @@ bool YaLuxRender::render(DzRenderHandler *old_handler, DzCamera *camera, const D
             YaLuxGlobal.debugLevel >= 3 )
         {
             if (YaLuxGlobal.bShowLuxRenderWindow == false) handler->beginFrame(YaLuxGlobal.frame_counter);
+            if (YaLuxGlobal.logWindow == NULL) createLogWindow();
             YaLuxGlobal.logWindow->show();
             YaLuxGlobal.logWindow->activateWindow();
         }
@@ -906,6 +819,13 @@ void YaLuxRender::processRenderLog(QProcess *process, QFile &logFile, bool bUpda
 ///////////////////////////////////////////
 void YaLuxRender::handleLogWindow( QString data, QColor textcolor, bool bIsBold )
 {
+    if (YaLuxGlobal.logWindow == NULL) createLogWindow();
+
+    if (YaLuxGlobal.logWindow == NULL || YaLuxGlobal.logText == NULL)
+    {
+        return;
+    }
+
     // set cursor to end of log
     YaLuxGlobal.logText->moveCursor(QTextCursor::End);
 
@@ -1617,6 +1537,106 @@ DtVoid YaLuxRender::DiResourceV(DtToken handle, DtToken type,
     }
 
 };
+
+void YaLuxRender::createLogWindow()
+{
+    QWidget *mainWindow = dzApp->getInterface();
+//    if (mainWindow == NULL) return;
+
+    ///////////
+    // Create Log window
+    ////////////
+    if (YaLuxGlobal.logWindow == NULL)
+    {
+        // make logwindow independent of main Daz window, otherwise render preview gets hidden
+        YaLuxGlobal.logWindow = new QFrame(0, Qt::Window);
+//        YaLuxGlobal.logWindow = new QFrame(mainWindow, Qt::Window);
+//      YaLuxGlobal.logWindow->setParent((QWidget*)dzApp->getInterface());
+        YaLuxGlobal.logWindow->setWindowTitle("LogWindow");
+        YaLuxGlobal.logWindow->setMinimumSize(800, 100);
+        QVBoxLayout* layout = new QVBoxLayout(YaLuxGlobal.logWindow);
+        YaLuxGlobal.logText = new QTextEdit(YaLuxGlobal.logWindow);
+        layout->addWidget(YaLuxGlobal.logText);
+        QHBoxLayout* buttonBar = new QHBoxLayout();
+        //QPushButton *showLXS = new QPushButton("&Show Scenefile (.LXS)", YaLuxGlobal.logWindow);
+        //buttonBar->addWidget(showLXS);
+        QPushButton* showSCN = new QPushButton("&Show Scenefile (.SCN)", YaLuxGlobal.logWindow);
+        buttonBar->addWidget(showSCN);
+        QPushButton* previewCurrentFrame = new QPushButton("Pre&view current frame", YaLuxGlobal.logWindow);
+        buttonBar->addWidget(previewCurrentFrame);
+        QPushButton* stopRenderButton = new QPushButton("&Stop rendering", YaLuxGlobal.logWindow);
+        buttonBar->addWidget(stopRenderButton);
+        QPushButton* resumeRenderButton = new QPushButton("&Resume rendering", YaLuxGlobal.logWindow);
+        buttonBar->addWidget(resumeRenderButton);
+        QPushButton* nextFrameButton = new QPushButton("&Next frame", YaLuxGlobal.logWindow);
+        buttonBar->addWidget(nextFrameButton);
+
+        layout->addLayout(buttonBar);
+
+        connect(resumeRenderButton, SIGNAL(clicked()),
+            this, SLOT(handleResumeRender()));
+        connect(stopRenderButton, SIGNAL(clicked()),
+            this, SLOT(handleStopRender()));
+        connect(nextFrameButton, SIGNAL(clicked()),
+            this, SLOT(handleNextFrame()));
+        connect(previewCurrentFrame, SIGNAL(clicked()),
+            this, SLOT(handlePreviewCurrentFrame()));
+        connect(showSCN, SIGNAL(clicked()),
+            this, SLOT(handleShowSCN()));
+
+        connect(
+            this, SIGNAL(updateLogWindow(QString, QColor, bool)),
+            this, SLOT(handleLogWindow(QString, QColor, bool))
+        );
+
+        // create thread to process corerenderlog....etc
+        Worker_UpdateInfoWindow* worker = new Worker_UpdateInfoWindow();
+        worker->myThread = new QThread;
+        worker->moveToThread(worker->myThread);
+        connect(worker->myThread, SIGNAL(started()),
+            worker, SLOT(doUpdate()));
+        worker->myThread->start();
+
+        // same this->signal, modify this/that
+        connect(
+            worker, SIGNAL(updateLogWindow(QString, QColor, bool)),
+            this, SLOT(handleLogWindow(QString, QColor, bool))
+        );
+        //connect(
+        //    this, SIGNAL(updateLogWindow(QString, QColor, bool)),
+        //    worker, SLOT(handleLogWindow(QString, QColor, bool))
+        //);
+        //connect(
+        //    worker, SIGNAL(updateLogWindow(QString, QColor, bool)),
+        //    worker, SLOT(worker->handleLogWindow(QString, QColor, bool))
+        //);
+
+        //// modify worker->signal, this/that
+        //connect(
+        //    this, SIGNAL(worker->updateLogWindow(QString, QColor, bool)),
+        //    this, SLOT(handleLogWindow(QString, QColor, bool))
+        //);
+        //connect(
+        //    worker, SIGNAL(worker->updateLogWindow(QString, QColor, bool)),
+        //    this, SLOT(handleLogWindow(QString, QColor, bool))
+        //);
+        //connect(
+        //    this, SIGNAL(worker->updateLogWindow(QString, QColor, bool)),
+        //    worker, SLOT(handleLogWindow(QString, QColor, bool))
+        //);
+        //connect(
+        //    worker, SIGNAL(worker->updateLogWindow(QString, QColor, bool)),
+        //    worker, SLOT(handleLogWindow(QString, QColor, bool))
+        //);
+
+        connect(
+            worker, SIGNAL(updateData()),
+            this, SLOT(updateData())
+        );
+
+    }
+
+}
 
 #include "moc_renderer.cpp"
 
