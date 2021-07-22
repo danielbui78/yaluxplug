@@ -201,7 +201,7 @@ bool DazDefaultToLuxCoreMaterial::ImportValues()
 
         if (m_Material_type == plastic)
         {
-            m_Roughness += 0.5;
+            m_Roughness += 0.33;
             m_Roughness = (m_Roughness > 1.0) ? 1.0 : m_Roughness;
         }
 
@@ -282,8 +282,15 @@ bool DazDefaultToLuxCoreMaterial::CreateMaterials()
     QString matLabel = m_LuxMaterialName;
 
     ret_str += QString("scene.materials.%1.type = \"glossy2\"\n").arg(matLabel);
-    if (m_DiffuseExists) ret_str += QString("scene.materials.%1.kd = \"%2\"\n").arg(matLabel).arg(m_DiffuseTex.name);
-    if (m_SpecularExists) ret_str += QString("scene.materials.%1.ks = \"%2\"\n").arg(matLabel).arg(m_SpecularTex.name);
+    if (m_DiffuseExists) 
+        ret_str += QString("scene.materials.%1.kd = \"%2\"\n").arg(matLabel).arg(m_DiffuseTex.name);
+    else
+        ret_str += QString("scene.materials.%1.kd = \"%2\"\n").arg(matLabel).arg("1.0 1.0 1.0");
+    if (m_SpecularExists) 
+        ret_str += QString("scene.materials.%1.ks = \"%2\"\n").arg(matLabel).arg(m_SpecularTex.name);
+    else
+        ret_str += QString("scene.materials.%1.ks = \"%2\"\n").arg(matLabel).arg("1.0 1.0 1.0");
+
 
     if (YaLuxGlobal.bDoBumpMaps)
     {
