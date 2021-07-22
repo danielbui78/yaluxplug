@@ -1067,6 +1067,12 @@ bool IrayUberToLuxCoreMaterial::CreateMaterials()
     QString ret_str = "";
     QString matLabel = m_LuxMaterialName;
 
+    bool doGlass = false;
+    if (m_RefractionWeight >= 0.5)
+    {
+        doGlass = true;
+    }
+
     ///////////////////////////////////////////
      //
      // Material definition
@@ -1119,7 +1125,7 @@ bool IrayUberToLuxCoreMaterial::CreateMaterials()
         {
             if (YaLuxGlobal.bDoDebugSSS && m_VolumeExists)
                 ret_str += QString("scene.materials.%1.type = \"null\"\n").arg(glossy2Label);
-            else if (m_RefractionWeight >= 0.5)
+            else if (doGlass)
                 ret_str += QString("scene.materials.%1.type = \"glass\"\n").arg(glossy2Label);
             else if (m_TranslucencyExists && YaLuxGlobal.bDoTranslucency)
                 ret_str += QString("scene.materials.%1.type = \"glossytranslucent\"\n").arg(glossy2Label);
@@ -1140,19 +1146,40 @@ bool IrayUberToLuxCoreMaterial::CreateMaterials()
             ret_str += QString("scene.materials.%1.type = \"glossy2\"\n").arg(glossy2Label);
         }
 
-        ret_str += QString("scene.materials.%1.kd = \"%2\"\n").arg(glossy2Label).arg(m_DiffuseTex.name);
-
-        if ((m_SpecularExists || m_GlossyLayeredWeight > 0 || m_MetallicWeight > 0) && YaLuxGlobal.bDoSpecular)
+        if (doGlass)
         {
-            ret_str += QString("scene.materials.%1.ks = \"%2\"\n").arg(glossy2Label).arg(m_SpecularTex.name);
-            if (YaLuxGlobal.bDoTranslucency && m_TranslucencyExists)
-                ret_str += QString("scene.materials.%1.ks_bf = \"%2\"\n").arg(glossy2Label).arg(m_SpecularTex.name);
+            ret_str += QString("scene.materials.%1.kr = \"%2\"\n").arg(glossy2Label).arg(m_DiffuseTex.name);
         }
         else
         {
-            ret_str += QString("scene.materials.%1.ks = 0 0 0\n").arg(glossy2Label);
-            if (YaLuxGlobal.bDoTranslucency && m_TranslucencyExists)
-                ret_str += QString("scene.materials.%1.ks_bf = 0 0 0\n").arg(glossy2Label);
+            ret_str += QString("scene.materials.%1.kd = \"%2\"\n").arg(glossy2Label).arg(m_DiffuseTex.name);
+        }
+
+        if ((m_SpecularExists || m_GlossyLayeredWeight > 0 || m_MetallicWeight > 0) && YaLuxGlobal.bDoSpecular)
+        {
+            if (doGlass)
+            {
+                ret_str += QString("scene.materials.%1.kt = \"%2\"\n").arg(glossy2Label).arg(m_SpecularTex.name);
+            }
+            else
+            {
+                ret_str += QString("scene.materials.%1.ks = \"%2\"\n").arg(glossy2Label).arg(m_SpecularTex.name);
+                if (YaLuxGlobal.bDoTranslucency && m_TranslucencyExists)
+                    ret_str += QString("scene.materials.%1.ks_bf = \"%2\"\n").arg(glossy2Label).arg(m_SpecularTex.name);
+            }
+        }
+        else
+        {
+            if (doGlass)
+            {
+                ret_str += QString("scene.materials.%1.kt = 1 1 1\n").arg(glossy2Label);
+            }
+            else
+            {
+                ret_str += QString("scene.materials.%1.ks = 0 0 0\n").arg(glossy2Label);
+                if (YaLuxGlobal.bDoTranslucency && m_TranslucencyExists)
+                    ret_str += QString("scene.materials.%1.ks_bf = 0 0 0\n").arg(glossy2Label);
+            }
         }
 
         if (m_BumpExists && YaLuxGlobal.bDoBumpMaps)
@@ -1190,7 +1217,13 @@ bool IrayUberToLuxCoreMaterial::CreateMaterials()
             ret_str += QString("scene.materials.%1.vroughness = %2\n").arg(glossy2Label).arg(m_Roughness);
         }
 
-        if (YaLuxGlobal.bDoDebugSSS && m_VolumeExists)
+        if (doGlass)
+            ret_str += QString("scene.materials.%1.interiorior = %2\n").arg(glossy2Label).arg(m_RefractionIndex);
+
+
+        if (doGlass)
+            ret_str += QString("scene.materials.%1.transparency = %2\n").arg(glossy2Label).arg(1 - (m_RefractionWeight * 0.5));
+        else if (YaLuxGlobal.bDoDebugSSS && m_VolumeExists)
             ret_str += QString("scene.materials.%1.transparency = 1\n").arg(glossy2Label);
         else if (m_OpacityExists)
             ret_str += QString("scene.materials.%1.transparency = \"%2\"\n").arg(glossy2Label).arg(m_OpacityTex.name);
