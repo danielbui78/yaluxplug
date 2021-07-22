@@ -103,7 +103,7 @@ YaLuxRender::YaLuxRender()
 
     // TODO: more GUI mainwindow checks needed
     createLogWindow();
-    emit updateLogWindow(QString("YaluxRender initialized..."));
+//    emit updateLogWindow(QString("YaluxRender initialized..."));
 
     return;
 }
@@ -138,6 +138,8 @@ void YaLuxRender::handleResumeRender()
 
     // 4. restart it!    
     YaLuxGlobal.inProgress = true;
+    YaLuxGlobal.bIsCancelled = false;
+    YaLuxGlobal.bAbortReceived = false;
     YaLuxGlobal.RenderProgress->resume();
 //    YaLuxGlobal.FrameProgress->resume();;
     YaLuxGlobal.handler->beginRender();
@@ -291,6 +293,7 @@ bool YaLuxRender::render(DzRenderHandler *old_handler, DzCamera *camera, const D
 
     YaLuxGlobal.inProgress = true;
     YaLuxGlobal.bIsCancelled = false;
+    YaLuxGlobal.bAbortReceived = false;
 
     YaLuxGlobal.optFrame->applyChanges();
 
@@ -366,7 +369,10 @@ bool YaLuxRender::render(DzRenderHandler *old_handler, DzCamera *camera, const D
     YaLuxGlobal.luxRenderProc->setWorkingDirectory(YaLuxGlobal.tempPath);
     QString logFileName = QString("%1/yaluxplug.log").arg(YaLuxGlobal.tempPath);
 //    process->setStandardErrorFile(logFile, QIODevice::Append);
-    YaLuxGlobal.luxRenderProc->setReadChannel(QProcess::StandardError);
+//    YaLuxGlobal.luxRenderProc->setReadChannel(QProcess::StandardError);
+    YaLuxGlobal.luxRenderProc->setProcessChannelMode(QProcess::MergedChannels);
+    YaLuxGlobal.luxRenderProc->setReadChannel(QProcess::StandardOutput);
+
 
     connect(YaLuxGlobal.luxRenderProc, SIGNAL( finished(int, QProcess::ExitStatus) ),
             this, SLOT( handleRenderProcessComplete(int, QProcess::ExitStatus) ) );
@@ -682,13 +688,16 @@ void YaLuxRender::resetRenderServers()
     //                    YaLuxGlobal.RenderProgress->setInfo( QString(qa) );
 }
 
+/////////////////
+// UNUSED: see Worker_UpdateInfoWindow::processCoreRenderLog() in utility_classes.cpp
+/////////////////
 void YaLuxRender::processCoreRenderLog(QProcess* process, QFile& logFile, bool bUpdateRender)
 {
 
     // Read the remainder of the stdoutput to the logfile
     if (YaLuxGlobal.bShowLuxRenderWindow)
     {
-        process->setProcessChannelMode(QProcess::MergedChannels);
+//        process->setProcessChannelMode(QProcess::MergedChannels);
         process->setReadChannel(QProcess::StandardOutput);
     }
     while ( process->canReadLine() )
@@ -826,6 +835,12 @@ void YaLuxRender::handleLogWindow( QString data, QColor textcolor, bool bIsBold 
         return;
     }
 
+    if (YaLuxGlobal.inProgress)
+    {
+        YaLuxGlobal.logWindow->show();
+        YaLuxGlobal.logWindow->raise();
+    }
+
     // set cursor to end of log
     YaLuxGlobal.logText->moveCursor(QTextCursor::End);
 
@@ -857,7 +872,7 @@ void YaLuxRender::updateData()
 
     for (int attempts=0; attempts <= 2; attempts++)
     {
-        if (imgFile.open(QIODevice::ReadOnly) == true)
+        if (imgFile.exists() && imgFile.open(QIODevice::ReadOnly) == true)
         {
             qa = imgFile.readAll();
             imgFile.close();
@@ -868,7 +883,7 @@ void YaLuxRender::updateData()
             }
         }
 
-        if (attempts == 2)
+        if (imgFile.exists() && attempts == 2)
         {
             QString mesg = "yaluxplug: timeout waiting for preview image from luxrender.";
             dzApp->log(mesg);
@@ -1167,13 +1182,19 @@ void YaLuxRender::killRender()
             kill(process->pid(), SIGINT);
 #endif
             // 2c. update log window after sending sigint/ctrl+c
-            emit updateLogWindow("\nShutting down render process...\n", QColor(255,0,0), true);
-            // 3. After sending SIGINT or CTRL+C, wait for "shutting down..." message/event (processed by process log thread)
+            emit updateLogWindow("\nAttempting to gracefully abort render...\n", QColor(255, 255, 0), true);
+            // 3. After sending SIGINT or CTRL+C, wait for "Abort Received" message/event (processed by process log thread)
             int timer = 0;
             int sleep_amount = 100;
-            int timeout_period = 10000;
+            int timeout_period = 10000; // 10 seconds
             do
             {
+                if (YaLuxGlobal.bAbortReceived)
+                {
+                    YaLuxGlobal.bAbortReceived = false;
+                    // increase timeout period if abort received
+                    timeout_period *= 6 * 5; // 5 minutes
+                }
 #ifdef Q_OS_WIN
                 Sleep(uint(sleep_amount));
 #else
@@ -1191,7 +1212,7 @@ void YaLuxRender::killRender()
             // 4. If wait times out, then forcefully kill process
             if (process->state() == QProcess::Running)
             {
-                emit updateLogWindow("\nFailed shutdown, killing render process...\n", QColor(255, 0, 0), true);
+                emit updateLogWindow("\nFailed abort, forcing shutdown of render process...\n", QColor(255, 0, 0), true);
                 process->kill();
 
             }

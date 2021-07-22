@@ -135,18 +135,17 @@ void Worker_UpdateInfoWindow::processCoreRenderLog()
 
     QProcess* process = YaLuxGlobal.luxRenderProc;
 
-    // Read the remainder of the stdoutput to the logfile
-    if (YaLuxGlobal.bShowLuxRenderWindow)
-    {
-        process->setProcessChannelMode(QProcess::MergedChannels);
-        process->setReadChannel(QProcess::StandardOutput);
-    }
     while (process->canReadLine())
     {
 
         // NOTE: we don't need to process the "writing tonemapped PNG" because a
         //   final loading of the file was done when the process called the finish() signal.
         QByteArray qa = process->readLine();
+
+        if (qa.contains("Abort Received"))
+        {
+            YaLuxGlobal.bAbortReceived = true;
+        }
 
         if (qa.contains("Outputting film:"))
         {

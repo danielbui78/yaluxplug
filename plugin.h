@@ -79,7 +79,6 @@ struct G
     QString tempFilenameBase;
     QString workingRenderFilename;
 
-
     QProcess *luxRenderProc = NULL;
     bool bFrameisFinished;
     bool bIsCancelled;
@@ -100,6 +99,8 @@ struct G
 
     QList<VolumeData*> VolumeList;
     QStringList matLookupTable;
+
+    bool bAbortReceived = false;
 };
 
 extern struct G YaLuxGlobal;
