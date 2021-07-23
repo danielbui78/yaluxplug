@@ -142,7 +142,7 @@ void Worker_UpdateInfoWindow::processCoreRenderLog()
         //   final loading of the file was done when the process called the finish() signal.
         QByteArray qa = process->readLine();
 
-        if (qa.contains("Abort Received"))
+        if (qa.contains("Abort received"))
         {
             YaLuxGlobal.bAbortReceived = true;
         }

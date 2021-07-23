@@ -1159,24 +1159,25 @@ void YaLuxRender::killRender()
             YaLuxGlobal.bIsCancelled = true;
             // 2. Try to gracefully shutdown with SIGINT or CTRL+C
 #ifdef Q_OS_WIN
-            // 2a. Instead of sending SIGINT, send CTRL+C to console and custom luxcoreconsole will handle as SIGINT
-            INPUT input[4] = { 0, 0, 0, 0 };
-            // keys down
-            input[0].type = INPUT_KEYBOARD;
-            input[0].ki.wVk = VK_CONTROL;
-            input[0].ki.dwFlags = 0; // key down
-            input[1].type = INPUT_KEYBOARD;
-            input[1].ki.wVk = 'C';
-            input[1].ki.dwFlags = 0; // key down
-            // keys up
-            input[2].type = INPUT_KEYBOARD;
-            input[2].ki.wVk = 'C';
-            input[2].ki.dwFlags = KEYEVENTF_KEYUP; 
-            input[3].type = INPUT_KEYBOARD;
-            input[3].ki.wVk = VK_CONTROL;
-            input[3].ki.dwFlags = KEYEVENTF_KEYUP;
-            // send input
-            SendInput(4, &input[0], sizeof(INPUT));
+            //// 2a. Instead of sending SIGINT, send CTRL+C to console and custom luxcoreconsole will handle as SIGINT
+            //INPUT input[4] = { 0, 0, 0, 0 };
+            //// keys down
+            //input[0].type = INPUT_KEYBOARD;
+            //input[0].ki.wVk = VK_CONTROL;
+            //input[0].ki.dwFlags = 0; // key down
+            //input[1].type = INPUT_KEYBOARD;
+            //input[1].ki.wVk = 'C';
+            //input[1].ki.dwFlags = 0; // key down
+            //// keys up
+            //input[2].type = INPUT_KEYBOARD;
+            //input[2].ki.wVk = 'C';
+            //input[2].ki.dwFlags = KEYEVENTF_KEYUP; 
+            //input[3].type = INPUT_KEYBOARD;
+            //input[3].ki.wVk = VK_CONTROL;
+            //input[3].ki.dwFlags = KEYEVENTF_KEYUP;
+            //// send input
+            //SendInput(4, &input[0], sizeof(INPUT));
+            PostThreadMessage(YaLuxGlobal.luxRenderProc->pid()->dwThreadId, WM_USER, WM_USER, WM_USER);
 #else
             // 2b. On other platforms, send actual SIGINT
             kill(process->pid(), SIGINT);
@@ -1186,14 +1187,15 @@ void YaLuxRender::killRender()
             // 3. After sending SIGINT or CTRL+C, wait for "Abort Received" message/event (processed by process log thread)
             int timer = 0;
             int sleep_amount = 100;
-            int timeout_period = 10000; // 10 seconds
+            int base_time = 3000;
+            int timeout_period = base_time; // 3 seconds
             do
             {
                 if (YaLuxGlobal.bAbortReceived)
                 {
                     YaLuxGlobal.bAbortReceived = false;
                     // increase timeout period if abort received
-                    timeout_period *= 6 * 5; // 5 minutes
+                    timeout_period = base_time * 20 * 5; // 5 minutes
                 }
 #ifdef Q_OS_WIN
                 Sleep(uint(sleep_amount));
@@ -1212,7 +1214,7 @@ void YaLuxRender::killRender()
             // 4. If wait times out, then forcefully kill process
             if (process->state() == QProcess::Running)
             {
-                emit updateLogWindow("\nFailed abort, forcing shutdown of render process...\n", QColor(255, 0, 0), true);
+                emit updateLogWindow("\nAbort attempt timed-out, forcing shutdown of renderer...\n", QColor(255, 0, 0), true);
                 process->kill();
 
             }
