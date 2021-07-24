@@ -196,6 +196,10 @@ YaLuxOptionsFrame::YaLuxOptionsFrame() : DzOptionsFrame("yaluxplug Options Frame
     doNormalMaps->setLabel("Render Normal Maps");
     listView->addProperty(doNormalMaps);
 
+    doNormalAsBump = new DzBoolProperty("yalux_do_normalasbump", true, false, false);
+    doNormalAsBump->setLabel("Render Normal As Bump");
+    listView->addProperty(doNormalAsBump);
+
     doSpecular = new DzBoolProperty("yalux_do_specular", true, false, true);
     doSpecular->setLabel("Render Specular");
     listView->addProperty(doSpecular);
@@ -291,6 +295,7 @@ void	YaLuxOptionsFrame::loadSettings()
         maxTextureSize->setValue( settings->getIntValue( maxTextureSize->getName()) );
         doBumpMaps->setBoolValue( settings->getBoolValue( doBumpMaps->getName()) );
         doNormalMaps->setBoolValue(settings->getBoolValue(doNormalMaps->getName()));
+        doNormalAsBump->setBoolValue(settings->getBoolValue(doNormalAsBump->getName()));
         doMetallic->setBoolValue(settings->getBoolValue(doMetallic->getName()));
         doSSS_Volume->setBoolValue(settings->getBoolValue(doSSS_Volume->getName()));
         doDebugSSS->setBoolValue(settings->getBoolValue(doDebugSSS->getName()));
@@ -324,6 +329,7 @@ void	YaLuxOptionsFrame::saveSettings()
     settings->setBoolValue(networkRenderOn->getName(), networkRenderOn->getBoolValue());
     settings->setBoolValue(doBumpMaps->getName(), doBumpMaps->getBoolValue());
     settings->setBoolValue(doNormalMaps->getName(), doNormalMaps->getBoolValue());
+    settings->setBoolValue(doNormalAsBump->getName(), doNormalAsBump->getBoolValue());
     settings->setBoolValue(doMetallic->getName(), doMetallic->getBoolValue());
     settings->setBoolValue(doSSS_Volume->getName(), doSSS_Volume->getBoolValue());
     settings->setBoolValue(doDebugSSS->getName(), doDebugSSS->getBoolValue());
@@ -368,6 +374,7 @@ void	YaLuxOptionsFrame::applyChanges()
         YaLuxGlobal.maxTextureSize = maxTextureSize->getStringValue().toInt();
     YaLuxGlobal.bDoBumpMaps = doBumpMaps->getBoolValue();
     YaLuxGlobal.bDoNormalMaps = doNormalMaps->getBoolValue();
+    YaLuxGlobal.bDoNormalAsBump = doNormalAsBump->getBoolValue();
     YaLuxGlobal.bDoMetallic = doMetallic->getBoolValue();
     YaLuxGlobal.bDoSpecular = doSpecular->getBoolValue();
     YaLuxGlobal.bDoTranslucency = doTranslucency->getBoolValue();

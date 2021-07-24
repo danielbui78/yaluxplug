@@ -105,6 +105,7 @@ QString LuxGetStringProperty(DzElement* el, QString propertyName, QString& mesg)
 QString LuxGetImageMapProperty(DzElement* el, QString propertyName, QString& mesg);
 QString propertyNumericImagetoString(DzNumericProperty* prop);
 int whichClass(QObject* obj, const QStringList& classNames);
+QString propertyValuetoString(DzProperty* prop);
 
 //QString LuxProcessObject(DzObject *daz_obj, QString &mesg);
 //QString LuxProcessGenMaterial(DzMaterial *material, QString &mesg, QString matLabel);

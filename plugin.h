@@ -89,6 +89,7 @@ struct G
 
     bool bDoBumpMaps;
     bool bDoNormalMaps;
+    bool bDoNormalAsBump;
     bool bDoMetallic;
     bool bDoSpecular;
     bool bDoTranslucency;

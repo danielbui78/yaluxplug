@@ -178,6 +178,13 @@ bool DazDefaultToLuxCoreMaterial::ImportValues()
         if (m_BumpMap != "")
             m_BumpExists = true;
     }
+    currentProperty = m_Material->findProperty("Normal Map");
+    if (currentProperty != NULL)
+    {
+        m_NormalMap = propertyValuetoString(currentProperty);
+        if (m_NormalMap != "")
+            m_NormalExists = true;
+    }
 
     //currentProperty = m_Material->findProperty("eta"); // index of refreaction
     //if (currentProperty != NULL)
@@ -273,6 +280,38 @@ bool DazDefaultToLuxCoreMaterial::CreateTextures()
         m_BumpTex.data = GenerateCoreTextureBlock1_Grey(m_BumpTex.name, m_BumpMap, m_BumpStrength,
             m_uscale, m_vscale, m_uoffset, m_voffset);
 
+    // Normalmap Block
+    QString normalMapName = m_LuxMaterialName + "_n";
+    QString imageMapName = normalMapName + "_t";
+    if (m_NormalMap != "" && YaLuxGlobal.bDoNormalMaps)
+    {
+        if (YaLuxGlobal.bDoNormalAsBump)
+        {
+            float scale = 0.02;
+            m_NormalTex.data += GenerateCoreTextureBlock1(imageMapName, m_NormalMap, 1.0,
+                m_uscale, m_vscale, m_uoffset, m_voffset,
+                1.0, "", "colored_mean");
+            //m_NormalTex.data += QString("scene.textures.%1.type = \"mix\"\n").arg(normalMapName);
+            //m_NormalTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(normalMapName).arg(0.5);
+            //m_NormalTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(normalMapName).arg(imageMapName);
+            //m_NormalTex.data += QString("scene.textures.%1.amount = \"%2\"\n").arg(normalMapName).arg(scale);
+            m_NormalTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(normalMapName);
+            m_NormalTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(normalMapName).arg(imageMapName);
+            m_NormalTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(normalMapName).arg(-0.2);
+            m_NormalTex.name = normalMapName;
+        }
+        else
+        {
+            m_NormalTex.data += GenerateCoreTextureBlock3(imageMapName, m_NormalMap,
+                1.0, 1.0, 1.0,
+                m_uscale, m_vscale, m_uoffset, m_voffset,
+                1.0, "", "rgb");
+            m_NormalTex.name = imageMapName;
+        }
+
+    }
+
+
     return true;
 }
 
@@ -295,6 +334,13 @@ bool DazDefaultToLuxCoreMaterial::CreateMaterials()
     if (YaLuxGlobal.bDoBumpMaps)
     {
         if (m_BumpExists) ret_str += QString("scene.materials.%1.bumptex = \"%2\"\n").arg(matLabel).arg(m_BumpTex.name);
+    }
+    if (YaLuxGlobal.bDoNormalMaps && m_NormalExists)
+    {
+        if (YaLuxGlobal.bDoNormalAsBump)
+            ret_str += QString("scene.materials.%1.bumptex = \"%2\"\n").arg(m_LuxMaterialName).arg(m_NormalTex.name);
+        else
+            ret_str += QString("scene.materials.%1.normaltex = \"%2\"\n").arg(m_LuxMaterialName).arg(m_NormalTex.name);
     }
 
     ret_str += QString("scene.materials.%1.uroughness = %2\n").arg(matLabel).arg(m_Roughness);
@@ -324,6 +370,7 @@ QString DazDefaultToLuxCoreMaterial::toString()
     ret_str += m_DiffuseTex.data;
     ret_str += m_SpecularTex.data;
     ret_str += m_BumpTex.data;
+    ret_str += m_NormalTex.data;
     ret_str += m_OpacityTex.data;
 
     // add material block

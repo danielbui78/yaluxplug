@@ -48,11 +48,13 @@ protected:
 	TextureBlock m_DiffuseTex;
 	TextureBlock m_SpecularTex;
 	TextureBlock m_BumpTex;
+	TextureBlock m_NormalTex;
 	TextureBlock m_OpacityTex;
 
 	bool m_DiffuseExists = false;
 	bool m_SpecularExists = false;
 	bool m_BumpExists = false;
+	bool m_NormalExists = false;
 	bool m_RoughnessExists = false;
 	bool m_OpacityExists = false;
 
@@ -61,6 +63,7 @@ protected:
 	QString		m_SpecularMap = "";
 	QColor		m_SpecularColor = QColor(0,0,0);
 	QString		m_BumpMap = "";
+	QString		m_NormalMap = "";
 	double		m_BumpStrength = 0;
 	double		m_Roughness = 0.5;
 	QString		m_OpacityMap = "";

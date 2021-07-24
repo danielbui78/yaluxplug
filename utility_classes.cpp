@@ -357,6 +357,7 @@ QString LuxUnsortedMaps(DzMaterial *pMaterial, QString matLabel)
 
 QString propertyValuetoString(DzProperty *prop)
 {
+    const char *className = prop->metaObject()->className();
     DzTexture *propTex;
     QColor colorval;
     QString ret_str;
@@ -366,20 +367,20 @@ QString propertyValuetoString(DzProperty *prop)
         case 1: // DzStringProperty
             ret_str += QString("%1").arg(((DzStringProperty*)prop)->getValue() );                
             break;
-        case 2: // DzColorProperty
+        case 3: // DzColorProperty
             colorval = ((DzColorProperty*)prop)->getColorValue();
             ret_str += QString("R%1 G%2 B%3").arg(colorval.red() ).arg(colorval.green() ).arg(colorval.blue() );
             break;
-        case 3: // DzFloatProperty
+        case 4: // DzFloatProperty
             ret_str += QString("%1").arg( ((DzFloatProperty*)prop)->getValue() );
             break;
-        case 4: // DzIntProperty
+        case 5: // DzIntProperty
             ret_str += QString("%1").arg( ((DzIntProperty*)prop)->getValue() );
             break;
-        case 5: // DzNodeProperty
+        case 6: // DzNodeProperty
             ret_str += "(node)";
             break;
-        case 6: // DzImageProperty
+        case 7: // DzImageProperty
             propTex = ((DzImageProperty*)prop)->getValue();
             if (propTex != NULL)
                 ret_str += QString("%1").arg (propTex->getTempFilename() );
@@ -387,7 +388,7 @@ QString propertyValuetoString(DzProperty *prop)
                 ret_str += "";
             break;
         default:
-            ret_str += "(no class) unimplemented\n";
+            ret_str += "";
             break;
             // none of the above
     }

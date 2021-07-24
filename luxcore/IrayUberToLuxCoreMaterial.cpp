@@ -569,13 +569,40 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
     if (m_NormalMap != "" && YaLuxGlobal.bDoNormalMaps)
     {
         float scale = m_NormalStrength * 1.0; // Multiply by any necessary render engine correction here
-        m_NormalTex.data += GenerateCoreTextureBlock1(normalMapName, m_NormalMap, 1.0,
-            m_uscale, m_vscale, m_uoffset, m_voffset);
+        if (YaLuxGlobal.bDoNormalAsBump)
+        {
+            scale = m_NormalStrength * 0.02; // Multiply by any necessary render engine correction here
+            m_NormalTex.data += GenerateCoreTextureBlock1(imageMapName, m_NormalMap, 1.0,
+                m_uscale, m_vscale, m_uoffset, m_voffset,
+                1.0, "", "colored_mean");
+        }
+        else
+        {
+            m_NormalTex.data += GenerateCoreTextureBlock3(imageMapName, m_NormalMap,
+                1.0, 1.0, 1.0,
+                m_uscale, m_vscale, m_uoffset, m_voffset,
+                1.0, "", "rgb");
+        }
+        m_NormalTex.name = imageMapName;
         if (scale != 1)
         {
-            m_NormalTex.data += QString("scene.textures.%1.type = \"normalmap\"\n").arg(normalMapName);
-            m_NormalTex.data += QString("scene.textures.%1.texture = \"%2\"\n").arg(normalMapName).arg(imageMapName);
-            m_NormalTex.data += QString("scene.textures.%1.scale = \"%2\"\n").arg(normalMapName).arg(scale);
+            if (YaLuxGlobal.bDoNormalAsBump)
+            {
+                //m_NormalTex.data += QString("scene.textures.%1.type = \"mix\"\n").arg(normalMapName);
+                //m_NormalTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(normalMapName).arg(0.5);
+                //m_NormalTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(normalMapName).arg(imageMapName);
+                //m_NormalTex.data += QString("scene.textures.%1.amount = \"%2\"\n").arg(normalMapName).arg(scale);
+                m_NormalTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(normalMapName);
+                m_NormalTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(normalMapName).arg(imageMapName);
+                m_NormalTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(normalMapName).arg(0.001);
+            }
+            else
+            {
+                m_NormalTex.data += QString("scene.textures.%1.type = \"normalmap\"\n").arg(normalMapName);
+                m_NormalTex.data += QString("scene.textures.%1.texture = \"%2\"\n").arg(normalMapName).arg(imageMapName);
+                m_NormalTex.data += QString("scene.textures.%1.scale = \"%2\"\n").arg(normalMapName).arg(scale);
+            }
+            m_NormalTex.name = normalMapName;
         }
 
     }
@@ -1184,12 +1211,16 @@ bool IrayUberToLuxCoreMaterial::CreateMaterials()
 
         if (m_BumpExists && YaLuxGlobal.bDoBumpMaps)
         {
-            ret_str += QString("scene.materials.%1.bumptex = \"%2\"\n").arg(glossy2Label).arg(matLabel + "_b");
+            ret_str += QString("scene.materials.%1.bumptex = \"%2\"\n").arg(glossy2Label).arg(m_BumpTex.name);
             //ret_str += QString("scene.materials.%1.bumpsamplingdistance = \"%2\"\n").arg(glossy2Label).arg(1 / 1000000);
         }
-        if (m_NormalMap != "" && YaLuxGlobal.bDoNormalMaps)
-            ret_str += QString("scene.materials.%1.normaltex = \"%2\"\n").arg(glossy2Label).arg(matLabel + "_n");
-
+        else if (m_NormalMap != "" && YaLuxGlobal.bDoNormalMaps)
+        {
+            if (YaLuxGlobal.bDoNormalAsBump)
+                ret_str += QString("scene.materials.%1.bumptex = \"%2\"\n").arg(glossy2Label).arg(m_NormalTex.name);
+            else
+                ret_str += QString("scene.materials.%1.normaltex = \"%2\"\n").arg(glossy2Label).arg(m_NormalTex.name);
+        }
 
         if (m_SpecularWeight > 0 && YaLuxGlobal.bDoSpecular)
         {
