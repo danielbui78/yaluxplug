@@ -1183,19 +1183,19 @@ void YaLuxRender::killRender()
             kill(process->pid(), SIGINT);
 #endif
             // 2c. update log window after sending sigint/ctrl+c
-            emit updateLogWindow("\nAttempting to gracefully abort render...\n", QColor(255, 255, 0), true);
+            emit updateLogWindow("\Sending abort request to renderer...\n", QColor(255, 255, 0), true);
             // 3. After sending SIGINT or CTRL+C, wait for "Abort Received" message/event (processed by process log thread)
             int timer = 0;
             int sleep_amount = 100;
-            int base_time = 3000;
-            int timeout_period = base_time; // 3 seconds
+            int base_time = 5000;
+            int timeout_period = base_time; // 5 seconds
             do
             {
                 if (YaLuxGlobal.bAbortReceived)
                 {
                     YaLuxGlobal.bAbortReceived = false;
                     // increase timeout period if abort received
-                    timeout_period = base_time * 20 * 5; // 5 minutes
+                    timeout_period = base_time * 60; // 5 minutes
                 }
 #ifdef Q_OS_WIN
                 Sleep(uint(sleep_amount));
@@ -1214,7 +1214,7 @@ void YaLuxRender::killRender()
             // 4. If wait times out, then forcefully kill process
             if (process->state() == QProcess::Running)
             {
-                emit updateLogWindow("\nAbort attempt timed-out, forcing shutdown of renderer...\n", QColor(255, 0, 0), true);
+                emit updateLogWindow("\nAbort request timed-out, forcing shutdown of renderer...\n", QColor(255, 0, 0), true);
                 process->kill();
 
             }
