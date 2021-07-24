@@ -244,12 +244,6 @@ bool PBRSkinToLuxCoreMaterial::ImportValues()
     {
         m_GlossyReflectivity = ((DzFloatProperty*)currentProperty)->getValue() * m_GlossyLayeredWeight;
     }
-//    currentProperty = m_Material->findProperty("Glossy Roughness"); // glossy roughness
-//    if (currentProperty != NULL)
-//    {
-//        m_GlossyRoughness = ((DzFloatProperty*)currentProperty)->getValue() * m_GlossyLayeredWeight;
-//        m_GlossyRoughnessMap = propertyNumericImagetoString((DzNumericProperty*)currentProperty);
-//    }
     if (material_type == metal_roughness)
     {
         currentProperty = m_Material->findProperty("Metallic Weight"); // metallicity
@@ -264,8 +258,9 @@ bool PBRSkinToLuxCoreMaterial::ImportValues()
         currentProperty = m_Material->findProperty("Glossy Roughness");
         if (currentProperty != NULL)
         {
-            // Linear Interpolation: roughness == 1.0 when glossy_layered_weight == 0%
-            m_Roughness = 1.0 * (1 - m_GlossyLayeredWeight) + ((DzFloatProperty*)currentProperty)->getValue() * m_GlossyLayeredWeight;
+            //// Linear Interpolation: roughness == 1.0 when glossy_layered_weight == 0%
+            //m_Roughness = 1.0 * (1 - m_GlossyLayeredWeight) + ((DzFloatProperty*)currentProperty)->getValue() * m_GlossyLayeredWeight;
+            m_Roughness = ((DzFloatProperty*)currentProperty)->getValue();
             if (m_Roughness > 0.8) m_Roughness = 0.8;
 
             m_GlossyRoughness = m_Roughness;
@@ -277,8 +272,9 @@ bool PBRSkinToLuxCoreMaterial::ImportValues()
         currentProperty = m_Material->findProperty("Glossiness");
         if (currentProperty != NULL)
         {
-            // simple linear interpolation: glossiness == 0 when glossy_layered_weight == 0%
-            m_Roughness = ((DzFloatProperty*)currentProperty)->getValue() * m_GlossyLayeredWeight;
+            //// simple linear interpolation: glossiness == 0 when glossy_layered_weight == 0%
+            //m_Roughness = ((DzFloatProperty*)currentProperty)->getValue() * m_GlossyLayeredWeight;
+            m_Roughness = ((DzFloatProperty*)currentProperty)->getValue();
             m_Roughness = (1 - m_Roughness > 0.8) ? 0.8 : (1 - m_Roughness);
         }
     }
@@ -1088,6 +1084,9 @@ bool PBRSkinToLuxCoreMaterial::CreateMaterials()
 {
     QString ret_str = "";
     QString matLabel = m_LuxMaterialName;
+    bool doGlass = false;
+    if (m_RefractionWeight >= 0.5)
+        doGlass = true;
 
     ///////////////////////////////////////////
      //
@@ -1141,8 +1140,8 @@ bool PBRSkinToLuxCoreMaterial::CreateMaterials()
         {
             if (YaLuxGlobal.bDoDebugSSS && m_VolumeExists)
                 ret_str += QString("scene.materials.%1.type = \"null\"\n").arg(glossy2Label);
-            else if (m_RefractionWeight >= 0.5)
-                ret_str += QString("scene.materials.%1.type = \"glass\"\n").arg(glossy2Label);
+            else if (doGlass)
+                ret_str += QString("scene.materials.%1.type = \"glossy2\"\n").arg(glossy2Label);
             else if (m_TranslucencyExists && YaLuxGlobal.bDoTranslucency)
                 ret_str += QString("scene.materials.%1.type = \"glossytranslucent\"\n").arg(glossy2Label);
             else
@@ -1162,9 +1161,16 @@ bool PBRSkinToLuxCoreMaterial::CreateMaterials()
             ret_str += QString("scene.materials.%1.type = \"glossy2\"\n").arg(glossy2Label);
         }
 
-        ret_str += QString("scene.materials.%1.kd = \"%2\"\n").arg(glossy2Label).arg(m_DiffuseTex.name);
+        if (doGlass)
+            ret_str += QString("scene.materials.%1.kd = \"%2\"\n").arg(glossy2Label).arg(m_DiffuseTex.name);
+        else
+            ret_str += QString("scene.materials.%1.kd = \"%2\"\n").arg(glossy2Label).arg(m_DiffuseTex.name);
 
-        if ((m_SpecularExists || m_GlossyLayeredWeight > 0 || m_MetallicWeight > 0) && YaLuxGlobal.bDoSpecular)
+        if (doGlass)
+        {
+            ret_str += QString("scene.materials.%1.kt = \"%2\"\n").arg(glossy2Label).arg("1 1 1");
+        }
+        else if ((m_SpecularExists || m_GlossyLayeredWeight > 0 || m_MetallicWeight > 0) && YaLuxGlobal.bDoSpecular)
         {
             ret_str += QString("scene.materials.%1.ks = \"%2\"\n").arg(glossy2Label).arg(m_SpecularTex.name);
             if (YaLuxGlobal.bDoTranslucency && m_TranslucencyExists)
@@ -1191,7 +1197,12 @@ bool PBRSkinToLuxCoreMaterial::CreateMaterials()
         }
 
 
-        if (m_SpecularWeight > 0 && YaLuxGlobal.bDoSpecular)
+        if (doGlass)
+        {
+            ret_str += QString("scene.materials.%1.uroughness = %2\n").arg(glossy2Label).arg(m_Roughness);
+            ret_str += QString("scene.materials.%1.vroughness = %2\n").arg(glossy2Label).arg(m_Roughness);
+        }
+        else if (m_SpecularWeight > 0 && YaLuxGlobal.bDoSpecular)
         {
             // use dual lobe specular for front and backface
 
@@ -1217,7 +1228,12 @@ bool PBRSkinToLuxCoreMaterial::CreateMaterials()
             ret_str += QString("scene.materials.%1.vroughness = %2\n").arg(glossy2Label).arg(m_Roughness);
         }
 
-        if (YaLuxGlobal.bDoDebugSSS && m_VolumeExists)
+        //if (doGlass)
+        //    ret_str += QString("scene.materials.%1.interiorior = %2\n").arg(glossy2Label).arg(m_RefractionIndex);
+
+        if (doGlass)
+            ret_str += QString("scene.materials.%1.transparency = %2\n").arg(glossy2Label).arg(1 - (m_RefractionWeight * 0.99));
+        else if (YaLuxGlobal.bDoDebugSSS && m_VolumeExists)
             ret_str += QString("scene.materials.%1.transparency = 1\n").arg(glossy2Label);
         else if (m_OpacityExists)
             ret_str += QString("scene.materials.%1.transparency = \"%2\"\n").arg(glossy2Label).arg(m_OpacityTex.name);
