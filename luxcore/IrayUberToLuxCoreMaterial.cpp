@@ -623,7 +623,8 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
         if (m_TranslucencyMap != "")
             m_TranslucencyTex.data += GenerateCoreTextureBlock3(translucencyTexture, m_TranslucencyMap,
                 GetRed(m_TranslucencyColor), GetGreen(m_TranslucencyColor), GetBlue(m_TranslucencyColor),
-                m_uscale, m_vscale, m_uoffset, m_voffset);
+                m_uscale, m_vscale, m_uoffset, m_voffset,
+                1.0, "", "colored_mean");
         else
             translucencyTexture = QString("%1 %2 %3").arg(GetRed(m_TranslucencyColor)).arg(GetGreen(m_TranslucencyColor)).arg(GetBlue(m_TranslucencyColor));
     }
@@ -836,7 +837,7 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
         // 3. scale down by translucency_weight
         m_OpacityTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(SSSMaskTex0);
         m_OpacityTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(SSSMaskTex0).arg(m_TranslucencyTex.name);
-        m_OpacityTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(SSSMaskTex0).arg(m_TranslucencyWeight);
+        m_OpacityTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(SSSMaskTex0).arg(m_TranslucencyWeight * 0.75);
 
         m_OpacityTex.data += QString("scene.textures.%1.type = \"subtract\"\n").arg(SSSMaskTex1);
         m_OpacityTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(SSSMaskTex1).arg(OpacityTex);
@@ -849,7 +850,7 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
         QString diffuse_new_name0 = m_LuxMaterialName + "_d_volumetric" + "_0";
         QString diffuse_new_name1 = m_LuxMaterialName + "_d_volumetric" + "_1";
         QString diffuse_new_name2 = m_LuxMaterialName + "_d_volumetric" + "_2";
-        QString diffuse_new_name3 = m_LuxMaterialName + "_d_volumetric" + "_3";
+//        QString diffuse_new_name3 = m_LuxMaterialName + "_d_volumetric" + "_3";
 
         //m_OpacityTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(diffuse_new_name0);
         //m_OpacityTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffuse_new_name0).arg(SSSMaskTex1);
@@ -865,11 +866,11 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
 
         m_DiffuseTex.name = diffuse_new_name2;
 
-        m_OpacityTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(diffuse_new_name3);
-        m_OpacityTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffuse_new_name3).arg(m_TranslucencyTex.name);
-        m_OpacityTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffuse_new_name3).arg(1 - (m_TranslucencyWeight * 0.75));
+        //m_OpacityTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(diffuse_new_name3);
+        //m_OpacityTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffuse_new_name3).arg(m_TranslucencyTex.name);
+        //m_OpacityTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffuse_new_name3).arg(1 - (m_TranslucencyWeight * 0.75));
 
-        m_TranslucencyTex.name = diffuse_new_name3;
+        //m_TranslucencyTex.name = diffuse_new_name3;
 
     }
     //    if (!volume_exists) translucency_exists = false;
