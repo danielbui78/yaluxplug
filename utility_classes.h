@@ -18,6 +18,8 @@
 #include <QtCore/QThread>
 #include "dztexture.h"
 
+#include "luxcore\DzMaterialToLuxCoreMaterial.h"
+
 const QStringList LXSfilm = QStringList() <<
 "Film \"fleximage\"\n" <<
 "\t\"integer outlierrejection_k\"\t[1]\n" <<
@@ -135,6 +137,9 @@ QString GenerateCoreTextureBlock1_Grey(QString textureName, QString mapName, flo
 
 /* Returns textureblock named: "<texturename>_cutoff_feathered" */
 QString CreateFeatheredCutOffTexture(QString texturename, QString cutoffFunction, double cutoff_threshold, double feather_edge_amount);
+
+/* Returns texture name for mask: "<texture_block.name>_mask" */
+QString GenerateMask(DzMaterialToLuxCoreMaterial::TextureBlock &texture_block, QString cutoff_function="greaterthan", double cutoff_threshold=0.25, double feather_amount=0.02, double noise_strength=1.0);
 
 QString SanitizeCoreLabel(QString label);
 QString LuxGetImageMapProperty(DzElement* el, QString propertyName, QString& mesg);

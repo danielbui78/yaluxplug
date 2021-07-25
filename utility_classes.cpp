@@ -76,6 +76,60 @@ double gammaCorrect(double x) {
     return pow(x, 0.4545); 
 }
 
+QString GenerateMask(DzMaterialToLuxCoreMaterial::TextureBlock &texture_block, QString cutoff_function, double cutoff_threshold, double feather_amount, double noise_strength)
+{
+    //////// Generate MASK /////
+    // 1. smaller % filter (threshold + 5)
+    // 2. multiply #1 by noise
+    // 3. larger % larger (threhold - 5)
+    // 4. multiply #3 by noise
+    // 5. blend #2 and #4 (average % fitler = threshold)
+    QString texture_mask = texture_block.name + "_mask";
+    QString texture_mask0 = texture_mask + "_0";
+    QString texture_mask1 = texture_mask + "_1";
+    QString texture_mask2 = texture_mask + "_2";
+    QString texture_mask3 = texture_mask + "_3";
+    QString noise_mask = "shared_material_noise_mask";
+
+//    texture_block.data += QString("scene.textures.%1.type = \"blender_noise\"\n").arg(noise_mask);
+//    texture_block.data += QString("scene.textures.%1.noisedepth = \"%2\"\n").arg(noise_mask).arg(noise_strength * 25); // 0 to 25
+//    texture_block.data += QString("scene.textures.%1.brightness = \"%2\"\n").arg(noise_mask).arg(1);
+//    texture_block.data += QString("scene.textures.%1.contrast = \"%2\"\n").arg(noise_mask).arg(1);
+
+    //QString noise_image = "4096-noise.png";
+    //if (YaLuxGlobal.maxTextureSize <= 1024)
+    //    noise_image = "1024-noise.png";
+    //else if (YaLuxGlobal.maxTextureSize <= 2048)
+    //    noise_image = "2048-noise.png";
+    //QString path = DzFileIO::getFilePath(YaLuxGlobal.LuxExecPath);
+
+    //texture_block.data += QString("scene.textures.%1.type = \"imagemap\"\n").arg(noise_mask);
+    //texture_block.data += QString("scene.textures.%1.file = \"%2\"\n").arg(noise_mask).arg(path + "/" + noise_image);
+
+    texture_block.data += QString("scene.textures.%1.type = \"%2\"\n").arg(texture_mask0).arg(cutoff_function);
+    texture_block.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(texture_mask0).arg(texture_block.name);
+    texture_block.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(texture_mask0).arg(cutoff_threshold + (feather_amount * 0.5) );
+
+    texture_block.data += QString("scene.textures.%1.type = \"scale\"\n").arg(texture_mask1);
+    texture_block.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(texture_mask1).arg(texture_mask0);
+    texture_block.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(texture_mask1).arg(noise_mask);
+
+    texture_block.data += QString("scene.textures.%1.type = \"greaterthan\"\n").arg(texture_mask2);
+    texture_block.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(texture_mask2).arg(texture_block.name);
+    texture_block.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(texture_mask2).arg(cutoff_threshold - (feather_amount * 0.5) );
+
+    texture_block.data += QString("scene.textures.%1.type = \"scale\"\n").arg(texture_mask3);
+    texture_block.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(texture_mask3).arg(texture_mask2);
+    texture_block.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(texture_mask3).arg(noise_mask);
+
+    texture_block.data += QString("scene.textures.%1.type = \"mix\"\n").arg(texture_mask);
+    texture_block.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(texture_mask).arg(texture_mask1);
+    texture_block.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(texture_mask).arg(texture_mask3);
+    texture_block.data += QString("scene.textures.%1.amount = \"%2\"\n").arg(texture_mask).arg(0.5);
+
+    return texture_mask;
+}
+
 QString CreateFeatheredCutOffTexture(QString texturename, QString cutoffFunction, double cutoff_threshold, double feather_edge_amount)
 {
     QString ret_str;
