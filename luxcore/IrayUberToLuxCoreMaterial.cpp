@@ -363,6 +363,8 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
             GetRed(m_DiffuseColor), GetGreen(m_DiffuseColor), GetBlue(m_DiffuseColor),
             m_uscale, m_vscale, m_uoffset, m_voffset);
 
+    QString diffuse_mask;
+    diffuse_mask = GenerateMask(m_DiffuseTex);
 
     // Specular Block (DUAL LOBE)
     float spec1_float = 0;
@@ -412,23 +414,6 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
             m_SpecularTex.data += GenerateCoreTextureBlock1(specref_label, specref_mapfile, spec_reflectivity,
             //m_SpecularTex.data += GenerateCoreTextureBlock1(specref_label, specref_mapfile, 1.0,
                 m_uscale, m_vscale, m_uoffset, m_voffset);
-
-        //////// SPECULAR MASK /////
-        QString specular_mask = mainSpec + "_specular_mask";
-        //QString active_mask = "";
-        //if (spec1_mapfile != "") active_mask = spec1_label;
-        //else if (spec2_mapfile != "") active_mask = spec2_label;
-        //else if (specref_mapfile != "") active_mask = specref_label;
-        //if (active_mask != "")
-        //{
-            m_SpecularTex.data += QString("scene.textures.%1.type = \"greaterthan\"\n").arg(specular_mask);
-            m_SpecularTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(specular_mask).arg(m_DiffuseTex.name);
-            m_SpecularTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(specular_mask).arg(0.25);
-        //}
-        //else
-        //{
-        //    specular_mask = "";
-        //}
 
         // mix spec1 + spec2
         m_SpecularTex.data += QString("scene.textures.%1.type = \"mix\"\n").arg(rawDualRoughness);
@@ -484,16 +469,9 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
         QString finalMix1 = mainSpec + "_final_mix_1";
         if (specref_mapfile == "") specref_label = QString("%1").arg(spec_reflectivity);
 
-        //if (specular_mask != "")
-        //{
-            m_SpecularTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(finalMix0);
-            m_SpecularTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(finalMix0).arg(specref_label);
-            m_SpecularTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(finalMix0).arg(specular_mask);
-        //}
-        //else
-        //{
-        //    finalMix = specref_label;
-        //}
+        m_SpecularTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(finalMix0);
+        m_SpecularTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(finalMix0).arg(specref_label);
+        m_SpecularTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(finalMix0).arg(diffuse_mask);
 
         m_SpecularTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(finalMix1);
         m_SpecularTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(finalMix1).arg(finalMix0);
@@ -832,7 +810,7 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
         // 3. scale down by translucency_weight
         m_OpacityTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(SSSMaskTex0);
         m_OpacityTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(SSSMaskTex0).arg(m_TranslucencyTex.name);
-        m_OpacityTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(SSSMaskTex0).arg(m_TranslucencyWeight * 0.75);
+        m_OpacityTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(SSSMaskTex0).arg(m_TranslucencyWeight * 0.50);
 
         m_OpacityTex.data += QString("scene.textures.%1.type = \"subtract\"\n").arg(SSSMaskTex1);
         m_OpacityTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(SSSMaskTex1).arg(OpacityTex);
@@ -857,7 +835,7 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
 
         m_OpacityTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(diffuse_new_name2);
         m_OpacityTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffuse_new_name2).arg(m_DiffuseTex.name);
-        m_OpacityTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffuse_new_name2).arg(1 - (m_TranslucencyWeight*0.75) );
+        m_OpacityTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffuse_new_name2).arg(1 - (m_TranslucencyWeight*0.945) );
 
         m_DiffuseTex.name = diffuse_new_name2;
 

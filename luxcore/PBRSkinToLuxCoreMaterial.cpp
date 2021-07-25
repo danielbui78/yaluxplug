@@ -363,11 +363,8 @@ bool PBRSkinToLuxCoreMaterial::CreateTextures()
             GetRed(m_DiffuseColor), GetGreen(m_DiffuseColor), GetBlue(m_DiffuseColor),
             m_uscale, m_vscale, m_uoffset, m_voffset);
 
-    //////// DIFFUSE MASK /////
-    QString diffuse_mask = m_LuxMaterialName + "_diffuse_mask";
-    m_SpecularTex.data += QString("scene.textures.%1.type = \"greaterthan\"\n").arg(diffuse_mask);
-    m_SpecularTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffuse_mask).arg(m_DiffuseTex.name);
-    m_SpecularTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffuse_mask).arg(0.25);
+    QString diffuse_mask;
+    diffuse_mask = GenerateMask(m_DiffuseTex);
 
     // Specular Block (DUAL LOBE)
     float spec1_float = 0;
@@ -472,16 +469,9 @@ bool PBRSkinToLuxCoreMaterial::CreateTextures()
         QString finalMix1 = mainSpec + "_final_mix_1";
         if (specref_mapfile == "") specref_label = QString("%1").arg(spec_reflectivity);
 
-        //if (diffuse_mask != "")
-        //{
-            m_SpecularTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(finalMix0);
-            m_SpecularTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(finalMix0).arg(specref_label);
-            m_SpecularTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(finalMix0).arg(diffuse_mask);
-        //}
-        //else
-        //{
-        //    finalMix = specref_label;
-        //}
+        m_SpecularTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(finalMix0);
+        m_SpecularTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(finalMix0).arg(specref_label);
+        m_SpecularTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(finalMix0).arg(diffuse_mask);
 
         m_SpecularTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(finalMix1);
         m_SpecularTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(finalMix1).arg(finalMix0);
@@ -853,14 +843,12 @@ bool PBRSkinToLuxCoreMaterial::CreateTextures()
         m_OpacityTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(diffuse_new_name2);
         m_OpacityTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffuse_new_name2).arg(m_DiffuseTex.name);
         m_OpacityTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffuse_new_name2).arg(1 - (m_TranslucencyWeight*0.75) );
-
         m_DiffuseTex.name = diffuse_new_name2;
 
-        m_OpacityTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(diffuse_new_name3);
-        m_OpacityTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffuse_new_name3).arg(m_TranslucencyTex.name);
-        m_OpacityTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffuse_new_name3).arg(1 - (m_TranslucencyWeight * 0.75));
-
-        m_TranslucencyTex.name = diffuse_new_name3;
+        //m_OpacityTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(diffuse_new_name3);
+        //m_OpacityTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffuse_new_name3).arg(m_TranslucencyTex.name);
+        //m_OpacityTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffuse_new_name3).arg(1 - (m_TranslucencyWeight * 0.75));
+        //m_TranslucencyTex.name = diffuse_new_name3;
 
     }
     //    if (!volume_exists) translucency_exists = false;
