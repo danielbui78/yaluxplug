@@ -686,6 +686,23 @@ bool LuxMakeSCNFile(QString filenameSCN, DzRenderer* r, DzCamera* camera, const 
     //emit imageMgr->prepareAllImages(r);
 
 
+    // SHARED TEXTURES AND MATERIALS
+    QString sharedMaterials;
+    QString noise_image = "4096-noise.png";
+    if (YaLuxGlobal.maxTextureSize <= 1024)
+        noise_image = "1024-noise.png";
+    else if (YaLuxGlobal.maxTextureSize <= 2048)
+        noise_image = "2048-noise.png";
+    QString path = DzFileIO::getFilePath(YaLuxGlobal.LuxExecPath);
+
+    QString noise_mask = "shared_material_noise_mask";
+    sharedMaterials += QString("scene.textures.%1.type = \"imagemap\"\n").arg(noise_mask);
+    sharedMaterials += QString("scene.textures.%1.file = \"%2\"\n").arg(noise_mask).arg(path + "/" + noise_image);
+
+    outSCN.write(sharedMaterials.toAscii());
+
+
+
     ///////////////////////////////////////////////
     // NODES
     ///////////////////////////////////////////////
