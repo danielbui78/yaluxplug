@@ -1183,7 +1183,7 @@ void YaLuxRender::killRender()
             kill(process->pid(), SIGINT);
 #endif
             // 2c. update log window after sending sigint/ctrl+c
-            emit updateLogWindow("\Sending abort request to renderer...\n", QColor(255, 255, 0), true);
+            emit updateLogWindow("\nSending abort request to renderer...\n", QColor(255, 255, 0), true);
             // 3. After sending SIGINT or CTRL+C, wait for "Abort Received" message/event (processed by process log thread)
             int timer = 0;
             int sleep_amount = 100;
