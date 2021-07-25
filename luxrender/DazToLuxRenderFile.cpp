@@ -63,7 +63,7 @@ QString MixTextures(QString textureMixName, QString textureName1, QString textur
     ret_str += QString("Texture \"%1\" \"%2\" \"%3\"\n").arg(textureMixName).arg(textureType).arg("mix");
     ret_str += QString("\t\"texture tex1\" [\"%1\"]\n").arg(textureName1);
     ret_str += QString("\t\"texture tex2\" [\"%1\"]\n").arg(textureName2);
-    ret_str += QString("\t\%1\n").arg(mixString);
+    ret_str += QString("\t\"%1\n").arg(mixString);
 
     return ret_str;
 }
