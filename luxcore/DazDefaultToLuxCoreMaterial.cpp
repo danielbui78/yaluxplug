@@ -287,7 +287,7 @@ bool DazDefaultToLuxCoreMaterial::CreateTextures()
     {
         if (YaLuxGlobal.bDoNormalAsBump)
         {
-            float scale = 0.02;
+            double scale = 0.02;
             m_NormalTex.data += GenerateCoreTextureBlock1(imageMapName, m_NormalMap, 1.0,
                 m_uscale, m_vscale, m_uoffset, m_voffset,
                 1.0, "", "colored_mean");
