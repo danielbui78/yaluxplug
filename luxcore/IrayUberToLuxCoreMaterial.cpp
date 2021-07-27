@@ -793,8 +793,8 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
     }
     if (m_OpacityExists && m_OpacityMap != "")
     {
-        double cutoff_threshold = 0.01;
-        double feather_amount = 0.5;
+        double cutoff_threshold = 0.5;
+        double feather_amount = 0.8;
         m_OpacityTex.data = GenerateCoreTextureBlock1(OpacityTex, m_OpacityMap, m_OpacityValue,
             m_uscale, m_vscale, m_uoffset, m_voffset, 1.0);
         m_OpacityTex.data += CreateFeatheredCutOffTexture(OpacityTex, "greaterthan", cutoff_threshold, feather_amount);
