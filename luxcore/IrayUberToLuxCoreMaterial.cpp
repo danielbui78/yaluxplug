@@ -365,6 +365,7 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
 
     QString diffuse_mask;
     diffuse_mask = GenerateMask(m_DiffuseTex);
+    QString noise_mask = "shared_material_noise_mask";
 
     // Specular Block (DUAL LOBE)
     float spec1_float = 0;
@@ -378,11 +379,12 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
 
     QString mainSpec = m_LuxMaterialName + "_s";
     QString specref_label = mainSpec + "_spec_reflect";
+    m_SpecRoughness_1 = mainSpec + "_rough1";
+    m_SpecRoughness_2 = mainSpec + "_rough2";
     QString rawDualRoughness = mainSpec + "_raw_rough";
-    m_SpecRoughness_1 = mainSpec + "_scaled_rough1";
-    m_SpecRoughness_2 = mainSpec + "_scaled_rough2";
     QString spec1_label = rawDualRoughness + "_spec1";
-    QString spec2_label = rawDualRoughness + "_spec2";
+    QString spec2_labelA = rawDualRoughness + "_spec2a";
+    QString spec2_labelB = rawDualRoughness + "_spec2b";
     QString specratio_label = rawDualRoughness + "_specratio";
 
     if (m_SpecularWeight > 0 && YaLuxGlobal.bDoSpecular)
@@ -402,10 +404,10 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
             m_SpecularTex.data += GenerateCoreTextureBlock1(mainSpec + "_weight", m_SpecularMap, m_SpecularWeight,
                 m_uscale, m_vscale, m_uoffset, m_voffset);
         if (spec1_mapfile != "")
-            m_SpecularTex.data += GenerateCoreTextureBlock1(spec1_label, spec1_mapfile, spec1_float,
+            m_SpecularTex.data += GenerateCoreTextureBlock1(spec1_label, spec1_mapfile, spec1_float*0.5,
                 m_uscale, m_vscale, m_uoffset, m_voffset);
         if (spec2_mapfile != "")
-            m_SpecularTex.data += GenerateCoreTextureBlock1(spec2_label, spec1_mapfile, spec2_float,
+            m_SpecularTex.data += GenerateCoreTextureBlock1(spec2_labelA, spec1_mapfile, spec2_float*0.5,
                 m_uscale, m_vscale, m_uoffset, m_voffset);
         if (specratio_mapfile != "")
             m_SpecularTex.data += GenerateCoreTextureBlock1(specratio_label, specratio_mapfile, spec_ratio,
@@ -415,56 +417,27 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
             //m_SpecularTex.data += GenerateCoreTextureBlock1(specref_label, specref_mapfile, 1.0,
                 m_uscale, m_vscale, m_uoffset, m_voffset);
 
+        // scale roughness from grey (0.5)?
+        if (spec1_mapfile != "")
+            m_SpecRoughness_1 = spec1_label;
+        else
+            m_SpecRoughness_1 = QString("%1").arg(spec1_float*0.5);
+
         // mix spec1 + spec2
-        m_SpecularTex.data += QString("scene.textures.%1.type = \"mix\"\n").arg(rawDualRoughness);
-        if (spec1_mapfile != "")
-            m_SpecularTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(rawDualRoughness).arg(spec1_label);
-        else
-            m_SpecularTex.data += QString("scene.textures.%1.texture1 = %2\n").arg(rawDualRoughness).arg(spec1_float);
-        if (spec2_mapfile != "")
-            m_SpecularTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(rawDualRoughness).arg(spec2_label);
-        else
-            m_SpecularTex.data += QString("scene.textures.%1.texture2 = %2\n").arg(rawDualRoughness).arg(spec2_float);
-        if (specratio_mapfile != "")
-            m_SpecularTex.data += QString("scene.textures.%1.amount = \"%2\"\n").arg(rawDualRoughness).arg(specratio_label);
-        else
-            m_SpecularTex.data += QString("scene.textures.%1.amount = %2\n").arg(rawDualRoughness).arg(spec_ratio);
-
-        // scale roughness from grey (0.5)?
         m_SpecularTex.data += QString("scene.textures.%1.type = \"mix\"\n").arg(m_SpecRoughness_2);
-        m_SpecularTex.data += QString("scene.textures.%1.texture1 = 0.15\n").arg(m_SpecRoughness_2);
-        m_SpecularTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(m_SpecRoughness_2).arg(rawDualRoughness);
-        if (m_SpecularMap != "")
-            m_SpecularTex.data += QString("scene.textures.%1.amount = \"%2\"\n").arg(m_SpecRoughness_2).arg(mainSpec + "_weight");
-        else
-            m_SpecularTex.data += QString("scene.textures.%1.amount = %2\n").arg(m_SpecRoughness_2).arg(m_SpecularWeight);
-
-        // scale roughness from grey (0.5)?
-        m_SpecularTex.data += QString("scene.textures.%1.type = \"mix\"\n").arg(m_SpecRoughness_1);
-        m_SpecularTex.data += QString("scene.textures.%1.texture1 = 0.15\n").arg(m_SpecRoughness_1);
         if (spec1_mapfile != "")
-            m_SpecularTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(m_SpecRoughness_1).arg(spec1_label);
+            m_SpecularTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(m_SpecRoughness_2).arg(spec1_label);
         else
-            m_SpecularTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(m_SpecRoughness_1).arg(spec1_float);
-        if (m_SpecularMap != "")
-            m_SpecularTex.data += QString("scene.textures.%1.amount = \"%2\"\n").arg(m_SpecRoughness_1).arg(mainSpec + "_weight");
+            m_SpecularTex.data += QString("scene.textures.%1.texture1 = %2\n").arg(m_SpecRoughness_2).arg(spec1_float*0.5);
+        if (spec2_mapfile != "")
+            m_SpecularTex.data += QString("scene.textures.%1.texture2 = %2\n").arg(m_SpecRoughness_2).arg(spec2_labelA);
         else
-            m_SpecularTex.data += QString("scene.textures.%1.amount = %2\n").arg(m_SpecRoughness_1).arg(m_SpecularWeight);
+            m_SpecularTex.data += QString("scene.textures.%1.texture2 = %2\n").arg(m_SpecRoughness_2).arg(spec2_float*0.5);
+        if (specratio_mapfile != "")
+            m_SpecularTex.data += QString("scene.textures.%1.amount = \"%2\"\n").arg(m_SpecRoughness_2).arg(specratio_label);
+        else
+            m_SpecularTex.data += QString("scene.textures.%1.amount = %2\n").arg(m_SpecRoughness_2).arg(spec_ratio);
 
-
-        // mix specweight
-        //if (specref_mapfile != "")
-        //{
-        //    //// no scaling of specular reflectivity
-        //    //mainSpec = QString("%1 %1 %1").arg(spec_reflectivity);
-        //    //if (specref_mapfile != "") mainSpec = specref_label;
-        //    mainSpec = specref_label;
-        //}
-
-        //QString finalMix = QString("%1").arg(spec_reflectivity);
-        //if (specref_mapfile != "") finalMix = specref_label;
-
-        ///// FINAL SPECULAR MIX is reflectivity * roughness
         QString finalMix0 = mainSpec + "_final_mix_0";
         QString finalMix1 = mainSpec + "_final_mix_1";
         if (specref_mapfile == "") specref_label = QString("%1").arg(spec_reflectivity);
@@ -476,7 +449,6 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
         m_SpecularTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(finalMix1);
         m_SpecularTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(finalMix1).arg(finalMix0);
         m_SpecularTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(finalMix1).arg(0.2);
-
 
         m_SpecularTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(mainSpec);
         m_SpecularTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(mainSpec).arg(finalMix1);
@@ -810,7 +782,7 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
         // 3. scale down by translucency_weight
         m_OpacityTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(SSSMaskTex0);
         m_OpacityTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(SSSMaskTex0).arg(m_TranslucencyTex.name);
-        m_OpacityTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(SSSMaskTex0).arg(m_TranslucencyWeight * 0.50);
+        m_OpacityTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(SSSMaskTex0).arg(m_TranslucencyWeight * 0.56);
 
         m_OpacityTex.data += QString("scene.textures.%1.type = \"subtract\"\n").arg(SSSMaskTex1);
         m_OpacityTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(SSSMaskTex1).arg(OpacityTex);
@@ -835,7 +807,7 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
 
         m_OpacityTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(diffuse_new_name2);
         m_OpacityTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffuse_new_name2).arg(m_DiffuseTex.name);
-        m_OpacityTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffuse_new_name2).arg(1 - (m_TranslucencyWeight*0.945) );
+        m_OpacityTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffuse_new_name2).arg(1 - (m_TranslucencyWeight*0.89) );
 
         m_DiffuseTex.name = diffuse_new_name2;
 
@@ -1196,12 +1168,12 @@ bool IrayUberToLuxCoreMaterial::CreateMaterials()
         {
             // use dual lobe specular for front and backface
 
-            ret_str += QString("scene.materials.%1.uroughness = \"%2\"\n").arg(glossy2Label).arg(m_SpecRoughness_1);
-            ret_str += QString("scene.materials.%1.vroughness = \"%2\"\n").arg(glossy2Label).arg(m_SpecRoughness_1);
+            ret_str += QString("scene.materials.%1.uroughness = \"%2\"\n").arg(glossy2Label).arg(m_SpecRoughness_2);
+            ret_str += QString("scene.materials.%1.vroughness = \"%2\"\n").arg(glossy2Label).arg(m_SpecRoughness_2);
             if (YaLuxGlobal.bDoSpecular && m_TranslucencyExists)
             {
-                ret_str += QString("scene.materials.%1.uroughness_bf = \"%2\"\n").arg(glossy2Label).arg(m_SpecRoughness_2);
-                ret_str += QString("scene.materials.%1.vroughness_bf = \"%2\"\n").arg(glossy2Label).arg(m_SpecRoughness_2);
+                ret_str += QString("scene.materials.%1.uroughness_bf = \"%2\"\n").arg(glossy2Label).arg(m_SpecRoughness_1);
+                ret_str += QString("scene.materials.%1.vroughness_bf = \"%2\"\n").arg(glossy2Label).arg(m_SpecRoughness_1);
             }
         }
         else if (m_GlossyRoughnessMap != "" && m_GlossyLayeredWeight > 0)
