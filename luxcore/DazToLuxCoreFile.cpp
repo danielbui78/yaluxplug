@@ -66,8 +66,8 @@ QString LuxCoreProcessObject(DzObject* daz_obj, QString& mesg)
     if (shape)
     {
         DzNode* node = shape->getNode();
-        daz_obj->update(*node, false);
-        daz_obj->finalize(*node, false, true);
+        daz_obj->update(*node, true);
+        daz_obj->finalize(*node, true, true);
     }
     QString shapeLabel = SanitizeCoreLabel(shape->getLabel());
 
