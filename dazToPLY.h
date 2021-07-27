@@ -21,6 +21,7 @@ class DazToPLY
 {
 public:
     DazToPLY(DzFacetMesh *mesh, QString meshName, DzMaterial *mat);
+    DazToPLY(DzFacetMesh* arg_mesh, QString arg_objMatName, DzMaterial* arg_mat, int materialGroupIndex);
     void walkFaceEdges(DzFacet *face);
     void processFace(DzFacet *face);
     QString LuxMakeAsciiPLY();    

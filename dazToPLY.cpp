@@ -516,4 +516,24 @@ DazToPLY::DazToPLY(DzFacetMesh *arg_mesh, QString arg_objMatName, DzMaterial *ar
 }
 
 
+DazToPLY::DazToPLY(DzFacetMesh* arg_mesh, QString arg_objMatName, DzMaterial* arg_mat, int materialGroupIndex)
+{
+    mesh = arg_mesh;
+    objMatName = arg_objMatName;
+    daz_indexIsCached = QBitArray(mesh->getNumVertices());
 
+    facetIndexList = NULL;
+    // find number of face groups
+    // create separate PLY for each group
+    facetIndexList = mesh->getMaterialGroup(materialGroupIndex);
+
+    ptrAllFaces = mesh->getFacetsPtr();
+    ptrAllEdges = mesh->getEdgesPtr();
+    ptrAllUVs = mesh->getUVs();
+    ptrAllNormals = mesh->getNormalsPtr();
+    ptrAllVertices = mesh->getVerticesPtr();
+
+    // DB (2021-06-15): get facetflags and check if hidden before processing face
+    ptrAllFacetFlags = mesh->getFacetFlagsPtr();
+
+}

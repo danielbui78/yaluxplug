@@ -51,7 +51,7 @@ QString LuxCoreProcessObject(DzObject* daz_obj, QString& mesg)
 {
     QString nodeAssetId;
     QString nodeLabel;
-    DzGeometry* geo;
+    DzFacetMesh* mesh;
     DzShape* shape;
     QString outstr = "";
     QString attributeblock = "";
@@ -63,14 +63,20 @@ QString LuxCoreProcessObject(DzObject* daz_obj, QString& mesg)
 
     // Object -> Shape
     shape = daz_obj->getCurrentShape();
+    if (shape)
+    {
+        DzNode* node = shape->getNode();
+        daz_obj->update(*node, false);
+        daz_obj->finalize(*node, false, true);
+    }
     QString shapeLabel = SanitizeCoreLabel(shape->getLabel());
 
     nodeLabel = SanitizeCoreLabel(shape->getNode()->getLabel());
     nodeAssetId = shape->getNode()->getAssetId();
 
     // Shape -> Geometry
-    geo = daz_obj->getCachedGeom();
-    QString geoLabel = SanitizeCoreLabel(QString("numvertices = %1").arg(geo->getNumVertices()));
+    mesh = qobject_cast<DzFacetMesh*>(daz_obj->getCachedGeom());
+    QString geoLabel = SanitizeCoreLabel(QString("numvertices = %1").arg(mesh->getNumVertices()));
 
     // DEBUG
     if (YaLuxGlobal.debugLevel > 2)
@@ -79,9 +85,9 @@ QString LuxCoreProcessObject(DzObject* daz_obj, QString& mesg)
     // Shape -> MaterialList
     QString matLabel;
 
-    int numMaterials = shape->getNumMaterials();
     QObjectList texList;
-
+//    int numMaterials = shape->getNumMaterials();
+    int numMaterials = shape->getNumAssemblyMaterials();
     // TEXTURES 
     for (int i = 0; i < numMaterials; i++)
     {
@@ -94,11 +100,8 @@ QString LuxCoreProcessObject(DzObject* daz_obj, QString& mesg)
         QString objMatName = QString("%1_%2").arg(nodeLabel).arg(matLabel);
 
         QString plyFileName;
-        if (geo->inherits("DzFacetMesh"))
-        {
-            DazToPLY dzPLYexport((DzFacetMesh*)geo, objMatName, material);
-            plyFileName = dzPLYexport.LuxMakeBinPLY();
-        }
+        DazToPLY dzPLYexport(mesh, objMatName, material, i);
+        plyFileName = dzPLYexport.LuxMakeBinPLY();
         if (plyFileName == "") continue;
 
         // DEBUG
@@ -724,12 +727,13 @@ bool LuxMakeSCNFile(QString filenameSCN, DzRenderer* r, DzCamera* camera, const 
         // Node -> Object
         DzObject* currentObject = currentNode->getObject();
 
-        if (currentObject == NULL || currentNode->isHidden() || !currentNode->isVisible())
+//        if (currentObject == NULL || currentNode->isHidden() || !currentNode->isVisible())
+        if (currentObject == NULL || !currentNode->isVisible())
         {
             if (currentObject == NULL)
                 dzApp->log("\tno object found.");
-            else if (currentNode->isHidden())
-                dzApp->log("\tnode is hidden.");
+            else if (!currentNode->isVisible())
+                dzApp->log("\tobject is not visible.");
             continue;
         }
 
@@ -751,19 +755,12 @@ bool LuxMakeSCNFile(QString filenameSCN, DzRenderer* r, DzCamera* camera, const 
             if (figure->isGraftFollowing())
             {
                 DzSkeleton* target = figure->getFollowTarget();
-                if (target && dynamic_cast<DzNode*>(target)->isVisible() && target->isVisibileInRender())
+                if (target && target->isVisible() && target->isVisibileInRender())
                 {
-                    /// DB (2021-07-11)
-                    /// This code skips geografts that are grafted on to body parts that are not visible.
-                    /// The one edge case which theoretically won't work is when the geograft is larger
-                    /// than the body part, ex: horse body grafted onto human torso -- if you zoom into
-                    /// just the hooves or tail, the human torso is not visible in the viewfrustum.
-                    ///
-                    /// Instead, dazToPLY has new Per-Face-Culling for non-visible faces. If all faces
-                    /// are not visible, then no PLY is written, and empty filename string is returned.
-                    /// Caveat: the per-face-culling is more performance intensive.
-//                    dzApp->log("yaluxplug: DEBUG: skipping geograft node: " + currentNode->getName());
-//                    continue;
+                    /// DB (2021-07-27)
+                    /// Fixed broken programmer logic and re-enabled.
+                    dzApp->log("yaluxplug: DEBUG: skipping geograft node: " + currentNode->getName());
+                    continue;
                 }
 
             }
@@ -772,11 +769,6 @@ bool LuxMakeSCNFile(QString filenameSCN, DzRenderer* r, DzCamera* camera, const 
 
         outSCN.write(QString("\n# AssetId=[" + nodeAssetId + "],nodeLabel=[" + currentNode->getLabel() + "]\n").toAscii());
         QString objectLabel = currentObject->getLabel();
-
-        //// DB (2021-06-15) This is probably not needed and may be introducing bad render data
-        //// FINALIZE Node's geometry cache for rendering
-        ////currentNode->finalize(true,true);
-        //currentObject->finalize(*currentNode, true, true);
 
         QString output;
         output = LuxCoreProcessObject(currentObject, mesg);
