@@ -151,7 +151,7 @@ YaLuxOptionsFrame::YaLuxOptionsFrame() : DzOptionsFrame("yaluxplug Options Frame
 
     // Save-related settings
     // Save Alpha Channel
-    saveAlphaChannel = new DzBoolProperty("yalux_save_alpha", true, false, true);
+    saveAlphaChannel = new DzBoolProperty("yalux_save_alpha", true, false, false);
     saveAlphaChannel->setLabel("Save alpha channel in PNG");
     listView->addProperty(saveAlphaChannel);
 
@@ -203,6 +203,10 @@ YaLuxOptionsFrame::YaLuxOptionsFrame() : DzOptionsFrame("yaluxplug Options Frame
     doSpecular = new DzBoolProperty("yalux_do_specular", true, false, true);
     doSpecular->setLabel("Render Specular");
     listView->addProperty(doSpecular);
+
+    doRoughnessMaps = new DzBoolProperty("yalux_do_roughness_maps", true, false, true);
+    doRoughnessMaps->setLabel("Render Roughness Maps");
+    listView->addProperty(doRoughnessMaps);
 
     doMetallic = new DzBoolProperty("yalux_do_metallic", true, false, true);
     doMetallic->setLabel("Render Metallic");
@@ -377,6 +381,7 @@ void	YaLuxOptionsFrame::applyChanges()
     YaLuxGlobal.bDoNormalAsBump = doNormalAsBump->getBoolValue();
     YaLuxGlobal.bDoMetallic = doMetallic->getBoolValue();
     YaLuxGlobal.bDoSpecular = doSpecular->getBoolValue();
+    YaLuxGlobal.bDoRoughnessMaps = doRoughnessMaps->getBoolValue();
     YaLuxGlobal.bDoTranslucency = doTranslucency->getBoolValue();
     YaLuxGlobal.bDoSSSVolume = doSSS_Volume->getBoolValue();
     YaLuxGlobal.bDoSSSAbsorption = doSSS_Absorption->getBoolValue();

@@ -84,6 +84,7 @@ private:
     DzBoolProperty      *doNormalAsBump;
     DzBoolProperty      *doMetallic;
     DzBoolProperty      *doSpecular;
+    DzBoolProperty      *doRoughnessMaps;
     DzBoolProperty      *doTranslucency;
     DzBoolProperty      *doSSS_Volume;
     DzBoolProperty      *doSSS_Absorption;
