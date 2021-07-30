@@ -721,7 +721,10 @@ bool PBRSkinToLuxCoreMaterial::CreateTextures()
             }
             else
             {
-                scaled_transmissionTexture = QString("%1 %1 %1").arg(1 / m_TransmissionDistance );
+//                scaled_transmissionTexture = QString("%1 %1 %1").arg(1 / m_TransmissionDistance );
+                m_TranslucencyTex.data += QString("scene.textures.%1.type = \"colordepth\"\n").arg(scaled_transmissionTexture);
+                m_TranslucencyTex.data += QString("scene.textures.%1.kt = \"%2 %3 %4\"\n").arg(scaled_transmissionTexture).arg(GetRed(m_TransmissionColor)).arg(GetGreen(m_TransmissionColor)).arg(GetBlue(m_TransmissionColor));
+                m_TranslucencyTex.data += QString("scene.textures.%1.depth = \"%2\"\n").arg(scaled_transmissionTexture).arg(m_TransmissionDistance / 10);
             }
 
             if (YaLuxGlobal.bDoSSSScattering)
@@ -732,11 +735,21 @@ bool PBRSkinToLuxCoreMaterial::CreateTextures()
             }
             else
             {
-                scaled_scatteringTexture = QString("%1").arg(1 / m_ScatteringDistance);
+//               scaled_scatteringTexture = QString("%1").arg(1 / m_ScatteringDistance);
+                m_TranslucencyTex.data += QString("scene.textures.%1.type = \"colordepth\"\n").arg(scaled_scatteringTexture);
+                m_TranslucencyTex.data += QString("scene.textures.%1.kt = \"%2 %3 %4\"\n").arg(scaled_scatteringTexture).arg(1 - GetRed(m_ScatteringColor)).arg(1 - GetGreen(m_ScatteringColor)).arg(1 - GetBlue(m_ScatteringColor));
+                m_TranslucencyTex.data += QString("scene.textures.%1.depth = \"%2\"\n").arg(scaled_scatteringTexture).arg(m_ScatteringDistance);
             }
 
             // create volume block
-            m_TranslucencyTex.data += QString("scene.volumes.%1.type = \"heterogeneous\"\n").arg(volumeLabel);
+            //m_TranslucencyTex.data += QString("scene.volumes.%1.type = \"heterogeneous\"\n").arg(volumeLabel);
+            //m_TranslucencyTex.data += QString("scene.volumes.%1.absorption = \"%2\"\n").arg(volumeLabel).arg(scaled_transmissionTexture);
+            //m_TranslucencyTex.data += QString("scene.volumes.%1.scattering = \"%2\"\n").arg(volumeLabel).arg(scaled_scatteringTexture);
+            //m_TranslucencyTex.data += QString("scene.volumes.%1.assymetry = \"%2\"\n").arg(volumeLabel).arg(m_ScatteringDirection);
+            //m_TranslucencyTex.data += QString("scene.volumes.%1.multiscattering = %2\n").arg(volumeLabel).arg(1);
+            //m_TranslucencyTex.data += QString("scene.volumes.%1.steps.size = %2\n").arg(volumeLabel).arg(0.1);
+            //m_TranslucencyTex.data += QString("scene.volumes.%1.steps.maxcount = %2\n").arg(volumeLabel).arg(5);
+            m_TranslucencyTex.data += QString("scene.volumes.%1.type = \"homogeneous\"\n").arg(volumeLabel);
             m_TranslucencyTex.data += QString("scene.volumes.%1.absorption = \"%2\"\n").arg(volumeLabel).arg(scaled_transmissionTexture);
             m_TranslucencyTex.data += QString("scene.volumes.%1.scattering = \"%2\"\n").arg(volumeLabel).arg(scaled_scatteringTexture);
             m_TranslucencyTex.data += QString("scene.volumes.%1.assymetry = \"%2\"\n").arg(volumeLabel).arg(m_ScatteringDirection);
