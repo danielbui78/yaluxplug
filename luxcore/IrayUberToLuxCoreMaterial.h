@@ -57,6 +57,8 @@ protected:
     TextureBlock m_TranslucencyTex;
     TextureBlock m_MetallicTex;
 
+    TextureBlock m_T_MaskTex;
+
     QString m_VolumeName = "";
 };
 
