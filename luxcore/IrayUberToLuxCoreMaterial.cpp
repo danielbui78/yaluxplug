@@ -405,7 +405,8 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
 
     m_T_MaskTex.data += QString("scene.textures.%1.type = \"greaterthan\"\n").arg(tmask1);
     m_T_MaskTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(tmask1).arg(mask_translucencyTexture);
-    m_T_MaskTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(tmask1).arg(0.4);
+    //m_T_MaskTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(tmask1).arg(0.4);
+    m_T_MaskTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(tmask1).arg(0.3);
 
     m_T_MaskTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(tmask2);
     m_T_MaskTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(tmask2).arg(tmask0);
