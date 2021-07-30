@@ -242,7 +242,7 @@ bool IrayUberToLuxCoreMaterial::ImportValues()
     currentProperty = m_Material->findProperty("Glossy Reflectivity"); // glossy reflectivity
     if (currentProperty != NULL)
     {
-        m_GlossyReflectivity = ((DzFloatProperty*)currentProperty)->getValue() * m_GlossyLayeredWeight;
+        m_GlossyReflectivity = ((DzFloatProperty*)currentProperty)->getValue();
     }
     if (material_type == metal_roughness)
     {
@@ -259,7 +259,6 @@ bool IrayUberToLuxCoreMaterial::ImportValues()
         if (currentProperty != NULL)
         {
             //// Linear Interpolation: roughness == 1.0 when glossy_layered_weight == 0%
-            //m_Roughness = 1.0 * (1 - m_GlossyLayeredWeight) + ((DzFloatProperty*)currentProperty)->getValue() * m_GlossyLayeredWeight;
             m_Roughness = ((DzFloatProperty*)currentProperty)->getValue();
             if (m_Roughness > 0.8) m_Roughness = 0.8;
 
@@ -273,7 +272,6 @@ bool IrayUberToLuxCoreMaterial::ImportValues()
         if (currentProperty != NULL)
         {
             //// simple linear interpolation: glossiness == 0 when glossy_layered_weight == 0%
-            //m_Roughness = ((DzFloatProperty*)currentProperty)->getValue() * m_GlossyLayeredWeight;
             m_Roughness = ((DzFloatProperty*)currentProperty)->getValue();
             m_Roughness = (1 - m_Roughness > 0.8) ? 0.8 : (1 - m_Roughness);
         }
@@ -281,7 +279,7 @@ bool IrayUberToLuxCoreMaterial::ImportValues()
     currentProperty = m_Material->findProperty("Glossy Anisotropy"); // index of refreaction
     if (currentProperty != NULL)
     {
-        glossy_anisotropy = ((DzFloatProperty*)currentProperty)->getValue() * m_GlossyLayeredWeight;
+        glossy_anisotropy = ((DzFloatProperty*)currentProperty)->getValue();
         if (glossy_anisotropy > 0)
         {
             if (material_type == metal_roughness)
@@ -383,8 +381,7 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
     m_SpecRoughness_2 = mainSpec + "_rough2";
     QString rawDualRoughness = mainSpec + "_raw_rough";
     QString spec1_label = rawDualRoughness + "_spec1";
-    QString spec2_labelA = rawDualRoughness + "_spec2a";
-    QString spec2_labelB = rawDualRoughness + "_spec2b";
+    QString spec2_label = rawDualRoughness + "_spec2";
     QString specratio_label = rawDualRoughness + "_specratio";
 
     if (m_SpecularWeight > 0 && YaLuxGlobal.bDoSpecular)
@@ -407,7 +404,7 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
             m_SpecularTex.data += GenerateCoreTextureBlock1(spec1_label, spec1_mapfile, spec1_float*0.5,
                 m_uscale, m_vscale, m_uoffset, m_voffset);
         if (spec2_mapfile != "")
-            m_SpecularTex.data += GenerateCoreTextureBlock1(spec2_labelA, spec1_mapfile, spec2_float*0.5,
+            m_SpecularTex.data += GenerateCoreTextureBlock1(spec2_label, spec1_mapfile, spec2_float*0.5,
                 m_uscale, m_vscale, m_uoffset, m_voffset);
         if (specratio_mapfile != "")
             m_SpecularTex.data += GenerateCoreTextureBlock1(specratio_label, specratio_mapfile, spec_ratio,
@@ -425,12 +422,9 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
 
         // mix spec1 + spec2
         m_SpecularTex.data += QString("scene.textures.%1.type = \"mix\"\n").arg(m_SpecRoughness_2);
-        if (spec1_mapfile != "")
-            m_SpecularTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(m_SpecRoughness_2).arg(spec1_label);
-        else
-            m_SpecularTex.data += QString("scene.textures.%1.texture1 = %2\n").arg(m_SpecRoughness_2).arg(spec1_float*0.5);
+        m_SpecularTex.data += QString("scene.textures.%1.texture1 = %2\n").arg(m_SpecRoughness_2).arg(m_SpecRoughness_1);
         if (spec2_mapfile != "")
-            m_SpecularTex.data += QString("scene.textures.%1.texture2 = %2\n").arg(m_SpecRoughness_2).arg(spec2_labelA);
+            m_SpecularTex.data += QString("scene.textures.%1.texture2 = %2\n").arg(m_SpecRoughness_2).arg(spec2_label);
         else
             m_SpecularTex.data += QString("scene.textures.%1.texture2 = %2\n").arg(m_SpecRoughness_2).arg(spec2_float*0.5);
         if (specratio_mapfile != "")
@@ -456,6 +450,11 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
             m_SpecularTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(mainSpec).arg(mainSpec + "_weight");
         else
             m_SpecularTex.data += QString("scene.textures.%1.texture2 = %2\n").arg(mainSpec).arg(m_SpecularWeight);
+
+        if (!YaLuxGlobal.bDoRoughnessMaps)
+        {
+            m_Roughness = (spec1_float*0.5 * (1-spec_ratio)) + (spec2_float*0.5 * (spec_ratio));
+        }
 
     }
     else
@@ -1159,30 +1158,38 @@ bool IrayUberToLuxCoreMaterial::CreateMaterials()
                 ret_str += QString("scene.materials.%1.normaltex = \"%2\"\n").arg(glossy2Label).arg(m_NormalTex.name);
         }
 
-        if (doGlass)
+        if (YaLuxGlobal.bDoRoughnessMaps)
         {
-            ret_str += QString("scene.materials.%1.uroughness = %2\n").arg(glossy2Label).arg(m_Roughness);
-            ret_str += QString("scene.materials.%1.vroughness = %2\n").arg(glossy2Label).arg(m_Roughness);
-        }
-        else if (m_SpecularWeight > 0 && YaLuxGlobal.bDoSpecular)
-        {
-            // use dual lobe specular for front and backface
-
-            ret_str += QString("scene.materials.%1.uroughness = \"%2\"\n").arg(glossy2Label).arg(m_SpecRoughness_2);
-            ret_str += QString("scene.materials.%1.vroughness = \"%2\"\n").arg(glossy2Label).arg(m_SpecRoughness_2);
-            if (YaLuxGlobal.bDoSpecular && m_TranslucencyExists)
+            if (doGlass)
             {
-                ret_str += QString("scene.materials.%1.uroughness_bf = \"%2\"\n").arg(glossy2Label).arg(m_SpecRoughness_1);
-                ret_str += QString("scene.materials.%1.vroughness_bf = \"%2\"\n").arg(glossy2Label).arg(m_SpecRoughness_1);
+                ret_str += QString("scene.materials.%1.uroughness = %2\n").arg(glossy2Label).arg(m_Roughness);
+                ret_str += QString("scene.materials.%1.vroughness = %2\n").arg(glossy2Label).arg(m_Roughness);
             }
-        }
-        else if (m_GlossyRoughnessMap != "" && m_GlossyLayeredWeight > 0)
-        {
-            //QString glossyRoughnessTexLabel = glossy2Label + "_glossyRoughnessTex";
-            //ret_str += QString("scene.textures.%1.type = \"imagemap\"\n").arg(glossyRoughnessTexLabel);
-            //ret_str += QString("scene.textures.%1.file = \"%2\"\n").arg(glossyRoughnessTexLabel).arg(glossy_roughness_mapfile);
-            ret_str += QString("scene.materials.%1.uroughness = %2\n").arg(glossy2Label).arg(m_GlossyRoughnessTex.name);
-            ret_str += QString("scene.materials.%1.vroughness = %2\n").arg(glossy2Label).arg(m_GlossyRoughnessTex.name);
+            else if (m_SpecularWeight > 0 && YaLuxGlobal.bDoSpecular)
+            {
+                // use dual lobe specular for front and backface
+
+                ret_str += QString("scene.materials.%1.uroughness = \"%2\"\n").arg(glossy2Label).arg(m_SpecRoughness_2);
+                ret_str += QString("scene.materials.%1.vroughness = \"%2\"\n").arg(glossy2Label).arg(m_SpecRoughness_2);
+                if (YaLuxGlobal.bDoSpecular && m_TranslucencyExists)
+                {
+                    ret_str += QString("scene.materials.%1.uroughness_bf = \"%2\"\n").arg(glossy2Label).arg(m_SpecRoughness_1);
+                    ret_str += QString("scene.materials.%1.vroughness_bf = \"%2\"\n").arg(glossy2Label).arg(m_SpecRoughness_1);
+                }
+            }
+            else if (m_GlossyRoughnessMap != "" && m_GlossyLayeredWeight > 0)
+            {
+                //QString glossyRoughnessTexLabel = glossy2Label + "_glossyRoughnessTex";
+                //ret_str += QString("scene.textures.%1.type = \"imagemap\"\n").arg(glossyRoughnessTexLabel);
+                //ret_str += QString("scene.textures.%1.file = \"%2\"\n").arg(glossyRoughnessTexLabel).arg(glossy_roughness_mapfile);
+                ret_str += QString("scene.materials.%1.uroughness = %2\n").arg(glossy2Label).arg(m_GlossyRoughnessTex.name);
+                ret_str += QString("scene.materials.%1.vroughness = %2\n").arg(glossy2Label).arg(m_GlossyRoughnessTex.name);
+            }
+            else
+            {
+                ret_str += QString("scene.materials.%1.uroughness = %2\n").arg(glossy2Label).arg(m_Roughness);
+                ret_str += QString("scene.materials.%1.vroughness = %2\n").arg(glossy2Label).arg(m_Roughness);
+            }
         }
         else
         {
