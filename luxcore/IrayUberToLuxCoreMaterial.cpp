@@ -631,83 +631,10 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
             m_TranslucencyTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(transmissionTexture).arg(transmissionTexture0);
             m_TranslucencyTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(transmissionTexture).arg(translucencyTexture);
 
-//          scatteringTexture = QString("%1 %2 %3").arg(GetRed(m_ScatteringColor)).arg(GetGreen(m_ScatteringColor)).arg(GetBlue(m_ScatteringColor));
             scatteringTexture = QString("%1 %2 %3").arg(1 - GetRed(m_ScatteringColor)).arg(1 - GetGreen(m_ScatteringColor)).arg(1 - GetBlue(m_ScatteringColor));
-//          scatteringTexture = QString("%1 %2 %3").arg(scattering_color.redF()).arg(scattering_color.greenF()).arg(scattering_color.blueF());
-//          scatteringTexture = "0 0 0";
-
-            //// Assume absorption = 1 - transmission
-            //m_TranslucencyTex.data += QString("scene.textures.%1.type = \"subtract\"\n").arg(absorptionTexture);
-            //m_TranslucencyTex.data += QString("scene.textures.%1.texture1 = 1 1 1\n").arg(absorptionTexture);
-            //m_TranslucencyTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(absorptionTexture).arg(transmissionTexture);
-
-            //////////////////////////////////////////
-            // scale conversion for Daz Volume parameters to Lux Volume parameters
-            //////////////////////////////////////////
-            //float transmissionDelta = (m_TransmissionDistance - 0.008) / 0.0068;
-            //float scatteringDelta = (m_ScatteringDistance - 0.15) / 0.135;
-
-            //// transmissionDelta == 0, no recalibration, transmissionDelta == 0.1 --> 
-            //float adjustment_a = 1.0;
-            //float adjustment_b = 3.125;
-            //float inverseTransmissionDelta = 1-transmissionDelta;
-            //if (inverseTransmissionDelta < 0) inverseTransmissionDelta = 0;
-            //float adjustment = (adjustment_a)*(inverseTransmissionDelta) + (adjustment_b)*(transmissionDelta);
-            //transmission_distance*= adjustment;
-
-            // numbers made to multiply by 15/scattering
-            //adjustment_a = 1.0;
-            //adjustment_b = 5.0;
-            //float inverseScatteringDelta = 1-scatteringDelta;
-            //if (inverseScatteringDelta < 0) inverseScatteringDelta = 0;
-            //adjustment = (adjustment_a)*(inverseScatteringDelta) + (adjustment_b)*(scatteringDelta);
-            //scattering_distance *= adjustment;
-
-            //// transmissionDelta == 0, no recalibration, transmissionDelta == 0.1 --> 
-            //float adjustment_a = 0.008;
-            //float adjustment_b = 0.00425;
-            //float adjustment = (adjustment_a)+(adjustment_b) * (transmissionDelta);
-            //m_TransmissionDistance = adjustment;
-
-            //adjustment_a = 0.01;
-            //adjustment_b = 0.005;
-            //adjustment = (adjustment_a)+(adjustment_b) * (scatteringDelta);
-            //m_ScatteringDistance = adjustment;
-
-            ////// EXPERIMENTAL-3 /////////////
             m_TransmissionDistance /= 100;
             m_ScatteringDistance /= 1;
 
-            // scale conversion
-            //QColor scaled_absorption_color = QColor(0,0,0);
-            //float scale = 1;
-            //float v; 
-            //float scaled_component;
-            //v = transmission_color.redF();
-            //scaled_component = (-log(max(v, pow(1, -30))) / transmission_distance) * scale * (v == 1.0 && -1 || 1);
-            //scaled_absorption_color.setRedF(scaled_component);
-            //v = transmission_color.greenF();
-            //scaled_component = (-log(max(v, pow(1, -30))) / transmission_distance) * scale * (v == 1.0 && -1 || 1);
-            //scaled_absorption_color.setGreenF(scaled_component);
-            //v = transmission_color.blueF();
-            //scaled_component = (-log(max(v, pow(1, -30))) / transmission_distance) * scale * (v == 1.0 && -1 || 1);
-            //scaled_absorption_color.setBlueF(scaled_component);
-
-            // clamp values
-            //float transmission_density = (transmission_density > 1000) ? 1000 : transmission_density;
-            //float scattering_density = (scattering_density > 500) ? 500 : scattering_density;
-
-            // Multiply translucency into transmission and scattering
-            //QString transmissionTexture_2 = transmissionTexture + "_2";
-            //ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(transmissionTexture_2);
-            //ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(transmissionTexture_2).arg(transmissionTexture);
-            //ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(transmissionTexture_2).arg(translucencyTexture);
-            //QString scatteringTexture_2 = scatteringTexture + "_2";
-            //ret_str += QString("scene.textures.%1.type = \"scale\"\n").arg(scatteringTexture_2);
-            //ret_str += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(scatteringTexture_2).arg(scatteringTexture);
-            //ret_str += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(scatteringTexture_2).arg(translucencyTexture);
-
-            // now scale everything up(down) for volumetric rendering data
             if (YaLuxGlobal.bDoSSSAbsorption)
             {
                 m_TranslucencyTex.data += QString("scene.textures.%1.type = \"colordepth\"\n").arg(scaled_transmissionTexture);
@@ -1097,30 +1024,14 @@ bool IrayUberToLuxCoreMaterial::CreateMaterials()
     {
         QString glossy2Label = matLabel;
 
-        if (m_TranslucencyExists || m_RefractionWeight > 0)
-        {
-            if (YaLuxGlobal.bDoDebugSSS && m_VolumeExists)
-                ret_str += QString("scene.materials.%1.type = \"null\"\n").arg(glossy2Label);
-            else if (doGlass)
-                ret_str += QString("scene.materials.%1.type = \"glossy2\"\n").arg(glossy2Label);
-            else if (m_TranslucencyExists && YaLuxGlobal.bDoTranslucency)
-                ret_str += QString("scene.materials.%1.type = \"glossytranslucent\"\n").arg(glossy2Label);
-            else
-                ret_str += QString("scene.materials.%1.type = \"glossy2\"\n").arg(glossy2Label);
-            if (YaLuxGlobal.bDoSSSVolume && m_VolumeExists)
-                ret_str += QString("scene.materials.%1.volume.interior = \"%2\"\n").arg(glossy2Label).arg(m_VolumeName);
-            if (YaLuxGlobal.bDoTranslucency && m_TranslucencyExists)
-            {
-                ret_str += QString("scene.materials.%1.kt = \"%2\"\n").arg(glossy2Label).arg(m_DiffuseTex.name);
-//                ret_str += QString("scene.materials.%1.kt = \"%2\"\n").arg(glossy2Label).arg(m_TranslucencyTex.name);
-//                ret_str += QString("scene.materials.%1.kt = \"%2\"\n").arg(glossy2Label).arg("0 0 0");
-//                ret_str += QString("scene.materials.%1.kt_bf = \"%2\"\n").arg(glossy2Label).arg("0 0 0");
-            }
-        }
-        else
-        {
+        if (YaLuxGlobal.bDoDebugSSS && m_VolumeExists)
+            ret_str += QString("scene.materials.%1.type = \"null\"\n").arg(glossy2Label);
+        else if (doGlass)
             ret_str += QString("scene.materials.%1.type = \"glossy2\"\n").arg(glossy2Label);
-        }
+        else if (m_TranslucencyExists && YaLuxGlobal.bDoTranslucency)
+            ret_str += QString("scene.materials.%1.type = \"glossytranslucent\"\n").arg(glossy2Label);
+        else
+            ret_str += QString("scene.materials.%1.type = \"glossy2\"\n").arg(glossy2Label);
 
         if (doGlass)
         {
@@ -1129,6 +1040,14 @@ bool IrayUberToLuxCoreMaterial::CreateMaterials()
         else
         {
             ret_str += QString("scene.materials.%1.kd = \"%2\"\n").arg(glossy2Label).arg(m_DiffuseTex.name);
+        }
+
+        if (YaLuxGlobal.bDoSSSVolume && m_VolumeExists)
+            ret_str += QString("scene.materials.%1.volume.interior = \"%2\"\n").arg(glossy2Label).arg(m_VolumeName);
+        if (YaLuxGlobal.bDoTranslucency && m_TranslucencyExists)
+        {
+            ret_str += QString("scene.materials.%1.kt = \"%2\"\n").arg(glossy2Label).arg(m_TranslucencyTex.name);
+            //                ret_str += QString("scene.materials.%1.kt = \"%2\"\n").arg(glossy2Label).arg("0 0 0");
         }
 
         if (doGlass)
