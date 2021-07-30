@@ -369,7 +369,8 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
 
             m_DiffuseTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(diffuse_new_name0);
             m_DiffuseTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffuse_new_name0).arg(m_DiffuseTex.name);
-            m_DiffuseTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffuse_new_name0).arg(1 - (m_TranslucencyWeight * 0.89));
+//            m_DiffuseTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffuse_new_name0).arg(1 - (m_TranslucencyWeight * 0.89));
+            m_DiffuseTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffuse_new_name0).arg(1 - 0.89);
 
             m_DiffuseTex.name = diffuse_new_name0;
 
