@@ -320,11 +320,32 @@ bool IrayUberToLuxCoreMaterial::ImportValues()
                     m_VolumeExists = true;
                 }
             }
-            currentProperty = m_Material->findProperty("SSS Color");
+
+            currentProperty = m_Material->findProperty("SSS Mode");
             if (currentProperty != NULL)
             {
-                m_ScatteringColor = ((DzColorProperty*)currentProperty)->getColorValue();
+                QString sssMode = ((DzEnumProperty*)currentProperty)->getStringValue();
+                if (sssMode.toLower().contains("mono"))
+                {
+                    currentProperty = m_Material->findProperty("SSS Amount");
+                    if (currentProperty != NULL)
+                    {
+                        double sssValue = ((DzFloatProperty*)currentProperty)->getValue();
+                        m_ScatteringColor.setRedF(sssValue);
+                        m_ScatteringColor.setGreenF(sssValue);
+                        m_ScatteringColor.setBlueF(sssValue);
+                    }
+                }
+                else
+                {
+                    currentProperty = m_Material->findProperty("SSS Color");
+                    if (currentProperty != NULL)
+                    {
+                        m_ScatteringColor = ((DzColorProperty*)currentProperty)->getColorValue();
+                    }
+                }
             }
+
             currentProperty = m_Material->findProperty("Transmitted Measurement Distance");
             if (currentProperty != NULL)
             {
