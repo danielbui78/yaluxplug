@@ -382,21 +382,6 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
         m_DiffuseTex.data += GenerateCoreTextureBlock3(mainDiffTex, m_DiffuseMap,
             GetRed(m_DiffuseColor), GetGreen(m_DiffuseColor), GetBlue(m_DiffuseColor),
             m_uscale, m_vscale, m_uoffset, m_voffset);
-
-        if (m_TranslucencyWeight > 0)
-        {
-            // scale down diffuse, based on translucency weight
-            QString diffuse_new_name0 = m_LuxMaterialName + "_d_volumetric" + "_0";
-
-            m_DiffuseTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(diffuse_new_name0);
-            m_DiffuseTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffuse_new_name0).arg(m_DiffuseTex.name);
-//            m_DiffuseTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffuse_new_name0).arg(1 - (m_TranslucencyWeight * 0.89));
-            m_DiffuseTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffuse_new_name0).arg(1 - 0.89);
-
-            m_DiffuseTex.name = diffuse_new_name0;
-
-        }
-
     }
 
 
@@ -831,6 +816,21 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
     }
     //    if (!volume_exists) translucency_exists = false;
     m_OpacityTex.name = OpacityTex;
+
+    // Darken Diffuse Tex for SSS / Translucency
+    if (m_TranslucencyWeight > 0 &&
+        (YaLuxGlobal.bDoTranslucency || YaLuxGlobal.bDoSSSVolume))
+    {
+        // scale down diffuse, based on translucency weight
+        QString diffuse_darkened = m_LuxMaterialName + "_d_SSS_darkened";
+        m_DiffuseTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(diffuse_darkened);
+        m_DiffuseTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffuse_darkened).arg(m_DiffuseTex.name);
+        //            m_DiffuseTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffuse_darkened).arg(1 - (m_TranslucencyWeight * 0.89));
+                    //m_DiffuseTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffuse_darkened).arg(1 - 0.89);
+        m_DiffuseTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffuse_darkened).arg(1 - (0.65 + m_TranslucencyWeight*0.25));
+        m_DiffuseTex.name = diffuse_darkened;
+
+    }
 
 
     // Metallicity
