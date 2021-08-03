@@ -623,84 +623,6 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
         }
     }
 
-    // TranslucencyMap Block
-    if (m_TranslucencyExists && YaLuxGlobal.bDoTranslucency)
-    {
-        // regular translucencyTexture (gamma = 2.2)
-        QString translucencyTexture_a = m_LuxMaterialName + "_translucency_a";
-        QString translucencyTexture_b = m_LuxMaterialName + "_translucency_b";
-        QString translucencyTexture_c = m_LuxMaterialName + "_translucency_c";
-        QString translucencyTexture_d = m_LuxMaterialName + "_translucency_d";
-
-        if (m_TranslucencyMap != "")
-        {
-            m_TranslucencyTex.data += GenerateCoreTextureBlock3(translucencyTexture_a, m_TranslucencyMap,
-                GetRed(m_TranslucencyColor), GetGreen(m_TranslucencyColor), GetBlue(m_TranslucencyColor),
-                m_uscale, m_vscale, m_uoffset, m_voffset,
-                2.2, "", "rgb");
-
-            if (m_TranslucencyWeight != 1)
-            {
-                m_TranslucencyTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(translucencyTexture_b);
-                m_TranslucencyTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(translucencyTexture_b).arg(translucencyTexture_a);
-                m_TranslucencyTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(translucencyTexture_b).arg(m_TranslucencyWeight);
-                m_TranslucencyTex.name = translucencyTexture_b;
-            }
-            else
-            {
-                m_TranslucencyTex.name = translucencyTexture_a;
-            }
-
-        }
-        else
-        {
-            // create translucency texture from diffuse map
-            m_TranslucencyTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(translucencyTexture_a);
-            m_TranslucencyTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(translucencyTexture_a).arg(m_DiffuseTex.name);
-            m_TranslucencyTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(translucencyTexture_a).arg(1.2);
-
-            m_TranslucencyTex.data += QString("scene.textures.%1.type = \"clamp\"\n").arg(translucencyTexture_b);
-            m_TranslucencyTex.data += QString("scene.textures.%1.texture = \"%2\"\n").arg(translucencyTexture_b).arg(translucencyTexture_a);
-            m_TranslucencyTex.data += QString("scene.textures.%1.max = \"%2\"\n").arg(translucencyTexture_b).arg(1);
-
-            m_TranslucencyTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(translucencyTexture_c);
-            m_TranslucencyTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(translucencyTexture_c).arg(translucencyTexture_b);
-            m_TranslucencyTex.data += QString("scene.textures.%1.texture2 = \"%2 %3 %4\"\n").arg(translucencyTexture_c).arg(GetRed(m_TranslucencyColor)).arg(GetGreen(m_TranslucencyColor)).arg(GetBlue(m_TranslucencyColor));
-
-            if (m_TranslucencyWeight != 1)
-            {
-                m_TranslucencyTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(translucencyTexture_d);
-                m_TranslucencyTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(translucencyTexture_d).arg(translucencyTexture_c);
-                m_TranslucencyTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(translucencyTexture_d).arg(m_TranslucencyWeight);
-                m_TranslucencyTex.name = translucencyTexture_d;
-            }
-            else
-            {
-                m_TranslucencyTex.name = translucencyTexture_c;
-            }
-
-        }
-
-        QString translucencyTexture_e = m_LuxMaterialName + "_translucency_e";
-        QString translucencyTexture_f = m_LuxMaterialName + "_translucency_f";
-        QString translucencyTexture_g = m_LuxMaterialName + "_translucency_g";
-
-        m_TranslucencyTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(translucencyTexture_e);
-        m_TranslucencyTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(translucencyTexture_e).arg(m_T_MaskTex.name);
-        m_TranslucencyTex.data += QString("scene.textures.%1.texture2 = \"%2 %3 %4\"\n").arg(translucencyTexture_e).arg(GetRed(m_TransmissionColor)).arg(GetGreen(m_TransmissionColor)).arg(GetBlue(m_TransmissionColor));
-
-        m_TranslucencyTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(translucencyTexture_f);
-        m_TranslucencyTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(translucencyTexture_f).arg(m_TranslucencyTex.name);
-        m_TranslucencyTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(translucencyTexture_f).arg(translucencyTexture_e);
-
-        m_TranslucencyTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(translucencyTexture_g);
-        m_TranslucencyTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(translucencyTexture_g).arg(translucencyTexture_f);
-        m_TranslucencyTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(translucencyTexture_g).arg(m_TranslucencyWeight);
-
-        m_TranslucencyTex.name = translucencyTexture_g;
-
-    }
-
     // VOLUME BLOCK
     //QString translucencyTexture = m_LuxMaterialName + "_translucency";
     QString transmissionTexture = m_LuxMaterialName + "_transmission";
@@ -810,6 +732,63 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
         }
 
         m_VolumeName = volumeLabel;
+    }
+
+    // TranslucencyMap Block
+    if (m_TranslucencyExists && YaLuxGlobal.bDoTranslucency)
+    {
+        // regular translucencyTexture (gamma = 2.2)
+        QString translucencyTexture_a = m_LuxMaterialName + "_translucency_a";
+        QString translucencyTexture_b = m_LuxMaterialName + "_translucency_b";
+        QString translucencyTexture_c = m_LuxMaterialName + "_translucency_c";
+        QString translucencyTexture_d = m_LuxMaterialName + "_translucency_d";
+
+        // create translucency texture
+        if (m_TranslucencyMap != "")
+        {
+            m_TranslucencyTex.data += GenerateCoreTextureBlock3(translucencyTexture_a, m_TranslucencyMap,
+                GetRed(m_TranslucencyColor), GetGreen(m_TranslucencyColor), GetBlue(m_TranslucencyColor),
+                m_uscale, m_vscale, m_uoffset, m_voffset,
+                2.2, "", "rgb");
+
+            m_TranslucencyTex.name = translucencyTexture_a;
+
+        }
+        else
+        {
+            // create translucency texture from diffuse map
+            m_TranslucencyTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(translucencyTexture_a);
+            m_TranslucencyTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(translucencyTexture_a).arg(m_DiffuseTex.name);
+            m_TranslucencyTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(translucencyTexture_a).arg(1.2);
+
+            m_TranslucencyTex.data += QString("scene.textures.%1.type = \"clamp\"\n").arg(translucencyTexture_b);
+            m_TranslucencyTex.data += QString("scene.textures.%1.texture = \"%2\"\n").arg(translucencyTexture_b).arg(translucencyTexture_a);
+            m_TranslucencyTex.data += QString("scene.textures.%1.max = \"%2\"\n").arg(translucencyTexture_b).arg(1);
+
+            m_TranslucencyTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(translucencyTexture_c);
+            m_TranslucencyTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(translucencyTexture_c).arg(translucencyTexture_b);
+            m_TranslucencyTex.data += QString("scene.textures.%1.texture2 = \"%2 %3 %4\"\n").arg(translucencyTexture_c).arg(GetRed(m_TranslucencyColor)).arg(GetGreen(m_TranslucencyColor)).arg(GetBlue(m_TranslucencyColor));
+
+            m_TranslucencyTex.name = translucencyTexture_c;
+
+        }
+
+        //// multiply RGB translucency texture with transmission color, then LERP with Diffuse Tex
+        QString translucencyTexture_e = m_LuxMaterialName + "_translucency_e";
+        //QString translucencyTexture_f = m_LuxMaterialName + "_translucency_f";
+        //QString translucencyTexture_g = m_LuxMaterialName + "_translucency_g";
+
+        m_TranslucencyTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(translucencyTexture_d);
+        m_TranslucencyTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(translucencyTexture_d).arg(m_TranslucencyTex.name);
+        m_TranslucencyTex.data += QString("scene.textures.%1.texture2 = \"%2 %3 %4\"\n").arg(translucencyTexture_d).arg(GetRed(m_TransmissionColor)).arg(GetGreen(m_TransmissionColor)).arg(GetBlue(m_TransmissionColor));
+
+        m_TranslucencyTex.data += QString("scene.textures.%1.type = \"mix\"\n").arg(translucencyTexture_e);
+        m_TranslucencyTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(translucencyTexture_e).arg(m_DiffuseTex.name);
+        m_TranslucencyTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(translucencyTexture_e).arg(translucencyTexture_d);
+        m_TranslucencyTex.data += QString("scene.textures.%1.amount = \"%2\"\n").arg(translucencyTexture_e).arg(m_T_MaskTex.name);
+
+        m_TranslucencyTex.name = translucencyTexture_e;
+
     }
 
     // Opacity Block
