@@ -398,16 +398,19 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
 
     // set up volume_translucencyTexture (gamma = 1.0)
     if (m_TranslucencyMap != "")
-        m_T_MaskTex.data += GenerateCoreTextureBlock3(mask_translucencyTexture, m_TranslucencyMap,
-            GetRed(m_TranslucencyColor), GetGreen(m_TranslucencyColor), GetBlue(m_TranslucencyColor),
+        m_T_MaskTex.data += GenerateCoreTextureBlock1(mask_translucencyTexture, m_TranslucencyMap, 1.0,
             m_uscale, m_vscale, m_uoffset, m_voffset,
             1.0, "", "colored_mean");
     else
-        mask_translucencyTexture = QString("%1 %2 %3").arg(GetRed(m_TranslucencyColor)).arg(GetGreen(m_TranslucencyColor)).arg(GetBlue(m_TranslucencyColor));
+    {
+        double mask_translucencyValue = gammaUnCorrect(m_TranslucencyColor.lightnessF());
+        mask_translucencyTexture = QString("%1").arg(mask_translucencyValue);
+    }
 
     m_T_MaskTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(tmask0);
     m_T_MaskTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(tmask0).arg(mask_translucencyTexture);
-    m_T_MaskTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(tmask0).arg(m_TranslucencyWeight * 0.75);
+    //m_T_MaskTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(tmask0).arg(m_TranslucencyWeight * 0.75);
+    m_T_MaskTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(tmask0).arg(m_TranslucencyWeight * 0.5);
 
     m_T_MaskTex.data += QString("scene.textures.%1.type = \"greaterthan\"\n").arg(tmask1);
     m_T_MaskTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(tmask1).arg(mask_translucencyTexture);
@@ -649,21 +652,40 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
             }
         }
 
+        // operations to perform whether or not new volume is created
+        if (m_SSS_tint != QColor(255, 255, 255))
+        {
+            m_TransmissionColor.setRedF(GetRed(m_TransmissionColor) * GetRed(m_SSS_tint));
+            m_TransmissionColor.setGreenF(GetGreen(m_TransmissionColor) * GetGreen(m_SSS_tint));
+            m_TransmissionColor.setBlueF(GetBlue(m_TransmissionColor) * GetBlue(m_SSS_tint));
+        }
+        //// clamp transmission brightness
+        //QColor min_Brightness_Color = QColor::fromRgbF(0.9, 0.2, 0.2);
+        //if (m_TransmissionColor.lightnessF() < min_Brightness_Color.lightnessF())
+        //{
+        //    double factor = min_Brightness_Color.lightnessF() / m_TransmissionColor.lightnessF();
+        //    m_TransmissionColor = m_TransmissionColor.lighter(100 * factor);
+        //}
+        //// clamp translucency brightness
+        //if (m_TranslucencyColor.lightnessF() < min_Brightness_Color.lightnessF())
+        //{
+        //    double factor = min_Brightness_Color.lightnessF() / m_TranslucencyColor.lightnessF();
+        //    m_TranslucencyColor = m_TranslucencyColor.lighter(100 * factor);
+        //}
+
+        // create new volume
         if (match_found == false)
         {
             // add to volumelist
             YaLuxGlobal.VolumeList.append(v);
 
+            // clamp values
+            m_TransmissionDistance = (m_TransmissionDistance > 0.12) ? 0.12 : m_TransmissionDistance;
+            m_ScatteringDistance = (m_ScatteringDistance > 0.02) ? 0.02 : m_ScatteringDistance;
+
             // create new volume block.....
             QString transmission_mapfile = "";
             QString scattering_mapfile = "";
-
-            if (m_SSS_tint != QColor(255, 255, 255))
-            {
-                m_TransmissionColor.setRedF(GetRed(m_TransmissionColor) * GetRed(m_SSS_tint));
-                m_TransmissionColor.setGreenF(GetGreen(m_TransmissionColor) * GetGreen(m_SSS_tint));
-                m_TransmissionColor.setBlueF(GetBlue(m_TransmissionColor) * GetBlue(m_SSS_tint));
-            }
 
             QString transmissionTexture0 = transmissionTexture + "_0";
             if (transmission_mapfile != "")
@@ -671,9 +693,10 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
                     GetRed(m_TransmissionColor), GetGreen(m_TransmissionColor), GetBlue(m_TransmissionColor));
             else
                 transmissionTexture0 = QString("%1 %2 %3").arg(GetRed(m_TransmissionColor)).arg(GetGreen(m_TransmissionColor)).arg(GetBlue(m_TransmissionColor));
+            // multiply by translucency color
             m_TranslucencyTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(transmissionTexture);
             m_TranslucencyTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(transmissionTexture).arg(transmissionTexture0);
-            m_TranslucencyTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(transmissionTexture).arg(mask_translucencyTexture);
+            m_TranslucencyTex.data += QString("scene.textures.%1.texture2 = \"%2 %3 %4\"\n").arg(transmissionTexture).arg(GetRed(m_TranslucencyColor)).arg(GetGreen(m_TranslucencyColor)).arg(GetBlue(m_TranslucencyColor));
 
             scatteringTexture = QString("%1 %2 %3").arg(1 - GetRed(m_ScatteringColor)).arg(1 - GetGreen(m_ScatteringColor)).arg(1 - GetBlue(m_ScatteringColor));
 
@@ -712,8 +735,8 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
             m_TranslucencyTex.data += QString("scene.volumes.%1.scattering = \"%2\"\n").arg(volumeLabel).arg(scaled_scatteringTexture);
             m_TranslucencyTex.data += QString("scene.volumes.%1.assymetry = \"%2\"\n").arg(volumeLabel).arg(m_ScatteringDirection);
             m_TranslucencyTex.data += QString("scene.volumes.%1.multiscattering = %2\n").arg(volumeLabel).arg(1);
-            m_TranslucencyTex.data += QString("scene.volumes.%1.steps.size = %2\n").arg(volumeLabel).arg(0.1);
-            m_TranslucencyTex.data += QString("scene.volumes.%1.steps.maxcount = %2\n").arg(volumeLabel).arg(5);
+            //m_TranslucencyTex.data += QString("scene.volumes.%1.steps.size = %2\n").arg(volumeLabel).arg(0.1);
+            //m_TranslucencyTex.data += QString("scene.volumes.%1.steps.maxcount = %2\n").arg(volumeLabel).arg(5);
         }
 
         m_VolumeName = volumeLabel;
@@ -805,6 +828,7 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
         OpacityTex = QString("%1 %1 %1").arg(m_OpacityValue);
     if (YaLuxGlobal.bDoSSSVolume && m_VolumeExists && m_RefractionWeight == 0)
     {
+        // Subtract translucency(SSS) mask from the current Opacity Texture
         QString SSSMaskTex3 = m_LuxMaterialName + "_SSS_MASK" + "_3";
         m_OpacityTex.data += QString("scene.textures.%1.type = \"subtract\"\n").arg(SSSMaskTex3);
         m_OpacityTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(SSSMaskTex3).arg(OpacityTex);
