@@ -61,6 +61,8 @@
 #include "dzviewrenderhandler.h"
 #include "dzrenderdata.h"
 #include "dzmainwindow.h"
+#include "dzactionmgr.h"
+#include "dzaction.h"
 
 #include "optionsframe.h"
 
@@ -220,19 +222,25 @@ bool YaLuxRender::render(DzRenderHandler *old_handler, DzCamera *camera, const D
     /////////////////////////////////////
     // Add Tonemapper Options if not exists
     /////////////////////////////////////
-    DzNode* tonemapper = dzScene->findNode("Tonemapper Options");
-    if (tonemapper)
-    {
+    DzActionMgr *actionMgr = dzApp->getInterface()->getActionMgr();
 
+    DzNode* tonemapper = dzScene->findNode("Tonemapper Options");
+    if (!tonemapper && YaLuxGlobal.bAddTonemapperAndEnvironement)
+    {
+        DzAction* action = actionMgr->findAction("DzNewTonemapperNodeAction");
+        if (action)
+            action->trigger();
     }
 
     /////////////////////////////////////
-    // ?? Optional ??? Add IBL Environemnet if no lights
+    // Add IBL Environemnet if no lights
     /////////////////////////////////////
     DzNode* environment = dzScene->findNode("Environment Options");
-    if (environment)
+    if (!environment && YaLuxGlobal.bAddTonemapperAndEnvironement)
     {
-
+        DzAction* action = actionMgr->findAction("DzNewEnvironmentNodeAction");
+        if (action)
+            action->trigger();
     }
 
 
