@@ -79,6 +79,9 @@ private:
     DzEnumProperty      *renderMode;
     DzStringProperty    *customRenderString;
 
+    DzBoolProperty      *addTonemapperAndEnvironment;
+    DzBoolProperty      *preferNormal;
+
     DzBoolProperty      *doBumpMaps;
     DzBoolProperty      *doNormalMaps;
     DzBoolProperty      *doNormalAsBump;

@@ -187,6 +187,14 @@ YaLuxOptionsFrame::YaLuxOptionsFrame() : DzOptionsFrame("yaluxplug Options Frame
     listView->addProperty(tonemapISO);
 
 
+    addTonemapperAndEnvironment = new DzBoolProperty("yalux_add_tonemapper_environment", true, true, true);
+    addTonemapperAndEnvironment->setLabel("Automatically Add Tonemapper and Environment Nodes");
+    listView->addProperty(addTonemapperAndEnvironment);
+
+    preferNormal = new DzBoolProperty("yalux_prefer_normal", true, false, false);
+    preferNormal->setLabel("Prefer Normal Maps");
+    listView->addProperty(preferNormal);
+
     /////// DEBUGGING OPTIONS ///////
     doBumpMaps = new DzBoolProperty("yalux_do_bumpmaps", true, false, true);
     doBumpMaps->setLabel("Render Bump Maps");
@@ -286,17 +294,23 @@ void	YaLuxOptionsFrame::loadSettings()
         haltSPP->setValue( settings->getIntValue( haltSPP->getName()) );
         haltThreshold->setValue( settings->getFloatValue( haltThreshold->getName()) );
         debugLevel->setValue( settings->getIntValue( debugLevel->getName()) );
+
         tonemapGamma->setValue( settings->getFloatValue( tonemapGamma->getName()) );
         tonemapFstop->setValue( settings->getFloatValue( tonemapFstop->getName()) );
         tonemapExposureTime->setValue( settings->getFloatValue( tonemapExposureTime->getName()) );
         tonemapISO->setValue( settings->getIntValue( tonemapISO->getName()) );
         toneMapMethod->setValue( settings->getIntValue( toneMapMethod->getName()) );
+
         renderServerList->setValue( settings->getStringValue( renderServerList->getName()) );
         renderMode->setValue( settings->getIntValue( renderMode->getName()) );
         customRenderString->setValue( settings->getStringValue( customRenderString->getName()) );
         specularMode->setValue( settings->getIntValue( specularMode->getName()) );
         networkRenderOn->setBoolValue( settings->getBoolValue( networkRenderOn->getName()) );
         maxTextureSize->setValue( settings->getIntValue( maxTextureSize->getName()) );
+
+        addTonemapperAndEnvironment->setBoolValue(settings->getBoolValue(addTonemapperAndEnvironment->getName()));
+        preferNormal->setBoolValue(settings->getBoolValue(preferNormal->getName()));
+
         doBumpMaps->setBoolValue( settings->getBoolValue( doBumpMaps->getName()) );
         doNormalMaps->setBoolValue(settings->getBoolValue(doNormalMaps->getName()));
         doNormalAsBump->setBoolValue(settings->getBoolValue(doNormalAsBump->getName()));
@@ -320,17 +334,23 @@ void	YaLuxOptionsFrame::saveSettings()
     settings->setIntValue(haltSPP->getName(), haltSPP->getValue());
     settings->setFloatValue(haltThreshold->getName(), haltThreshold->getValue());
     settings->setIntValue(debugLevel->getName(), debugLevel->getValue());
+
     settings->setFloatValue(tonemapGamma->getName(), tonemapGamma->getValue());
     settings->setFloatValue(tonemapFstop->getName(), tonemapFstop->getValue());
     settings->setFloatValue(tonemapExposureTime->getName(), tonemapExposureTime->getValue());
     settings->setIntValue(tonemapISO->getName(), tonemapISO->getValue());
     settings->setIntValue(toneMapMethod->getName(), toneMapMethod->getValue());
+
     settings->setStringValue(renderServerList->getName(), renderServerList->getValue());
     settings->setIntValue(renderMode->getName(), renderMode->getValue());
     settings->setStringValue(customRenderString->getName(), customRenderString->getValue());
     settings->setIntValue(specularMode->getName(), specularMode->getValue());
     settings->setIntValue(maxTextureSize->getName(), maxTextureSize->getValue());
     settings->setBoolValue(networkRenderOn->getName(), networkRenderOn->getBoolValue());
+
+    settings->setBoolValue(addTonemapperAndEnvironment->getName(), addTonemapperAndEnvironment->getBoolValue());
+    settings->setBoolValue(preferNormal->getName(), preferNormal->getBoolValue());
+
     settings->setBoolValue(doBumpMaps->getName(), doBumpMaps->getBoolValue());
     settings->setBoolValue(doNormalMaps->getName(), doNormalMaps->getBoolValue());
     settings->setBoolValue(doNormalAsBump->getName(), doNormalAsBump->getBoolValue());
@@ -362,11 +382,13 @@ void	YaLuxOptionsFrame::applyChanges()
     YaLuxGlobal.haltAtSamplesPerPixel = haltSPP->getValue();
     YaLuxGlobal.haltAtThreshold = haltThreshold->getValue();
     YaLuxGlobal.debugLevel = debugLevel->getValue();
+
     YaLuxGlobal.tonemapGamma = tonemapGamma->getValue();
     YaLuxGlobal.tonemapFstop = tonemapFstop->getValue();
     YaLuxGlobal.tonemapExposureTime = tonemapExposureTime->getValue();
     YaLuxGlobal.tonemapISO = tonemapISO->getValue();
     YaLuxGlobal.LuxToneMapper = toneMapMethod->getStringValue();
+
     YaLuxGlobal.bNetworkRenderOn = networkRenderOn->getBoolValue();
     YaLuxGlobal.slaveNodeList = renderServerList->getValue().replace(" ",",").split(",", QString::SkipEmptyParts);
     YaLuxGlobal.renderMode = renderMode->getValue();
@@ -376,9 +398,14 @@ void	YaLuxOptionsFrame::applyChanges()
         YaLuxGlobal.maxTextureSize = -1;
     else
         YaLuxGlobal.maxTextureSize = maxTextureSize->getStringValue().toInt();
+
+    YaLuxGlobal.bAddTonemapperAndEnvironement = addTonemapperAndEnvironment->getBoolValue();
+    YaLuxGlobal.bPreferNormal = preferNormal->getBoolValue();
+
     YaLuxGlobal.bDoBumpMaps = doBumpMaps->getBoolValue();
     YaLuxGlobal.bDoNormalMaps = doNormalMaps->getBoolValue();
     YaLuxGlobal.bDoNormalAsBump = doNormalAsBump->getBoolValue();
+
     YaLuxGlobal.bDoMetallic = doMetallic->getBoolValue();
     YaLuxGlobal.bDoSpecular = doSpecular->getBoolValue();
     YaLuxGlobal.bDoRoughnessMaps = doRoughnessMaps->getBoolValue();

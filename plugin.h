@@ -86,7 +86,10 @@ struct G
 
     QStringList tokenList;
     DzTokenBuffer tokenBuffer;
+    
+    bool bAddTonemapperAndEnvironement;
 
+    bool bPreferNormal;
     bool bDoBumpMaps;
     bool bDoNormalMaps;
     bool bDoNormalAsBump;
