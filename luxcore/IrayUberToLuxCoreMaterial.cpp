@@ -208,6 +208,8 @@ bool IrayUberToLuxCoreMaterial::ImportValues()
     {
         m_NormalStrength = ((DzFloatProperty*)currentProperty)->getValue();
         m_NormalMap = propertyNumericImagetoString((DzNumericProperty*)currentProperty);
+        if (m_NormalMap != "")
+            m_NormalExists = true;
     }
     currentProperty = m_Material->findProperty("Refraction Weight");
     if (currentProperty != NULL)
@@ -571,7 +573,7 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
     QString normalMapName = m_LuxMaterialName + "_n";
     m_NormalTex.name = normalMapName;
     QString imageMapName = normalMapName + "_t";
-    if (m_NormalMap != "" && YaLuxGlobal.bDoNormalMaps)
+    if (m_NormalExists && YaLuxGlobal.bDoNormalMaps)
     {
         float scale = m_NormalStrength * 1.0; // Multiply by any necessary render engine correction here
         if (YaLuxGlobal.bDoNormalAsBump)
@@ -1174,12 +1176,12 @@ bool IrayUberToLuxCoreMaterial::CreateMaterials()
         }
 
 
-        if (m_BumpExists && YaLuxGlobal.bDoBumpMaps)
+        if ((m_BumpExists && YaLuxGlobal.bDoBumpMaps) && !(m_NormalExists && YaLuxGlobal.bDoNormalMaps && YaLuxGlobal.bPreferNormal) )
         {
             ret_str += QString("scene.materials.%1.bumptex = \"%2\"\n").arg(glossy2Label).arg(m_BumpTex.name);
             //ret_str += QString("scene.materials.%1.bumpsamplingdistance = \"%2\"\n").arg(glossy2Label).arg(1 / 1000000);
         }
-        else if (m_NormalMap != "" && YaLuxGlobal.bDoNormalMaps)
+        else if (m_NormalExists && YaLuxGlobal.bDoNormalMaps)
         {
             if (YaLuxGlobal.bDoNormalAsBump)
                 ret_str += QString("scene.materials.%1.bumptex = \"%2\"\n").arg(glossy2Label).arg(m_NormalTex.name);
