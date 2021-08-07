@@ -682,8 +682,8 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
             YaLuxGlobal.VolumeList.append(v);
 
             // clamp values
-            m_TransmissionDistance = (m_TransmissionDistance > 0.12) ? 0.12 : m_TransmissionDistance;
-            m_ScatteringDistance = (m_ScatteringDistance > 0.02) ? 0.02 : m_ScatteringDistance;
+            m_TransmissionDistance = (m_TransmissionDistance > 0.15) ? 0.15 : m_TransmissionDistance;
+            m_ScatteringDistance = (m_ScatteringDistance > 0.15) ? 0.15 : m_ScatteringDistance;
 
             // create new volume block.....
             QString transmission_mapfile = "";
@@ -695,27 +695,30 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
                     GetRed(m_TransmissionColor), GetGreen(m_TransmissionColor), GetBlue(m_TransmissionColor));
             else
                 transmissionTexture0 = QString("%1 %2 %3").arg(GetRed(m_TransmissionColor)).arg(GetGreen(m_TransmissionColor)).arg(GetBlue(m_TransmissionColor));
+
             // multiply by translucency color
-            m_TranslucencyTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(transmissionTexture);
+            m_TranslucencyTex.data += QString("scene.textures.%1.type = \"mix\"\n").arg(transmissionTexture);
             m_TranslucencyTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(transmissionTexture).arg(transmissionTexture0);
+            // TODO: replace m_TranslucencyColor with averaged color from TranslucencyMap (write color averaging function)
             m_TranslucencyTex.data += QString("scene.textures.%1.texture2 = \"%2 %3 %4\"\n").arg(transmissionTexture).arg(GetRed(m_TranslucencyColor)).arg(GetGreen(m_TranslucencyColor)).arg(GetBlue(m_TranslucencyColor));
+            m_TranslucencyTex.data += QString("scene.textures.%1.amount = \"%2\"\n").arg(transmissionTexture).arg(0.5);
 
             scatteringTexture = QString("%1 %2 %3").arg(1 - GetRed(m_ScatteringColor)).arg(1 - GetGreen(m_ScatteringColor)).arg(1 - GetBlue(m_ScatteringColor));
 
-            m_TransmissionDistance /= 100;
+            m_TransmissionDistance /= 1000;
             m_ScatteringDistance /= 1;
 
             if (YaLuxGlobal.bDoSSSAbsorption)
             {
                 m_TranslucencyTex.data += QString("scene.textures.%1.type = \"colordepth\"\n").arg(scaled_transmissionTexture);
                 m_TranslucencyTex.data += QString("scene.textures.%1.kt = \"%2\"\n").arg(scaled_transmissionTexture).arg(transmissionTexture);
-                m_TranslucencyTex.data += QString("scene.textures.%1.depth = \"%2\"\n").arg(scaled_transmissionTexture).arg(m_TransmissionDistance / 10);
+                m_TranslucencyTex.data += QString("scene.textures.%1.depth = \"%2\"\n").arg(scaled_transmissionTexture).arg(m_TransmissionDistance);
             }
             else
             {
                 m_TranslucencyTex.data += QString("scene.textures.%1.type = \"colordepth\"\n").arg(scaled_transmissionTexture);
                 m_TranslucencyTex.data += QString("scene.textures.%1.kt = \"%2 %3 %4\"\n").arg(scaled_transmissionTexture).arg(GetRed(m_TransmissionColor)).arg(GetGreen(m_TransmissionColor)).arg(GetBlue(m_TransmissionColor));
-                m_TranslucencyTex.data += QString("scene.textures.%1.depth = \"%2\"\n").arg(scaled_transmissionTexture).arg(m_TransmissionDistance / 10);
+                m_TranslucencyTex.data += QString("scene.textures.%1.depth = \"%2\"\n").arg(scaled_transmissionTexture).arg(m_TransmissionDistance);
             }
 
             if (YaLuxGlobal.bDoSSSScattering)
