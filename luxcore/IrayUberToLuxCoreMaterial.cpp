@@ -661,12 +661,6 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
         }
 
         // operations to perform whether or not new volume is created
-        if (m_SSS_tint != QColor(255, 255, 255))
-        {
-            m_TransmissionColor.setRedF(GetRed(m_TransmissionColor) * GetRed(m_SSS_tint));
-            m_TransmissionColor.setGreenF(GetGreen(m_TransmissionColor) * GetGreen(m_SSS_tint));
-            m_TransmissionColor.setBlueF(GetBlue(m_TransmissionColor) * GetBlue(m_SSS_tint));
-        }
         //// clamp transmission brightness
         //QColor min_Brightness_Color = QColor::fromRgbF(0.9, 0.2, 0.2);
         //if (m_TransmissionColor.lightnessF() < min_Brightness_Color.lightnessF())
@@ -856,14 +850,25 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
     if (m_TranslucencyWeight > 0 &&
         (YaLuxGlobal.bDoTranslucency || YaLuxGlobal.bDoSSSVolume))
     {
+        double darken_amount;
+        QColor blue_shift = QColor::fromRgbF(0.94, 0.99, 1.0);
+
         // scale down diffuse, based on translucency weight
+        // 1 - (0.65 + m_TranslucencyWeight*0.25)
+        // 1 - 0.89
+        darken_amount = 1 - (m_TranslucencyWeight * 0.89);
+
+        if (m_SSS_tint != QColor(255, 255, 255))
+        {
+            blue_shift.setRedF(GetRed(blue_shift) * GetRed(m_SSS_tint));
+            blue_shift.setGreenF(GetGreen(blue_shift) * GetGreen(m_SSS_tint));
+            blue_shift.setBlueF(GetBlue(blue_shift) * GetBlue(m_SSS_tint));
+        }
+
         QString diffuse_darkened = m_LuxMaterialName + "_d_SSS_darkened";
         m_DiffuseTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(diffuse_darkened);
         m_DiffuseTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffuse_darkened).arg(m_DiffuseTex.name);
-        //m_DiffuseTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffuse_darkened).arg(1 - (m_TranslucencyWeight * 0.89));
-        //m_DiffuseTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffuse_darkened).arg(1 - 0.89);
-        m_DiffuseTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffuse_darkened).arg(1 - 0.81);
-        //m_DiffuseTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffuse_darkened).arg(1 - (0.65 + m_TranslucencyWeight*0.25));
+        m_DiffuseTex.data += QString("scene.textures.%1.texture2 = \"%2 %3 %4\"\n").arg(diffuse_darkened).arg(GetRed(blue_shift)*darken_amount).arg(GetGreen(blue_shift)*darken_amount).arg(GetBlue(blue_shift)*darken_amount);
         m_DiffuseTex.name = diffuse_darkened;
 
     }
