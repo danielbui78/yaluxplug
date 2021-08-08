@@ -195,6 +195,10 @@ YaLuxOptionsFrame::YaLuxOptionsFrame() : DzOptionsFrame("yaluxplug Options Frame
     preferNormal->setLabel("Prefer Normal Maps");
     listView->addProperty(preferNormal);
 
+    overrideTransmissionColor = new DzBoolProperty("yalux_override_transmission_color", true, false, false);
+    overrideTransmissionColor->setLabel("Override Transmission/Translucency Color");
+    listView->addProperty(overrideTransmissionColor);
+
     /////// DEBUGGING OPTIONS ///////
     doBumpMaps = new DzBoolProperty("yalux_do_bumpmaps", true, false, true);
     doBumpMaps->setLabel("Render Bump Maps");
@@ -310,6 +314,7 @@ void	YaLuxOptionsFrame::loadSettings()
 
         addTonemapperAndEnvironment->setBoolValue(settings->getBoolValue(addTonemapperAndEnvironment->getName()));
         preferNormal->setBoolValue(settings->getBoolValue(preferNormal->getName()));
+        overrideTransmissionColor->setBoolValue(settings->getBoolValue(overrideTransmissionColor->getName()));
 
         doBumpMaps->setBoolValue( settings->getBoolValue( doBumpMaps->getName()) );
         doNormalMaps->setBoolValue(settings->getBoolValue(doNormalMaps->getName()));
@@ -350,6 +355,7 @@ void	YaLuxOptionsFrame::saveSettings()
 
     settings->setBoolValue(addTonemapperAndEnvironment->getName(), addTonemapperAndEnvironment->getBoolValue());
     settings->setBoolValue(preferNormal->getName(), preferNormal->getBoolValue());
+    settings->setBoolValue(overrideTransmissionColor->getName(), overrideTransmissionColor->getBoolValue());
 
     settings->setBoolValue(doBumpMaps->getName(), doBumpMaps->getBoolValue());
     settings->setBoolValue(doNormalMaps->getName(), doNormalMaps->getBoolValue());
@@ -401,6 +407,7 @@ void	YaLuxOptionsFrame::applyChanges()
 
     YaLuxGlobal.bAddTonemapperAndEnvironement = addTonemapperAndEnvironment->getBoolValue();
     YaLuxGlobal.bPreferNormal = preferNormal->getBoolValue();
+    YaLuxGlobal.bOverrideTransmissionColor = overrideTransmissionColor->getBoolValue();
 
     YaLuxGlobal.bDoBumpMaps = doBumpMaps->getBoolValue();
     YaLuxGlobal.bDoNormalMaps = doNormalMaps->getBoolValue();

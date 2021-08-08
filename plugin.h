@@ -88,8 +88,9 @@ struct G
     DzTokenBuffer tokenBuffer;
     
     bool bAddTonemapperAndEnvironement;
-
     bool bPreferNormal;
+    bool bOverrideTransmissionColor;
+
     bool bDoBumpMaps;
     bool bDoNormalMaps;
     bool bDoNormalAsBump;

@@ -81,6 +81,7 @@ private:
 
     DzBoolProperty      *addTonemapperAndEnvironment;
     DzBoolProperty      *preferNormal;
+    DzBoolProperty      *overrideTransmissionColor;
 
     DzBoolProperty      *doBumpMaps;
     DzBoolProperty      *doNormalMaps;
