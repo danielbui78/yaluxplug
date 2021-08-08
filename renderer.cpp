@@ -1599,8 +1599,8 @@ void YaLuxRender::createLogWindow()
         buttonBar->addWidget(stopRenderButton);
         QPushButton* resumeRenderButton = new QPushButton("&Resume rendering", YaLuxGlobal.logWindow);
         buttonBar->addWidget(resumeRenderButton);
-        QPushButton* nextFrameButton = new QPushButton("&Next frame", YaLuxGlobal.logWindow);
-        buttonBar->addWidget(nextFrameButton);
+        //QPushButton* nextFrameButton = new QPushButton("&Next frame", YaLuxGlobal.logWindow);
+        //buttonBar->addWidget(nextFrameButton);
 
         layout->addLayout(buttonBar);
 
@@ -1608,8 +1608,8 @@ void YaLuxRender::createLogWindow()
             this, SLOT(handleResumeRender()));
         connect(stopRenderButton, SIGNAL(clicked()),
             this, SLOT(handleStopRender()));
-        connect(nextFrameButton, SIGNAL(clicked()),
-            this, SLOT(handleNextFrame()));
+        //connect(nextFrameButton, SIGNAL(clicked()),
+        //    this, SLOT(handleNextFrame()));
         connect(previewCurrentFrame, SIGNAL(clicked()),
             this, SLOT(handlePreviewCurrentFrame()));
         connect(showSCN, SIGNAL(clicked()),
