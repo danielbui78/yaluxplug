@@ -1174,6 +1174,9 @@ bool IrayUberToLuxCoreMaterial::CreateMaterials()
         else
             ret_str += QString("scene.materials.%1.type = \"glossy2\"\n").arg(glossy2Label);
 
+        if (YaLuxGlobal.bDoSSSVolume && m_VolumeExists)
+            ret_str += QString("scene.materials.%1.volume.interior = \"%2\"\n").arg(glossy2Label).arg(m_VolumeName);
+
         if (doGlass)
         {
             ret_str += QString("scene.materials.%1.kd = \"%2\"\n").arg(glossy2Label).arg(m_DiffuseTex.name);
@@ -1183,8 +1186,6 @@ bool IrayUberToLuxCoreMaterial::CreateMaterials()
             ret_str += QString("scene.materials.%1.kd = \"%2\"\n").arg(glossy2Label).arg(m_DiffuseTex.name);
         }
 
-        if (YaLuxGlobal.bDoSSSVolume && m_VolumeExists)
-            ret_str += QString("scene.materials.%1.volume.interior = \"%2\"\n").arg(glossy2Label).arg(m_VolumeName);
         if (YaLuxGlobal.bDoTranslucency && m_TranslucencyExists)
         {
             ret_str += QString("scene.materials.%1.kt = \"%2\"\n").arg(glossy2Label).arg(m_TranslucencyTex.name);
