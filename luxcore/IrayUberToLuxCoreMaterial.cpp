@@ -790,14 +790,35 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
     {
         // Subtract translucency(SSS) mask from the current Opacity Texture
         QString SSSMaskTex3 = m_LuxMaterialName + "_SSS_MASK" + "_3";
+        QString SSSMaskTex4 = m_LuxMaterialName + "_SSS_MASK" + "_4";
         //m_OpacityTex.data += QString("scene.textures.%1.type = \"subtract\"\n").arg(SSSMaskTex3);
         //m_OpacityTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(SSSMaskTex3).arg(OpacityTex);
         //m_OpacityTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(SSSMaskTex3).arg(m_TranslucencyTex_MASK.name);
-        m_OpacityTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(SSSMaskTex3);
-        m_OpacityTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(SSSMaskTex3).arg(OpacityTex);
-        m_OpacityTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(SSSMaskTex3).arg(TranslucencyTex_INVERSE_MASK);
 
-        OpacityTex = SSSMaskTex3;
+        QString diffuse_mask_SSS = SSSMaskTex3 + "_d_mask";
+        double diffuse_mask_SSS_gain = 1.5;
+        if (m_DiffuseMap != "")
+        {
+            m_OpacityTex.data += GenerateCoreTextureBlock1(diffuse_mask_SSS, m_DiffuseMap, diffuse_mask_SSS_gain,
+                1, -1, 0, 0,
+                1, "", "mean");
+        }
+        else
+        {
+            diffuse_mask_SSS = diffuse_mask_SSS_gain;
+        }
+
+        double SSS_opacity_strength = 0.2;
+        m_OpacityTex.data += QString("scene.textures.%1.type = \"mix\"\n").arg(SSSMaskTex3);
+        m_OpacityTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(SSSMaskTex3).arg(1);
+        m_OpacityTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(SSSMaskTex3).arg(TranslucencyTex_INVERSE_MASK);
+        m_OpacityTex.data += QString("scene.textures.%1.amount = \"%2\"\n").arg(SSSMaskTex3).arg(diffuse_mask_SSS);
+
+        m_OpacityTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(SSSMaskTex4);
+        m_OpacityTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(SSSMaskTex4).arg(OpacityTex);
+        m_OpacityTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(SSSMaskTex4).arg(SSSMaskTex3);
+
+        OpacityTex = SSSMaskTex4;
         m_OpacityExists = true;
 
     }
