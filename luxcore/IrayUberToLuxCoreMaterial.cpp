@@ -198,7 +198,8 @@ bool IrayUberToLuxCoreMaterial::ImportValues()
     if (currentProperty != NULL)
     {
 //        m_BumpStrength = ((DzFloatProperty*)currentProperty)->getValue() / 500; // equivalent to (* 0.002)
-        m_BumpStrength = ((DzFloatProperty*)currentProperty)->getValue() * 0.0012;
+//        m_BumpStrength = ((DzFloatProperty*)currentProperty)->getValue() * 0.0012;
+        m_BumpStrength = ((DzFloatProperty*)currentProperty)->getValue() * 0.0012 * 0.4;
         m_BumpMap = propertyNumericImagetoString((DzNumericProperty*)currentProperty);
         if (m_BumpMap != "")
             m_BumpExists = true;
