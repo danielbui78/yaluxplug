@@ -235,12 +235,14 @@ bool IrayUberToLuxCoreMaterial::ImportValues()
     if (currentProperty != NULL)
     {
         m_GlossyLayeredWeight = ((DzFloatProperty*)currentProperty)->getValue();
+        m_GlossyMap = propertyNumericImagetoString((DzNumericProperty*)currentProperty);
     }
     currentProperty = m_Material->findProperty("Glossy Color");
     if (currentProperty != NULL)
     {
         m_GlossyColor = ((DzColorProperty*)currentProperty)->getColorValue();
-        m_GlossyMap = propertyNumericImagetoString((DzNumericProperty*)currentProperty);
+        if (m_GlossyMap == "")
+            m_GlossyMap = propertyNumericImagetoString((DzNumericProperty*)currentProperty);
     }
     currentProperty = m_Material->findProperty("Glossy Reflectivity"); // glossy reflectivity
     if (currentProperty != NULL)
@@ -279,7 +281,7 @@ bool IrayUberToLuxCoreMaterial::ImportValues()
             m_Roughness = (1 - m_Roughness > 0.8) ? 0.8 : (1 - m_Roughness);
         }
     }
-    currentProperty = m_Material->findProperty("Glossy Anisotropy"); // index of refreaction
+    currentProperty = m_Material->findProperty("Glossy Anisotropy"); 
     if (currentProperty != NULL)
     {
         glossy_anisotropy = ((DzFloatProperty*)currentProperty)->getValue();
@@ -295,6 +297,7 @@ bool IrayUberToLuxCoreMaterial::ImportValues()
             }
         }
     }
+    // Translucency and Volume data
     currentProperty = m_Material->findProperty("Translucency Weight");
     if (currentProperty != NULL)
     {
@@ -369,6 +372,20 @@ bool IrayUberToLuxCoreMaterial::ImportValues()
         }
     }
 
+    // Diffuse Overlay
+    currentProperty = m_Material->findProperty("Diffuse Overlay Weight");
+    if (currentProperty != NULL)
+    {
+        m_DiffuseOverlayWeight = ((DzFloatProperty*)currentProperty)->getValue();
+        m_DiffuseOverlayWeightMap = propertyNumericImagetoString((DzNumericProperty*)currentProperty);
+    }
+    currentProperty = m_Material->findProperty("Diffuse Overlay Color");
+    if (currentProperty != NULL)
+    {
+        m_DiffuseOverlayColor = ((DzColorProperty*)currentProperty)->getColorValue();
+        m_DiffuseOverlayColorMap = propertyNumericImagetoString((DzNumericProperty*)currentProperty);
+    }
+
 	return true;
 }
 
@@ -400,42 +417,52 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
     QString translucencytex_mask_2 = translucencyTexture_MASK + "_2";
     QString translucencytex_mask_3 = translucencyTexture_MASK + "_3";
 
+    QString TranslucencyTex_CUTOFF_MASK = "1";
+    QString TranslucencyTex_INVERSE_MASK = "0";
+
     // set up volume_translucencyTexture (gamma = 1.0)
-    if (m_TranslucencyMap != "")
-        m_TranslucencyTex_MASK.data += GenerateCoreTextureBlock1(translucencyTexture_MASK, m_TranslucencyMap, 1.0,
-            m_uscale, m_vscale, m_uoffset, m_voffset,
-            1.0, "", "colored_mean");
-    else
+    if (m_TranslucencyExists)
     {
-        double mask_translucencyValue = gammaUnCorrect(m_TranslucencyColor.lightnessF());
-        translucencyTexture_MASK = QString("%1").arg(mask_translucencyValue);
+        if (m_TranslucencyMap != "")
+            m_TranslucencyTex_MASK.data += GenerateCoreTextureBlock1(translucencyTexture_MASK, m_TranslucencyMap, 1.0,
+                m_uscale, m_vscale, m_uoffset, m_voffset,
+                1.0, "", "colored_mean");
+        else
+        {
+            double mask_translucencyValue = gammaUnCorrect(m_TranslucencyColor.lightnessF());
+            translucencyTexture_MASK = QString("%1").arg(mask_translucencyValue);
+        }
+
+        //// MASK ATTENUATION
+        m_TranslucencyTex_MASK.data += QString("scene.textures.%1.type = \"scale\"\n").arg(translucencytex_mask_0);
+        m_TranslucencyTex_MASK.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(translucencytex_mask_0).arg(translucencyTexture_MASK);
+        if (m_TranslucencyWeight < 0.35)
+            m_TranslucencyTex_MASK.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(translucencytex_mask_0).arg(m_TranslucencyWeight);
+        else if (m_TranslucencyWeight < 0.5)
+            m_TranslucencyTex_MASK.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(translucencytex_mask_0).arg(m_TranslucencyWeight * 0.8);
+        else
+            m_TranslucencyTex_MASK.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(translucencytex_mask_0).arg(m_TranslucencyWeight * 0.65);
+        //m_TranslucencyTex_MASK.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(translucencytex_mask_0).arg(m_TranslucencyWeight);
+
+        //// MASK CUTOFF
+        m_TranslucencyTex_MASK.data += QString("scene.textures.%1.type = \"greaterthan\"\n").arg(translucencytex_mask_1);
+        m_TranslucencyTex_MASK.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(translucencytex_mask_1).arg(translucencyTexture_MASK);
+        //m_TranslucencyTex_MASK.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(translucencytex_mask_1).arg(0.4);
+        m_TranslucencyTex_MASK.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(translucencytex_mask_1).arg(0.35);
+        TranslucencyTex_CUTOFF_MASK = translucencytex_mask_1;
+
+        //// MASK MERGE ATTENUATION + CUTOFF
+        m_TranslucencyTex_MASK.data += QString("scene.textures.%1.type = \"scale\"\n").arg(translucencytex_mask_2);
+        m_TranslucencyTex_MASK.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(translucencytex_mask_2).arg(translucencytex_mask_0);
+        m_TranslucencyTex_MASK.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(translucencytex_mask_2).arg(translucencytex_mask_1);
+        m_TranslucencyTex_MASK.name = translucencytex_mask_2;
+
+        //// MASK INVERSION
+        m_TranslucencyTex_MASK.data += QString("scene.textures.%1.type = \"subtract\"\n").arg(translucencytex_mask_3);
+        m_TranslucencyTex_MASK.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(translucencytex_mask_3).arg(1);
+        m_TranslucencyTex_MASK.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(translucencytex_mask_3).arg(translucencytex_mask_2);
+        TranslucencyTex_INVERSE_MASK = translucencytex_mask_3;
     }
-
-    //// MASK ATTENUATION
-    m_TranslucencyTex_MASK.data += QString("scene.textures.%1.type = \"scale\"\n").arg(translucencytex_mask_0);
-    m_TranslucencyTex_MASK.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(translucencytex_mask_0).arg(translucencyTexture_MASK);
-    if (m_TranslucencyWeight < 0.5)
-        m_TranslucencyTex_MASK.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(translucencytex_mask_0).arg(m_TranslucencyWeight * 0.8);
-    else
-        m_TranslucencyTex_MASK.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(translucencytex_mask_0).arg(m_TranslucencyWeight * 0.2);
-
-    //// MASK CUTOFF
-    m_TranslucencyTex_MASK.data += QString("scene.textures.%1.type = \"greaterthan\"\n").arg(translucencytex_mask_1);
-    m_TranslucencyTex_MASK.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(translucencytex_mask_1).arg(translucencyTexture_MASK);
-    //m_TranslucencyTex_MASK.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(translucencytex_mask_1).arg(0.4);
-    m_TranslucencyTex_MASK.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(translucencytex_mask_1).arg(0.3);
-
-    //// MASK MERGE ATTENUATION + CUTOFF
-    m_TranslucencyTex_MASK.data += QString("scene.textures.%1.type = \"scale\"\n").arg(translucencytex_mask_2);
-    m_TranslucencyTex_MASK.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(translucencytex_mask_2).arg(translucencytex_mask_0);
-    m_TranslucencyTex_MASK.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(translucencytex_mask_2).arg(translucencytex_mask_1);
-    m_TranslucencyTex_MASK.name = translucencytex_mask_2;
-
-    //// MASK INVERSION
-    m_TranslucencyTex_MASK.data += QString("scene.textures.%1.type = \"subtract\"\n").arg(translucencytex_mask_3);
-    m_TranslucencyTex_MASK.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(translucencytex_mask_3).arg(1);
-    m_TranslucencyTex_MASK.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(translucencytex_mask_3).arg(translucencytex_mask_2);
-    QString TranslucencyTex_INVERSE_MASK = translucencytex_mask_3;
 
     // Specular Block (DUAL LOBE)
     float spec1_float = 0;
@@ -456,10 +483,11 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
     QString spec2_label = rawDualRoughness + "_spec2";
     QString specratio_label = rawDualRoughness + "_specratio";
 
+//    QString diffuse_mask = "";
+
     if (m_SpecularWeight > 0 && YaLuxGlobal.bDoSpecular)
     {
-        QString diffuse_mask;
-        diffuse_mask = GenerateMask(m_DiffuseTex);
+//        diffuse_mask = GenerateMask(m_DiffuseTex, "greaterthan", 0.25, 0.02, 1.0);
 
         QString mesg;
         LuxGetFloatProperty(m_Material, "Specular Lobe 1 Roughness", spec1_float, mesg);
@@ -513,11 +541,13 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
 
         m_SpecularTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(finalMix0);
         m_SpecularTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(finalMix0).arg(specref_label);
-        m_SpecularTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(finalMix0).arg(diffuse_mask);
+//        m_SpecularTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(finalMix0).arg(diffuse_mask);
+        m_SpecularTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(finalMix0).arg(TranslucencyTex_CUTOFF_MASK);
 
         m_SpecularTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(finalMix1);
         m_SpecularTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(finalMix1).arg(finalMix0);
-        m_SpecularTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(finalMix1).arg(0.2);
+//        m_SpecularTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(finalMix1).arg(0.25);
+        m_SpecularTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(finalMix1).arg(0.4);
 
         m_SpecularTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(mainSpec);
         m_SpecularTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(mainSpec).arg(finalMix1);
@@ -544,6 +574,9 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
     {
         if (YaLuxGlobal.bDoSpecular)
         {
+            //if (diffuse_mask == "")
+            //    diffuse_mask = GenerateMask(m_DiffuseTex);
+
             QString glossyTex = m_LuxMaterialName + "_glossy";
             if (m_GlossyMap != "")
                 m_GlossyTex.data += GenerateCoreTextureBlock3(glossyTex, m_GlossyMap,
@@ -551,16 +584,40 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
                     m_uscale, m_vscale, m_uoffset, m_voffset);
             else
                 glossyTex = QString("%1 %2 %3").arg(GetRed(m_GlossyColor)).arg(GetGreen(m_GlossyColor)).arg(GetBlue(m_GlossyColor));
+            m_GlossyTex.name = glossyTex;
 
             // mix glossy with mainSpec (dual spec)
             QString glossyMixTex = m_LuxMaterialName + "_glossy" + "_mix";
-            m_GlossyTex.name = glossyMixTex;
+            QString glossyMix0 = glossyMixTex + "_0";
+            QString glossyMix1 = glossyMixTex + "_1";
+            QString glossyMix2 = glossyMixTex + "_2";
+            double glossyMixMultiplier = 1.0;
+            if (m_SpecularWeight > 0) 
+                glossyMixMultiplier = 0.05;
+            else
+            {
+                m_GlossyTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(glossyMix0);
+                m_GlossyTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(glossyMix0).arg(m_GlossyTex.name);
+                m_GlossyTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(glossyMix0).arg(TranslucencyTex_CUTOFF_MASK);
+                m_GlossyTex.name = glossyMix0;
 
-            m_GlossyTex.data += QString("scene.textures.%1.type = \"mix\"\n").arg(glossyMixTex);
-            m_GlossyTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(glossyMixTex).arg(mainSpec);
-            m_GlossyTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(glossyMixTex).arg(glossyTex);
-            m_GlossyTex.data += QString("scene.textures.%1.amount = \"%2\"\n").arg(glossyMixTex).arg(m_GlossyLayeredWeight * 0.05);
-            m_SpecularTex.name = glossyMixTex;
+                m_GlossyTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(glossyMix1);
+                m_GlossyTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(glossyMix1).arg(m_GlossyTex.name);
+                m_GlossyTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(glossyMix1).arg(0.1);
+                m_GlossyTex.name = glossyMix1;
+
+                // decrease roughness by 20%
+                m_Roughness *= 0.8;
+
+            }
+
+            m_GlossyTex.data += QString("scene.textures.%1.type = \"mix\"\n").arg(glossyMix2);
+            m_GlossyTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(glossyMix2).arg(mainSpec);
+            m_GlossyTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(glossyMix2).arg(m_GlossyTex.name);
+            m_GlossyTex.data += QString("scene.textures.%1.amount = \"%2\"\n").arg(glossyMix2).arg(m_GlossyLayeredWeight * glossyMixMultiplier);
+            m_GlossyTex.name = glossyMix2;
+            m_SpecularTex.name = m_GlossyTex.name;
+
         }
 
         if (m_GlossyRoughnessMap != "")
@@ -568,7 +625,8 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
             // note: roughness is already multiplied by glossy_layered_weight when imported above
             m_GlossyRoughnessTex.name = glossyRoughnessTexLabel;
             m_GlossyRoughnessTex.data += GenerateCoreTextureBlock1(glossyRoughnessTexLabel, m_GlossyRoughnessMap, m_GlossyRoughness,
-                m_uscale, m_vscale, m_uoffset, m_voffset);
+                m_uscale, m_vscale, m_uoffset, m_voffset,
+                1.0);
         }
 
     }
@@ -681,11 +739,15 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
         //    double factor = min_Brightness_Color.lightnessF() / m_TranslucencyColor.lightnessF();
         //    m_TranslucencyColor = m_TranslucencyColor.lighter(100 * factor);
         //}
+        //if ( YaLuxGlobal.bOverrideTransmissionColor && 
+        //    (m_TranslucencyColor != QColor(255,255,255) || m_TransmissionColor != QColor::fromRgbF(0.95, 0.2, 0.1))
+        //    )
+        //{
+        //    m_TransmissionColor = QColor::fromRgbF(0.95, 0.20, 0.10);
+        //    m_TranslucencyColor = QColor(255,255,255);
+        //}
         if (YaLuxGlobal.bOverrideTransmissionColor)
-        {
-            m_TransmissionColor = QColor::fromRgbF(0.95, 0.20, 0.10);
-            m_TranslucencyColor = QColor(255,255,255);
-        }
+            TestAndOverrideTransmission();
 
         // create new volume
         if (match_found == false)
@@ -791,34 +853,46 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
         // Subtract translucency(SSS) mask from the current Opacity Texture
         QString SSSMaskTex3 = m_LuxMaterialName + "_SSS_MASK" + "_3";
         QString SSSMaskTex4 = m_LuxMaterialName + "_SSS_MASK" + "_4";
+        QString SSSMaskTex5 = m_LuxMaterialName + "_SSS_MASK" + "_5";
+        QString SSSMaskTex6 = m_LuxMaterialName + "_SSS_MASK" + "_6";
         //m_OpacityTex.data += QString("scene.textures.%1.type = \"subtract\"\n").arg(SSSMaskTex3);
         //m_OpacityTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(SSSMaskTex3).arg(OpacityTex);
         //m_OpacityTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(SSSMaskTex3).arg(m_TranslucencyTex_MASK.name);
 
-        QString diffuse_mask_SSS = SSSMaskTex3 + "_d_mask";
-        double diffuse_mask_SSS_gain = 1.5;
-        if (m_DiffuseMap != "")
-        {
-            m_OpacityTex.data += GenerateCoreTextureBlock1(diffuse_mask_SSS, m_DiffuseMap, diffuse_mask_SSS_gain,
-                1, -1, 0, 0,
-                1, "", "mean");
-        }
+        //QString diffuse_mask_SSS = SSSMaskTex3 + "_d_mask";
+        //double diffuse_mask_SSS_gain = 1.75;
+        //if (m_DiffuseMap != "")
+        //{
+        //    m_OpacityTex.data += GenerateCoreTextureBlock1(diffuse_mask_SSS, m_DiffuseMap, diffuse_mask_SSS_gain,
+        //        1, -1, 0, 0,
+        //        1, "", "mean");
+        //}
+        //else
+        //{
+        //    diffuse_mask_SSS = diffuse_mask_SSS_gain;
+        //}
+
+        //double SSS_opacity_strength = 0.2;
+        //m_OpacityTex.data += QString("scene.textures.%1.type = \"mix\"\n").arg(SSSMaskTex3);
+        //m_OpacityTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(SSSMaskTex3).arg(1);
+        //m_OpacityTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(SSSMaskTex3).arg(TranslucencyTex_INVERSE_MASK);
+        //m_OpacityTex.data += QString("scene.textures.%1.amount = \"%2\"\n").arg(SSSMaskTex3).arg(diffuse_mask_SSS);
+
+        // CLAMP SSS Mask (do not allow SSS Mask to make things appear see-through)
+        m_OpacityTex.data += QString("scene.textures.%1.type = \"clamp\"\n").arg(SSSMaskTex4);
+        m_OpacityTex.data += QString("scene.textures.%1.texture = \"%2\"\n").arg(SSSMaskTex4).arg(TranslucencyTex_INVERSE_MASK);
+        if (!YaLuxGlobal.bDarkenDiffuseTexture)
+            m_OpacityTex.data += QString("scene.textures.%1.min = \"%2\"\n").arg(SSSMaskTex4).arg(0.85);
         else
-        {
-            diffuse_mask_SSS = diffuse_mask_SSS_gain;
-        }
+            m_OpacityTex.data += QString("scene.textures.%1.min = \"%2\"\n").arg(SSSMaskTex4).arg(0.90);
+        m_OpacityTex.data += QString("scene.textures.%1.max = \"%2\"\n").arg(SSSMaskTex4).arg(1.0);
 
-        double SSS_opacity_strength = 0.2;
-        m_OpacityTex.data += QString("scene.textures.%1.type = \"mix\"\n").arg(SSSMaskTex3);
-        m_OpacityTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(SSSMaskTex3).arg(1);
-        m_OpacityTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(SSSMaskTex3).arg(TranslucencyTex_INVERSE_MASK);
-        m_OpacityTex.data += QString("scene.textures.%1.amount = \"%2\"\n").arg(SSSMaskTex3).arg(diffuse_mask_SSS);
+        // Final SSS+Opacity Mix
+        m_OpacityTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(SSSMaskTex5);
+        m_OpacityTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(SSSMaskTex5).arg(OpacityTex);
+        m_OpacityTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(SSSMaskTex5).arg(SSSMaskTex4);
+        OpacityTex = SSSMaskTex5;
 
-        m_OpacityTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(SSSMaskTex4);
-        m_OpacityTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(SSSMaskTex4).arg(OpacityTex);
-        m_OpacityTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(SSSMaskTex4).arg(SSSMaskTex3);
-
-        OpacityTex = SSSMaskTex4;
         m_OpacityExists = true;
 
     }
@@ -836,49 +910,77 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
         if (m_SSS_tint != QColor(255, 255, 255))
         {
             diffuse_tint = m_SSS_tint;
+
+            double red_tint_lerp = 1 * (0.95) + GetRed(diffuse_tint) * (0.05);
+            double green_tint_lerp = 1 * (0.95) + GetGreen(diffuse_tint) * (0.05);
+            double blue_tint_lerp = 1 * (0.95) + GetBlue(diffuse_tint) * (0.05);
+
+            QString diffuse_tinted = m_LuxMaterialName + "_d_SSS_tinted";
+            m_DiffuseTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(diffuse_tinted);
+            m_DiffuseTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffuse_tinted).arg(m_DiffuseTex.name);
+            m_DiffuseTex.data += QString("scene.textures.%1.texture2 = \"%2 %3 %4\"\n").arg(diffuse_tinted).arg(red_tint_lerp).arg(green_tint_lerp).arg(blue_tint_lerp);
+            m_DiffuseTex.name = diffuse_tinted;
+
         }
         else
         {
-            diffuse_tint = QColor::fromRgbF(0.94, 0.99, 1.0);
+//            diffuse_tint = QColor::fromRgbF(0.94, 0.99, 1.0);
 //            diffuse_tint = QColor::fromRgbF(0.4, 0.9, 1.0);
         }
 
-        double red_tint_lerp = 1 * (0.95) + GetRed(diffuse_tint) * (0.05);
-        double green_tint_lerp = 1 * (0.95) + GetGreen(diffuse_tint) * (0.05);
-        double blue_tint_lerp = 1 * (0.95) + GetBlue(diffuse_tint) * (0.05);
+        //double red_tint_lerp = 1 * (0.95) + GetRed(diffuse_tint) * (0.05);
+        //double green_tint_lerp = 1 * (0.95) + GetGreen(diffuse_tint) * (0.05);
+        //double blue_tint_lerp = 1 * (0.95) + GetBlue(diffuse_tint) * (0.05);
 
-        QString diffuse_tinted = m_LuxMaterialName + "_d_SSS_tinted";
-        m_DiffuseTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(diffuse_tinted);
-        m_DiffuseTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffuse_tinted).arg(m_DiffuseTex.name);
-        m_DiffuseTex.data += QString("scene.textures.%1.texture2 = \"%2 %3 %4\"\n").arg(diffuse_tinted).arg(red_tint_lerp).arg(green_tint_lerp).arg(blue_tint_lerp);
-        m_DiffuseTex.name = diffuse_tinted;
+        //QString diffuse_tinted = m_LuxMaterialName + "_d_SSS_tinted";
+        //m_DiffuseTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(diffuse_tinted);
+        //m_DiffuseTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffuse_tinted).arg(m_DiffuseTex.name);
+        //m_DiffuseTex.data += QString("scene.textures.%1.texture2 = \"%2 %3 %4\"\n").arg(diffuse_tinted).arg(red_tint_lerp).arg(green_tint_lerp).arg(blue_tint_lerp);
+        //m_DiffuseTex.name = diffuse_tinted;
 
         // scale down diffuse, based on translucency weight
         // 1 - (0.65 + m_TranslucencyWeight*0.25)
         // 1 - 0.89
+        //darken_amount = 1 - (m_TranslucencyWeight * 0.89);
         darken_amount = 1 - (m_TranslucencyWeight * 0.89);
-        if (YaLuxGlobal.bOverrideTransmissionColor)
-        {
-            saturation_amount = 1.15;
-        }
-        else
-        {
-            saturation_amount = 1.0;
-        }
+        saturation_amount = 1.0;
+        //if (YaLuxGlobal.bDarkenDiffuseTexture)
+        //    darken_amount = 1 - (m_TranslucencyWeight * 0.92);
+        if (YaLuxGlobal.bSaturateDiffuseTexture)
+            saturation_amount = 1.20;
 
-        //QString diffuse_darkened = m_LuxMaterialName + "_d_SSS_darkened";
-        //m_DiffuseTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(diffuse_darkened);
-        //m_DiffuseTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffuse_darkened).arg(m_DiffuseTex.name);
-        //m_DiffuseTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffuse_darkened).arg(darken_amount);
-        //m_DiffuseTex.name = diffuse_darkened;
-
+        // TODO: saturate using specular or SSS mask, but darken whole image
         QString diffuse_darkened = m_LuxMaterialName + "_d_SSS_darkened";
-        m_DiffuseTex.data += QString("scene.textures.%1.type = \"hsv\"\n").arg(diffuse_darkened);
-        m_DiffuseTex.data += QString("scene.textures.%1.texture = \"%2\"\n").arg(diffuse_darkened).arg(m_DiffuseTex.name);
-        m_DiffuseTex.data += QString("scene.textures.%1.saturation = \"%2\"\n").arg(diffuse_darkened).arg(saturation_amount);
-        m_DiffuseTex.data += QString("scene.textures.%1.value = \"%2\"\n").arg(diffuse_darkened).arg(darken_amount);
-        m_DiffuseTex.name = diffuse_darkened;
+        QString diffuse_darkened_0 = diffuse_darkened + "_0";
+        QString diffuse_darkened_1 = diffuse_darkened + "_1";
+        QString diffuse_darkened_2 = diffuse_darkened + "_2";
+        QString diffuse_darkened_3 = diffuse_darkened + "_3";
 
+        // saturate and mask
+        m_DiffuseTex.data += QString("scene.textures.%1.type = \"hsv\"\n").arg(diffuse_darkened_0);
+        m_DiffuseTex.data += QString("scene.textures.%1.texture = \"%2\"\n").arg(diffuse_darkened_0).arg(m_DiffuseTex.name);
+        m_DiffuseTex.data += QString("scene.textures.%1.saturation = \"%2\"\n").arg(diffuse_darkened_0).arg(saturation_amount);
+        m_DiffuseTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(diffuse_darkened_1);
+        m_DiffuseTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffuse_darkened_1).arg(diffuse_darkened_0);
+        m_DiffuseTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffuse_darkened_1).arg(TranslucencyTex_CUTOFF_MASK);
+        // create inverse mask of unsaturated
+        QString TranslucencyTex_CUTOFF_MASK_INVERSE = TranslucencyTex_CUTOFF_MASK + "_inverse";
+        m_DiffuseTex.data += QString("scene.textures.%1.type = \"subtract\"\n").arg(TranslucencyTex_CUTOFF_MASK_INVERSE);
+        m_DiffuseTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(TranslucencyTex_CUTOFF_MASK_INVERSE).arg(1);
+        m_DiffuseTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(TranslucencyTex_CUTOFF_MASK_INVERSE).arg(TranslucencyTex_CUTOFF_MASK);
+        m_DiffuseTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(diffuse_darkened_2);
+        m_DiffuseTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffuse_darkened_2).arg(m_DiffuseTex.name);
+        m_DiffuseTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffuse_darkened_2).arg(TranslucencyTex_CUTOFF_MASK_INVERSE);
+        // add saturated-masked and unsaturated-inverse-mask
+        m_DiffuseTex.data += QString("scene.textures.%1.type = \"add\"\n").arg(diffuse_darkened_3);
+        m_DiffuseTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffuse_darkened_3).arg(diffuse_darkened_1);
+        m_DiffuseTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffuse_darkened_3).arg(diffuse_darkened_2);
+        m_DiffuseTex.name = diffuse_darkened_3;
+        // scale above
+        m_DiffuseTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(diffuse_darkened);
+        m_DiffuseTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(diffuse_darkened).arg(m_DiffuseTex.name);
+        m_DiffuseTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(diffuse_darkened).arg(darken_amount);
+        m_DiffuseTex.name = diffuse_darkened;
     }
 
     // TranslucencyMap Block
@@ -925,33 +1027,44 @@ bool IrayUberToLuxCoreMaterial::CreateTextures()
         QString translucencyTexture_f = m_LuxMaterialName + "_translucency_f";
         //QString translucencyTexture_g = m_LuxMaterialName + "_translucency_g";
 
-        double translucencyValue = m_TranslucencyColor.valueF();
-        double transmissionValue = m_TransmissionColor.valueF();
-        double diffusionValue = m_DiffuseColor.valueF() * (1.0 - (m_TranslucencyWeight*0.84));
-        double translucencyApparentStrength = translucencyValue - diffusionValue;
-        double translucencyTargetStrength = diffusionValue + (m_TranslucencyWeight*0.84);
-        double transmissionMultiplier = translucencyTargetStrength / transmissionValue;
-        m_TranslucencyTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(translucencyTexture_d);
-        m_TranslucencyTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(translucencyTexture_d).arg(m_TranslucencyTex.name);
-        m_TranslucencyTex.data += QString("scene.textures.%1.texture2 = \"%2 %3 %4\"\n").arg(translucencyTexture_d).arg(GetRed(m_TransmissionColor) * transmissionMultiplier).arg(GetGreen(m_TransmissionColor) * transmissionMultiplier).arg(GetBlue(m_TransmissionColor) * transmissionMultiplier);
+        //double translucencyValue = m_TranslucencyColor.valueF();
+        //double transmissionValue = m_TransmissionColor.valueF();
+        //double diffusionValue = m_DiffuseColor.valueF() * (1.0 - (m_TranslucencyWeight*0.84));
+        //double translucencyApparentStrength = translucencyValue - diffusionValue;
+        //double translucencyTargetStrength = diffusionValue + (m_TranslucencyWeight*0.84);
+        //double transmissionMultiplier = translucencyTargetStrength / transmissionValue;
+        //m_TranslucencyTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(translucencyTexture_d);
+        //m_TranslucencyTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(translucencyTexture_d).arg(m_TranslucencyTex.name);
+        //m_TranslucencyTex.data += QString("scene.textures.%1.texture2 = \"%2 %3 %4\"\n").arg(translucencyTexture_d).arg(GetRed(m_TransmissionColor) * transmissionMultiplier).arg(GetGreen(m_TransmissionColor) * transmissionMultiplier).arg(GetBlue(m_TransmissionColor) * transmissionMultiplier);
 
-        double pre_scale = 0.7;
+        double premix_scale = 1.0;
         if ((m_VolumeExists && YaLuxGlobal.bDoSSSVolume) == false)
         {
-            pre_scale = 0.3;
+            premix_scale = 0.3;
         }
-        QString TranslucencyTex_INVERSE_MASK_A = TranslucencyTex_INVERSE_MASK + "_pre_scale";
-        m_TranslucencyTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(TranslucencyTex_INVERSE_MASK_A);
-        m_TranslucencyTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(TranslucencyTex_INVERSE_MASK_A).arg(TranslucencyTex_INVERSE_MASK);
-        m_TranslucencyTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(TranslucencyTex_INVERSE_MASK_A).arg(pre_scale);
-        TranslucencyTex_INVERSE_MASK = TranslucencyTex_INVERSE_MASK_A;
-
+        QString TranslucencyTex_INVERSE_MASK_A = TranslucencyTex_INVERSE_MASK + "_premix_scale";
+        QString TranslucencyTex_INVERSE_MASK_B = TranslucencyTex_INVERSE_MASK + "_premix_noise";
+        if (premix_scale != 1)
+        {
+            m_TranslucencyTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(TranslucencyTex_INVERSE_MASK_A);
+            m_TranslucencyTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(TranslucencyTex_INVERSE_MASK_A).arg(TranslucencyTex_INVERSE_MASK);
+            m_TranslucencyTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(TranslucencyTex_INVERSE_MASK_A).arg(premix_scale);
+        }
+        m_TranslucencyTex.data += QString("scene.textures.%1.type = \"scale\"\n").arg(TranslucencyTex_INVERSE_MASK_B);
+        if (premix_scale != 1)
+            m_TranslucencyTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(TranslucencyTex_INVERSE_MASK_B).arg(TranslucencyTex_INVERSE_MASK_A);
+        else
+            m_TranslucencyTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(TranslucencyTex_INVERSE_MASK_B).arg(TranslucencyTex_INVERSE_MASK);
+//        m_TranslucencyTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(TranslucencyTex_INVERSE_MASK_B).arg(noise_mask);
+        m_TranslucencyTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(TranslucencyTex_INVERSE_MASK_B).arg(1);
+        TranslucencyTex_INVERSE_MASK = TranslucencyTex_INVERSE_MASK_B;
 
         m_TranslucencyTex.data += QString("scene.textures.%1.type = \"mix\"\n").arg(translucencyTexture_e);
         m_TranslucencyTex.data += QString("scene.textures.%1.texture1 = \"%2\"\n").arg(translucencyTexture_e).arg(m_DiffuseTex.name);
-        m_TranslucencyTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(translucencyTexture_e).arg(translucencyTexture_d);
+        //m_TranslucencyTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(translucencyTexture_e).arg(translucencyTexture_d);
+        m_TranslucencyTex.data += QString("scene.textures.%1.texture2 = \"%2\"\n").arg(translucencyTexture_e).arg(m_TranslucencyTex.name);
         m_TranslucencyTex.data += QString("scene.textures.%1.amount = \"%2\"\n").arg(translucencyTexture_e).arg(TranslucencyTex_INVERSE_MASK);
-        m_TranslucencyTex.name = translucencyTexture_e;
+        //m_TranslucencyTex.name = translucencyTexture_e;
 
     }
 
@@ -1344,6 +1457,29 @@ bool IrayUberToLuxCoreMaterial::CreateMaterials()
 	return true;
 }
 
+bool IrayUberToLuxCoreMaterial::TestAndOverrideTransmission()
+{
+    if (m_TransmissionOverrideNeeded == true) 
+        return true;
+
+    bool retval = false;
+
+    if (YaLuxGlobal.bOverrideTransmissionColor)
+    {
+//        if (m_TranslucencyColor != QColor(255, 255, 255) || m_TransmissionColor != QColor::fromRgbF(0.95, 0.20, 0.10))
+        if (m_TranslucencyColor != QColor(255, 255, 255) || m_TransmissionColor != QColor(249, 123, 90))
+        {
+            m_TransmissionOverrideNeeded = true;
+//            m_TransmissionColor = QColor::fromRgbF(0.95, 0.20, 0.10);
+            m_TransmissionColor = QColor(249, 123, 90);
+            m_TranslucencyColor = QColor(255, 255, 255);
+        }
+    }
+    retval = m_TransmissionOverrideNeeded;
+
+    return retval;
+}
+
 QString IrayUberToLuxCoreMaterial::toString()
 {
     QString ret_str;
@@ -1351,8 +1487,8 @@ QString IrayUberToLuxCoreMaterial::toString()
     ret_str = "# (IrayUber) MATERIAL " + m_LuxMaterialName + "\n";
 
     // add texture blocks
-    ret_str += m_DiffuseTex.data;
     ret_str += m_TranslucencyTex_MASK.data;
+    ret_str += m_DiffuseTex.data;
     ret_str += m_SpecularTex.data;
     ret_str += m_BumpTex.data;
 

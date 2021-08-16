@@ -60,5 +60,14 @@ protected:
     TextureBlock m_TranslucencyTex_MASK;
 
     QString m_VolumeName = "";
+
+    double m_DiffuseOverlayWeight = 0;
+    QString m_DiffuseOverlayWeightMap = "";
+    QColor m_DiffuseOverlayColor = QColor(255,255,255);
+    QString m_DiffuseOverlayColorMap = "";
+
+    bool m_TransmissionOverrideNeeded = false;
+    bool TestAndOverrideTransmission();
+
 };
 

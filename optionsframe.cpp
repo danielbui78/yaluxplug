@@ -195,9 +195,17 @@ YaLuxOptionsFrame::YaLuxOptionsFrame() : DzOptionsFrame("yaluxplug Options Frame
     preferNormal->setLabel("Prefer Normal Maps");
     listView->addProperty(preferNormal);
 
-    overrideTransmissionColor = new DzBoolProperty("yalux_override_transmission_color", true, false, false);
-    overrideTransmissionColor->setLabel("Override Transmission/Translucency Color");
+    overrideTransmissionColor = new DzBoolProperty("yalux_override_transmission_color", false, false, false);
+    overrideTransmissionColor->setLabel("OVERRIDE: Use Default Transmission/Translucency Color");
     listView->addProperty(overrideTransmissionColor);
+
+    darkenDiffuseTexture = new DzBoolProperty("yalux_darken_diffuse_texture", false, false, false);
+    darkenDiffuseTexture->setLabel("OVERRIDE: Darken Diffuse Texture");
+    listView->addProperty(darkenDiffuseTexture);
+
+    saturateDiffuseTexture = new DzBoolProperty("yalux_saturate_diffuse_texture", false, false, false);
+    saturateDiffuseTexture->setLabel("OVERRIDE: Saturate Diffuse Texture");
+    listView->addProperty(saturateDiffuseTexture);
 
     /////// DEBUGGING OPTIONS ///////
     doBumpMaps = new DzBoolProperty("yalux_do_bumpmaps", true, false, true);
@@ -314,7 +322,10 @@ void	YaLuxOptionsFrame::loadSettings()
 
         addTonemapperAndEnvironment->setBoolValue(settings->getBoolValue(addTonemapperAndEnvironment->getName()));
         preferNormal->setBoolValue(settings->getBoolValue(preferNormal->getName()));
-        overrideTransmissionColor->setBoolValue(settings->getBoolValue(overrideTransmissionColor->getName()));
+//        overrideTransmissionColor->setBoolValue(settings->getBoolValue(overrideTransmissionColor->getName()));
+        overrideTransmissionColor->setBoolValue( YaLuxGlobal.bOverrideTransmissionColor );
+        darkenDiffuseTexture->setBoolValue(YaLuxGlobal.bDarkenDiffuseTexture);
+        saturateDiffuseTexture->setBoolValue( YaLuxGlobal.bSaturateDiffuseTexture );
 
         doBumpMaps->setBoolValue( settings->getBoolValue( doBumpMaps->getName()) );
         doNormalMaps->setBoolValue(settings->getBoolValue(doNormalMaps->getName()));
@@ -355,7 +366,7 @@ void	YaLuxOptionsFrame::saveSettings()
 
     settings->setBoolValue(addTonemapperAndEnvironment->getName(), addTonemapperAndEnvironment->getBoolValue());
     settings->setBoolValue(preferNormal->getName(), preferNormal->getBoolValue());
-    settings->setBoolValue(overrideTransmissionColor->getName(), overrideTransmissionColor->getBoolValue());
+//    settings->setBoolValue(overrideTransmissionColor->getName(), overrideTransmissionColor->getBoolValue());
 
     settings->setBoolValue(doBumpMaps->getName(), doBumpMaps->getBoolValue());
     settings->setBoolValue(doNormalMaps->getName(), doNormalMaps->getBoolValue());
@@ -408,6 +419,8 @@ void	YaLuxOptionsFrame::applyChanges()
     YaLuxGlobal.bAddTonemapperAndEnvironement = addTonemapperAndEnvironment->getBoolValue();
     YaLuxGlobal.bPreferNormal = preferNormal->getBoolValue();
     YaLuxGlobal.bOverrideTransmissionColor = overrideTransmissionColor->getBoolValue();
+    YaLuxGlobal.bDarkenDiffuseTexture = darkenDiffuseTexture->getBoolValue();
+    YaLuxGlobal.bSaturateDiffuseTexture = saturateDiffuseTexture->getBoolValue();
 
     YaLuxGlobal.bDoBumpMaps = doBumpMaps->getBoolValue();
     YaLuxGlobal.bDoNormalMaps = doNormalMaps->getBoolValue();

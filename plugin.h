@@ -90,6 +90,8 @@ struct G
     bool bAddTonemapperAndEnvironement;
     bool bPreferNormal;
     bool bOverrideTransmissionColor;
+    bool bDarkenDiffuseTexture;
+    bool bSaturateDiffuseTexture;
 
     bool bDoBumpMaps;
     bool bDoNormalMaps;
