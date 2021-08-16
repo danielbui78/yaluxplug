@@ -639,6 +639,50 @@ bool LuxMakeSCNFile(QString filenameSCN, DzRenderer* r, DzCamera* camera, const 
         // 4. set roughness to 1-glossiness
         // shadow intensity??
         // 5. Draw ground
+        bool bDrawGround = false;
+        LuxGetBoolProperty(environment, "Draw Ground", bDrawGround, mesg);
+        if (bDrawGround)
+        {
+            double ground_glossiness = 0.0;
+            QColor ground_reflect_color = QColor(0,0,0);
+            double ground_shadow_intensity = 0.0;
+            QString ground_position_mode_str = "auto";
+            double ground_origin_x=0, ground_origin_y=0, ground_origin_z=0;
+            double ground_size = 50;
+            double x, y, z;
+
+            if (ground_position_mode_str != "auto")
+            {
+                x=0;
+                y=0;
+                z=0;
+            }
+            ground_origin_x = x - (ground_size / 2);
+            ground_origin_y = y - (ground_size / 2);
+            ground_origin_z = z;
+
+            QString ground_material_name = "env_ground_mat";
+            QString ground_object_name = "env_ground_obj";
+            QString ground_mesh_name = "env_ground_mesh";
+            outstr = "\n";
+            outstr += QString("scene.materials.%1.type = \"glossy2\"\n").arg(ground_material_name);
+            outstr += QString("scene.materials.%1.kd = \"%2 %3 %4\"\n").arg(ground_material_name).arg(GetRed(ground_reflect_color)).arg(GetGreen(ground_reflect_color)).arg(GetBlue(ground_reflect_color));
+            outstr += QString("scene.materials.%1.ks = \"0\"\n").arg(ground_material_name);
+            outstr += QString("scene.materials.%1.uroughness = %2\n").arg(ground_material_name).arg(1-ground_glossiness);
+            outstr += QString("scene.materials.%1.vroughness = %2\n").arg(ground_material_name).arg(1-ground_glossiness);
+            outstr += QString("scene.materials.%1.shadowcatcher.enable = 1\n").arg(ground_material_name);
+            outstr += QString("scene.objects.%1.material = \"%2\"\n").arg(ground_object_name).arg(ground_material_name);
+            outstr += QString("scene.objects.%1.shape = \"%2\"\n").arg(ground_object_name).arg(ground_mesh_name);
+            outstr += QString("scene.shapes.%1.type = \"inlinedmesh\"\n").arg(ground_mesh_name);
+            QString vert0 = QString("%1 %2 %3").arg(ground_origin_x).arg(ground_origin_y).arg(ground_origin_z);
+            QString vert1 = QString("%1 %2 %3").arg(ground_origin_x + ground_size).arg(ground_origin_y).arg(ground_origin_z);
+            QString vert2 = QString("%1 %2 %3").arg(ground_origin_x).arg(ground_origin_y + ground_size).arg(ground_origin_z);
+            QString vert3 = QString("%1 %2 %3").arg(ground_origin_x + ground_size).arg(ground_origin_y + ground_size).arg(ground_origin_z);
+            outstr += QString("scene.shapes.%1.vertices = %2   %3   %4   %5\n").arg(ground_mesh_name).arg(vert0).arg(vert1).arg(vert2).arg(vert3);
+            outstr += QString("scene.shapes.%1.faces = 0 1 2 2 1 3\n").arg(ground_mesh_name);
+            outstr += "\n";
+            outSCN.write(outstr.toAscii());
+        }
 
         ///////
         // Matte Fog
