@@ -423,20 +423,23 @@ QString LuxCoreProcessLight(DzLight* currentLight, QString& mesg)
         //// row[3] needs to be scaled
         //outstr += QString("%1 %2 %3 %4 ").arg(mat4[3][0] / 100).arg(-mat4[3][2] / 100).arg(mat4[3][1] / 100).arg(mat4[3][3]);
         //outstr += "]\n";
+
+        // DB 2021-10-24: if using WS positions, then don't need WS transform --> use unit matrix conversion to LuxCore instead
+        //outstr += QString("scene.lights.%1.transformation = ").arg(lightLabel);
+        //outstr += QString("%1 %2 %3 %4 ").arg(mat4[0][0] / 100).arg(-mat4[0][2] / 100).arg(mat4[0][1] / 100).arg(mat4[0][3] / 100);
+        //outstr += QString("%1 %2 %3 %4 ").arg(mat4[1][0] / 100).arg(-mat4[1][2] / 100).arg(mat4[1][1] / 100).arg(mat4[1][3] / 100);
+        //outstr += QString("%1 %2 %3 %4 ").arg(-mat4[2][0] / 100).arg(mat4[2][2] / 100).arg(-mat4[2][1] / 100).arg(mat4[2][3] / 100);
+        //outstr += QString("%1 %2 %3 %4\n").arg(mat4[3][0] / 100).arg(-mat4[3][2] / 100).arg(mat4[3][1] / 100).arg(mat4[3][3]);
+
+        // Unit Matrix conversion to LuxCore
         outstr += QString("scene.lights.%1.transformation = ").arg(lightLabel);
-        outstr += QString("%1 %2 %3 %4 ").arg(mat4[0][0]).arg(-mat4[0][2]).arg(mat4[0][1]).arg(mat4[0][3]);
-        outstr += QString("%5 %6 %7 %8 ").arg(mat4[1][0]).arg(-mat4[1][2]).arg(mat4[1][1]).arg(mat4[1][3]);
-        outstr += QString("%9 %10 %11 %12 ").arg(-mat4[2][0]).arg(mat4[2][2]).arg(-mat4[2][1]).arg(mat4[2][3]);
-        outstr += QString("%13 %14 %15 %16\n").arg(mat4[3][0] / 100).arg(-mat4[3][2] / 100).arg(mat4[3][1] / 100).arg(mat4[3][3]);
+        outstr += QString("0.01 0 0 0 ");
+        outstr += QString("0 0 0.01 0 ");
+        outstr += QString("0 -0.01 0 0 ");
+        outstr += QString("0 0 0 1\n");
 
         //outstr += "AreaLightSource \"area\"\n";
         lightPos = currentLight->getWSPos();
-        //outstr += QString("\t\"color L\"\t[%1 %2 %3]\n").arg(lightColor.redF()).arg(lightColor.greenF()).arg(lightColor.blueF());
-        //outstr += QString("\t\"float power\"\t[%1]\n").arg(100);
-        //outstr += QString("\t\"float efficacy\"\t[%1]\n").arg(17);
-        outstr += QString("scene.lights.%1.color = %2 %3 %4\n").arg(lightLabel).arg(lightColor.redF()).arg(lightColor.greenF()).arg(lightColor.blueF());
-        outstr += QString("scene.lights.%1.gain = %2 %2 %2\n").arg(lightLabel).arg(lightIntensity);
-        outstr += QString("scene.lights.%1.position = %2 %3 %4\n").arg(lightLabel).arg(lightPos.m_x).arg(lightPos.m_y).arg(lightPos.m_z);
 
         if (currentLight->inherits("DzSpotLight"))
         {
@@ -444,22 +447,41 @@ QString LuxCoreProcessLight(DzLight* currentLight, QString& mesg)
             //outstr += spotLightPlane.join("");
             outstr += QString("scene.lights.%1.type = \"spot\"\n").arg(lightLabel);
             lightVector = currentLight->getFocalPoint();
+            DzVec3 delta = lightPos - lightVector;
+            float distance = lightVector.length();
+            float coneangle = (dynamic_cast<DzSpotLight*>(currentLight)->getSpreadAngleControl())->getValue();
+            delta.setLength(distance);
+            lightVector = lightPos - delta;
+            lightIntensity *= 7500.0f;
             outstr += QString("scene.lights.%1.target = %2 %3 %4\n").arg(lightLabel).arg(lightVector.m_x).arg(lightVector.m_y).arg(lightVector.m_z);
+            outstr += QString("scene.lights.%1.coneangle = %2\n").arg(lightLabel).arg(coneangle / 2.0);
+            outstr += QString("scene.lights.%1.conedeltaangle = %2\n").arg(lightLabel).arg(5.0);
         }
         else if (currentLight->inherits("DzPointLight")) {
             //outstr += QString("\t\"float gain\"\t[%1]\n").arg(((DzPointLight*)currentLight)->getIntensity());
             //outstr += "Shape \"sphere\" \"float radius\" [0.5]\n";
+            lightIntensity *= 0.75f;
             outstr += QString("scene.lights.%1.type = \"point\"\n").arg(lightLabel);
         }
         else if (currentLight->inherits("DzDistantLight")) {
             //outstr += QString("\t\"float gain\"\t[%1]\n").arg(((DzDistantLight*)currentLight)->getIntensity());
             //outstr += distantLightPlane.join("");
+            lightIntensity *= 750.0f;
             outstr += QString("scene.lights.%1.type = \"distant\"\n").arg(lightLabel);
-            outstr += QString("scene.lights.%1.dir = %2 %3 %4\n").arg(lightLabel).arg(lightVector.m_x).arg(lightVector.m_y).arg(lightVector.m_z);
+            outstr += QString("scene.lights.%1.direction = %2 %3 %4\n").arg(lightLabel).arg(lightVector.m_x).arg(lightVector.m_y).arg(lightVector.m_z);
         }
+
+        //outstr += QString("\t\"color L\"\t[%1 %2 %3]\n").arg(lightColor.redF()).arg(lightColor.greenF()).arg(lightColor.blueF());
+        //outstr += QString("\t\"float power\"\t[%1]\n").arg(100);
+        //outstr += QString("\t\"float efficacy\"\t[%1]\n").arg(17);
+        outstr += QString("scene.lights.%1.color = %2 %3 %4\n").arg(lightLabel).arg(lightColor.redF()).arg(lightColor.greenF()).arg(lightColor.blueF());
+        outstr += QString("scene.lights.%1.gain = %2 %2 %2\n").arg(lightLabel).arg(lightIntensity);
+        outstr += QString("scene.lights.%1.position = %2 %3 %4\n").arg(lightLabel).arg(lightPos.m_x).arg(lightPos.m_y).arg(lightPos.m_z);
+
     }
 
     //outstr += "AttributeEnd\n";
+    outstr += "\n";
 
     return outstr;
 }
