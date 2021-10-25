@@ -18,7 +18,7 @@
 #include <QtCore/QThread>
 #include "dztexture.h"
 
-#include "luxcore\DzMaterialToLuxCoreMaterial.h"
+#include "luxcore/DzMaterialToLuxCoreMaterial.h"
 
 const QStringList LXSfilm = QStringList() <<
 "Film \"fleximage\"\n" <<

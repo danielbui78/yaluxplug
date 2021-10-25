@@ -389,7 +389,8 @@ void	YaLuxOptionsFrame::applyChanges()
     //YaLuxGlobal.LuxExecPath = execPath->getValue() + "/luxconsole.exe";
     YaLuxGlobal.LuxExecPath = execPath->getValue() + "/luxcoreconsole.exe";
 #elif defined( Q_WS_MAC )
-    YaLuxGlobal.LuxExecPath = execPath->getValue() + "/Luxrender.app/Contents/MacOS/luxconsole";
+    //YaLuxGlobal.LuxExecPath = execPath->getValue() + "/Luxrender.app/Contents/MacOS/luxconsole";
+    YaLuxGlobal.LuxExecPath = execPath->getValue() + "/LuxCore.app/Contents/MacOS/luxcoreconsole";
 #endif
     YaLuxGlobal.CmdLineArgs = argumentList->getValue();
 
